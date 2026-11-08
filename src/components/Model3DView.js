@@ -58,7 +58,7 @@ export default function Model3DView({
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
       width:100%; height:100%; overflow:hidden;
-      background-color: #020617; touch-action:none;
+      background-color: ${theme === 'light' ? '#f8fafc' : '#020617'}; touch-action:none;
       user-select:none; -webkit-user-select:none;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
@@ -121,6 +121,7 @@ export default function Model3DView({
     }
 
     let scene, camera, renderer, controls;
+    let grid = null;
     let organMeshes = [];
     let organMap = {};
     let heartMesh = null;
@@ -137,7 +138,7 @@ export default function Model3DView({
       xrayMode: false,
       explodeVal: 0,
       focusRegion: 'all',
-      theme: 'dark'
+      theme: '${theme}'
     };
 
     const CAM_VIEWS = {
@@ -176,7 +177,7 @@ export default function Model3DView({
     function initScene() {
       const canvas = document.getElementById('canvas3d');
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x020617);
+      scene.background = new THREE.Color(${theme === 'light' ? '0xf8fafc' : '0x020617'});
 
       const w = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0, 320);
       const h = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0, 480);
@@ -227,9 +228,9 @@ export default function Model3DView({
       scene.add(rimLight);
 
       // Anatomical Ground Grid
-      const grid = new THREE.GridHelper(26, 26, 0x0ea5e9, 0x1e293b);
+      grid = new THREE.GridHelper(26, 26, 0x0ea5e9, 0x1e293b);
       grid.material.transparent = true;
-      grid.material.opacity = 0.22;
+      grid.material.opacity = ${theme === 'light' ? '0.35' : '0.22'};
       grid.position.y = -0.05;
       scene.add(grid);
 
@@ -773,10 +774,10 @@ export default function Model3DView({
   </script>
 </body>
 </html>
-  `, []);
+  `, [theme]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, theme === 'light' && styles.containerLight]}>
       <WebView
         ref={webViewRef}
         originWhitelist={['*']}
@@ -803,6 +804,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     backgroundColor: '#020617',
+  },
+  containerLight: {
+    backgroundColor: '#f8fafc',
   },
   webview: {
     flex: 1,

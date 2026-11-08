@@ -11,11 +11,13 @@ import {
 import { ANATOMY_DATA, SYSTEMS } from '../data/anatomyData';
 import OrganDetailsSheet from '../components/OrganDetailsSheet';
 
-export default function SearchScreen() {
+export default function SearchScreen({ theme = 'dark' }) {
   const [query, setQuery] = useState('');
   const [selectedSystemFilter, setSelectedSystemFilter] = useState('all');
   const [selectedOrganData, setSelectedOrganData] = useState(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+
+  const isLight = theme === 'light';
 
   const organList = useMemo(() => Object.values(ANATOMY_DATA), []);
 
@@ -52,23 +54,23 @@ export default function SearchScreen() {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, isLight && styles.containerLight]}>
       {/* Header & Search Input */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Search Anatomy</Text>
-        <View style={styles.inputContainer}>
+      <View style={[styles.header, isLight && styles.headerLight]}>
+        <Text style={[styles.title, isLight && styles.titleLight]}>Search Anatomy</Text>
+        <View style={[styles.inputContainer, isLight && styles.inputContainerLight]}>
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, isLight && styles.inputLight]}
             placeholder="Search organs, diseases, Latin terms..."
-            placeholderTextColor="#64748b"
+            placeholderTextColor={isLight ? '#94a3b8' : '#64748b'}
             value={query}
             onChangeText={setQuery}
             autoCorrect={false}
           />
           {query.length > 0 && (
             <TouchableOpacity onPress={() => setQuery('')}>
-              <Text style={styles.clearBtn}>✕</Text>
+              <Text style={[styles.clearBtn, isLight && styles.clearBtnLight]}>✕</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -84,13 +86,15 @@ export default function SearchScreen() {
               <TouchableOpacity
                 style={[
                   styles.filterChip,
-                  selectedSystemFilter === item.id && styles.filterChipActive,
+                  isLight && styles.filterChipLight,
+                  selectedSystemFilter === item.id && (isLight ? styles.filterChipActiveLight : styles.filterChipActive),
                 ]}
                 onPress={() => setSelectedSystemFilter(item.id)}
               >
                 <Text
                   style={[
                     styles.filterText,
+                    isLight && styles.filterTextLight,
                     selectedSystemFilter === item.id && styles.filterTextActive,
                   ]}
                 >
@@ -104,8 +108,8 @@ export default function SearchScreen() {
       </View>
 
       {/* Results Count */}
-      <View style={styles.countBar}>
-        <Text style={styles.countText}>
+      <View style={[styles.countBar, isLight && styles.countBarLight]}>
+        <Text style={[styles.countText, isLight && styles.countTextLight]}>
           Showing {filteredOrgans.length} anatomical structures
         </Text>
       </View>
@@ -119,23 +123,23 @@ export default function SearchScreen() {
           const sys = SYSTEMS[item.system] || { name: 'System', icon: '🧬', color: '#38bdf8' };
           return (
             <TouchableOpacity
-              style={styles.card}
+              style={[styles.card, isLight && styles.cardLight]}
               activeOpacity={0.7}
               onPress={() => handleOpenOrgan(item)}
             >
               <View style={styles.cardTop}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.cardTitle}>
-                    {item.name} {item.name_bn ? <Text style={styles.cardTitleBn}>({item.name_bn})</Text> : null}
+                  <Text style={[styles.cardTitle, isLight && styles.cardTitleLight]}>
+                    {item.name} {item.name_bn ? <Text style={[styles.cardTitleBn, isLight && styles.cardTitleBnLight]}>({item.name_bn})</Text> : null}
                   </Text>
                   {item.latin ? (
-                    <Text style={styles.cardLatin}>{item.latin}</Text>
+                    <Text style={[styles.cardLatin, isLight && styles.cardLatinLight]}>{item.latin}</Text>
                   ) : null}
                 </View>
                 <View
                   style={[
                     styles.badge,
-                    { backgroundColor: sys.color + '22', borderColor: sys.color },
+                    { backgroundColor: sys.color + (isLight ? '18' : '22'), borderColor: sys.color },
                   ]}
                 >
                   <Text style={[styles.badgeText, { color: sys.color }]}>
@@ -145,14 +149,14 @@ export default function SearchScreen() {
               </View>
 
               {/* Bangla overview preview */}
-              <Text style={styles.cardSnippet} numberOfLines={2}>
+              <Text style={[styles.cardSnippet, isLight && styles.cardSnippetLight]} numberOfLines={2}>
                 {item.desc_bn || item.desc_en}
               </Text>
 
               {/* Diseases Tag */}
               {item.diseases_bn && (
-                <View style={styles.diseaseSnippet}>
-                  <Text style={styles.diseaseTag} numberOfLines={1}>
+                <View style={[styles.diseaseSnippet, isLight && styles.diseaseSnippetLight]}>
+                  <Text style={[styles.diseaseTag, isLight && styles.diseaseTagLight]} numberOfLines={1}>
                     ⚠️ {item.diseases_bn[0]}
                   </Text>
                 </View>
@@ -167,6 +171,7 @@ export default function SearchScreen() {
         visible={sheetVisible}
         organData={selectedOrganData}
         onClose={() => setSheetVisible(false)}
+        theme={theme}
       />
     </SafeAreaView>
   );
@@ -307,5 +312,70 @@ const styles = StyleSheet.create({
     color: '#f87171',
     fontSize: 12,
     lineHeight: 16,
+  },
+  // Light Theme Styles
+  containerLight: {
+    backgroundColor: '#f8fafc',
+  },
+  headerLight: {
+    backgroundColor: '#ffffff',
+    borderBottomColor: '#e2e8f0',
+  },
+  titleLight: {
+    color: '#0f172a',
+  },
+  inputContainerLight: {
+    backgroundColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
+  },
+  inputLight: {
+    color: '#0f172a',
+  },
+  clearBtnLight: {
+    color: '#64748b',
+  },
+  filterChipLight: {
+    backgroundColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
+  },
+  filterChipActiveLight: {
+    backgroundColor: '#0284c7',
+    borderColor: '#0284c7',
+  },
+  filterTextLight: {
+    color: '#64748b',
+  },
+  countBarLight: {
+    backgroundColor: '#f1f5f9',
+  },
+  countTextLight: {
+    color: '#64748b',
+  },
+  cardLight: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  cardTitleLight: {
+    color: '#0f172a',
+  },
+  cardTitleBnLight: {
+    color: '#0284c7',
+  },
+  cardLatinLight: {
+    color: '#0284c7',
+  },
+  cardSnippetLight: {
+    color: '#334155',
+  },
+  diseaseSnippetLight: {
+    borderTopColor: '#f1f5f9',
+  },
+  diseaseTagLight: {
+    color: '#dc2626',
   },
 });

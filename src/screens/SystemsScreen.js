@@ -10,10 +10,12 @@ import {
 import { SYSTEMS, ANATOMY_DATA } from '../data/anatomyData';
 import OrganDetailsSheet from '../components/OrganDetailsSheet';
 
-export default function SystemsScreen() {
+export default function SystemsScreen({ theme = 'dark' }) {
   const [selectedSystem, setSelectedSystem] = useState(null);
   const [selectedOrganData, setSelectedOrganData] = useState(null);
   const [sheetVisible, setSheetVisible] = useState(false);
+
+  const isLight = theme === 'light';
 
   const systemKeys = Object.keys(SYSTEMS);
 
@@ -27,11 +29,11 @@ export default function SystemsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, isLight && styles.containerLight]}>
       {/* Screen Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Anatomical Systems</Text>
-        <Text style={styles.subtitle}>Explore organ networks and physiological pathways</Text>
+      <View style={[styles.header, isLight && styles.headerLight]}>
+        <Text style={[styles.title, isLight && styles.titleLight]}>Anatomical Systems</Text>
+        <Text style={[styles.subtitle, isLight && styles.subtitleLight]}>Explore organ networks and physiological pathways</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollList}>
@@ -41,45 +43,45 @@ export default function SystemsScreen() {
           const isExpanded = selectedSystem === sysKey;
 
           return (
-            <View key={sysKey} style={styles.systemCard}>
+            <View key={sysKey} style={[styles.systemCard, isLight && styles.systemCardLight]}>
               <TouchableOpacity
-                style={styles.cardHeader}
+                style={[styles.cardHeader, isLight && styles.cardHeaderLight]}
                 activeOpacity={0.7}
                 onPress={() => setSelectedSystem(isExpanded ? null : sysKey)}
               >
-                <View style={styles.iconCircle}>
+                <View style={[styles.iconCircle, isLight && styles.iconCircleLight]}>
                   <Text style={styles.sysIcon}>{sys.icon}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.sysName}>
-                    {sys.name} <Text style={styles.sysNameBn}>({sys.name_bn})</Text>
+                  <Text style={[styles.sysName, isLight && styles.sysNameLight]}>
+                    {sys.name} <Text style={[styles.sysNameBn, isLight && styles.sysNameBnLight]}>({sys.name_bn})</Text>
                   </Text>
-                  <Text style={styles.organCount}>
+                  <Text style={[styles.organCount, isLight && styles.organCountLight]}>
                     {organs.length} {organs.length === 1 ? 'organ mapped' : 'organs mapped'}
                   </Text>
                 </View>
-                <Text style={styles.chevron}>{isExpanded ? '▲' : '▼'}</Text>
+                <Text style={[styles.chevron, isLight && styles.chevronLight]}>{isExpanded ? '▲' : '▼'}</Text>
               </TouchableOpacity>
 
               {/* Expanded Organ List */}
               {isExpanded && (
-                <View style={styles.organsContainer}>
+                <View style={[styles.organsContainer, isLight && styles.organsContainerLight]}>
                   {organs.map((organ) => (
                     <TouchableOpacity
                       key={organ.name}
-                      style={styles.organRow}
+                      style={[styles.organRow, isLight && styles.organRowLight]}
                       onPress={() => handleOpenOrgan(organ)}
                     >
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.organName}>
-                          {organ.name} <Text style={styles.organNameBn}>({organ.name_bn})</Text>
+                        <Text style={[styles.organName, isLight && styles.organNameLight]}>
+                          {organ.name} <Text style={[styles.organNameBn, isLight && styles.organNameBnLight]}>({organ.name_bn})</Text>
                         </Text>
                         {organ.latin ? (
-                          <Text style={styles.organLatin}>{organ.latin}</Text>
+                          <Text style={[styles.organLatin, isLight && styles.organLatinLight]}>{organ.latin}</Text>
                         ) : null}
                       </View>
-                      <View style={styles.viewBadge}>
-                        <Text style={styles.viewBadgeText}>Details ➔</Text>
+                      <View style={[styles.viewBadge, isLight && styles.viewBadgeLight]}>
+                        <Text style={[styles.viewBadgeText, isLight && styles.viewBadgeTextLight]}>Details ➔</Text>
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -95,6 +97,7 @@ export default function SystemsScreen() {
         visible={sheetVisible}
         organData={selectedOrganData}
         onClose={() => setSheetVisible(false)}
+        theme={theme}
       />
     </SafeAreaView>
   );
@@ -210,5 +213,68 @@ const styles = StyleSheet.create({
     color: '#38bdf8',
     fontSize: 12,
     fontWeight: '600',
+  },
+  // Light Theme Styles
+  containerLight: {
+    backgroundColor: '#f8fafc',
+  },
+  headerLight: {
+    backgroundColor: '#ffffff',
+    borderBottomColor: '#e2e8f0',
+  },
+  titleLight: {
+    color: '#0f172a',
+  },
+  subtitleLight: {
+    color: '#64748b',
+  },
+  systemCardLight: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  cardHeaderLight: {
+    backgroundColor: '#ffffff',
+  },
+  iconCircleLight: {
+    backgroundColor: '#f1f5f9',
+  },
+  sysNameLight: {
+    color: '#0f172a',
+  },
+  sysNameBnLight: {
+    color: '#0284c7',
+  },
+  organCountLight: {
+    color: '#64748b',
+  },
+  chevronLight: {
+    color: '#64748b',
+  },
+  organsContainerLight: {
+    backgroundColor: '#f8fafc',
+    borderTopColor: '#e2e8f0',
+  },
+  organRowLight: {
+    borderBottomColor: '#f1f5f9',
+  },
+  organNameLight: {
+    color: '#1e293b',
+  },
+  organNameBnLight: {
+    color: '#0284c7',
+  },
+  organLatinLight: {
+    color: '#0284c7',
+  },
+  viewBadgeLight: {
+    backgroundColor: 'rgba(2, 132, 199, 0.1)',
+  },
+  viewBadgeTextLight: {
+    color: '#0284c7',
   },
 });

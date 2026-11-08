@@ -23,21 +23,23 @@ export default function SettingsScreen({
   explodeVal,
   setExplodeVal,
 }) {
+  const isLight = theme === 'light';
+
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Settings & Preferences</Text>
-        <Text style={styles.subtitle}>Configure 3D graphics, physiology, and display</Text>
+    <SafeAreaView style={[styles.container, isLight && styles.containerLight]}>
+      <View style={[styles.header, isLight && styles.headerLight]}>
+        <Text style={[styles.title, isLight && styles.titleLight]}>Settings & Preferences</Text>
+        <Text style={[styles.subtitle, isLight && styles.subtitleLight]}>Configure 3D graphics, physiology, and display</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollList}>
         {/* CARD 1: THEME & APPEARANCE */}
-        <View style={styles.card}>
+        <View style={[styles.card, isLight && styles.cardLight]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>🎨</Text>
             <View>
-              <Text style={styles.cardHeading}>Theme & Appearance</Text>
-              <Text style={styles.cardSub}>Viewport atmosphere and background</Text>
+              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>Theme & Appearance</Text>
+              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Viewport atmosphere and background</Text>
             </View>
           </View>
 
@@ -47,14 +49,16 @@ export default function SettingsScreen({
                 key={mode}
                 style={[
                   styles.themeChip,
-                  theme === mode && styles.themeChipActive,
+                  isLight && styles.themeChipLight,
+                  theme === mode && (isLight ? styles.themeChipActiveLight : styles.themeChipActive),
                 ]}
                 onPress={() => setTheme(mode)}
               >
                 <Text
                   style={[
                     styles.themeChipText,
-                    theme === mode && styles.themeChipTextActive,
+                    isLight && styles.themeChipTextLight,
+                    theme === mode && (isLight ? styles.themeChipTextActiveLight : styles.themeChipTextActive),
                   ]}
                 >
                   {mode === 'dark' ? '🌙 Dark' : mode === 'light' ? '☀️ Light' : '⚡ X-Ray'}
@@ -65,136 +69,142 @@ export default function SettingsScreen({
         </View>
 
         {/* CARD 2: 3D VIEW MODES */}
-        <View style={styles.card}>
+        <View style={[styles.card, isLight && styles.cardLight]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>👁️</Text>
             <View>
-              <Text style={styles.cardHeading}>3D View Controls</Text>
-              <Text style={styles.cardSub}>Camera dynamics and visual effects</Text>
+              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>3D View Controls</Text>
+              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Camera dynamics and visual effects</Text>
             </View>
           </View>
 
           <View style={styles.settingRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.rowLabel}>Auto-Rotate Model</Text>
-              <Text style={styles.rowDesc}>Smooth 360° continuous turntable rotation</Text>
+              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Auto-Rotate Model</Text>
+              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Smooth 360° continuous turntable rotation</Text>
             </View>
             <Switch
               value={autoRotate}
               onValueChange={setAutoRotate}
-              trackColor={{ false: '#334155', true: '#0284c7' }}
-              thumbColor={autoRotate ? '#38bdf8' : '#cbd5e1'}
+              trackColor={{ false: isLight ? '#cbd5e1' : '#334155', true: '#0284c7' }}
+              thumbColor={autoRotate ? '#38bdf8' : (isLight ? '#f8fafc' : '#cbd5e1')}
             />
           </View>
 
-          <View style={[styles.settingRow, styles.rowBorderTop]}>
+          <View style={[styles.settingRow, styles.rowBorderTop, isLight && styles.rowBorderTopLight]}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.rowLabel}>Holographic X-Ray</Text>
-              <Text style={styles.rowDesc}>Semiconductive transparent skeleton view</Text>
+              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Holographic X-Ray</Text>
+              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Semiconductive transparent skeleton view</Text>
             </View>
             <Switch
               value={xrayMode}
               onValueChange={setXrayMode}
-              trackColor={{ false: '#334155', true: '#0284c7' }}
-              thumbColor={xrayMode ? '#38bdf8' : '#cbd5e1'}
+              trackColor={{ false: isLight ? '#cbd5e1' : '#334155', true: '#0284c7' }}
+              thumbColor={xrayMode ? '#38bdf8' : (isLight ? '#f8fafc' : '#cbd5e1')}
             />
           </View>
         </View>
 
         {/* CARD 3: PHYSIOLOGY SIMULATION */}
-        <View style={styles.card}>
+        <View style={[styles.card, isLight && styles.cardLight]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>💓</Text>
             <View>
-              <Text style={styles.cardHeading}>Physiology Simulation</Text>
-              <Text style={styles.cardSub}>Dynamic cardiac and respiratory rates</Text>
+              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>Physiology Simulation</Text>
+              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Dynamic cardiac and respiratory rates</Text>
             </View>
           </View>
 
           {/* BPM Stepper */}
           <View style={styles.stepperRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.rowLabel}>Heart Rate</Text>
-              <Text style={styles.rowDesc}>Cardiac cycle speed in real time</Text>
+              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Heart Rate</Text>
+              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Cardiac cycle speed in real time</Text>
             </View>
-            <View style={styles.stepperControls}>
+            <View style={[styles.stepperControls, isLight && styles.stepperControlsLight]}>
               <TouchableOpacity
-                style={styles.stepBtn}
+                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
                 onPress={() => setBpm((prev) => Math.max(40, prev - 5))}
               >
-                <Text style={styles.stepBtnText}>−</Text>
+                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>−</Text>
               </TouchableOpacity>
-              <Text style={styles.stepValue}>{bpm} <Text style={styles.stepUnit}>BPM</Text></Text>
+              <Text style={[styles.stepValue, isLight && styles.stepValueLight]}>
+                {bpm} <Text style={[styles.stepUnit, isLight && styles.stepUnitLight]}>BPM</Text>
+              </Text>
               <TouchableOpacity
-                style={styles.stepBtn}
+                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
                 onPress={() => setBpm((prev) => Math.min(180, prev + 5))}
               >
-                <Text style={styles.stepBtnText}>+</Text>
+                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>+</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Respiration Stepper */}
-          <View style={[styles.stepperRow, styles.rowBorderTop]}>
+          <View style={[styles.stepperRow, styles.rowBorderTop, isLight && styles.rowBorderTopLight]}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.rowLabel}>Respiration Rate</Text>
-              <Text style={styles.rowDesc}>Pulmonary ventilation cycle speed</Text>
+              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Respiration Rate</Text>
+              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Pulmonary ventilation cycle speed</Text>
             </View>
-            <View style={styles.stepperControls}>
+            <View style={[styles.stepperControls, isLight && styles.stepperControlsLight]}>
               <TouchableOpacity
-                style={styles.stepBtn}
+                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
                 onPress={() => setRespRate((prev) => Math.max(8, prev - 2))}
               >
-                <Text style={styles.stepBtnText}>−</Text>
+                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>−</Text>
               </TouchableOpacity>
-              <Text style={styles.stepValue}>{respRate} <Text style={styles.stepUnit}>RPM</Text></Text>
+              <Text style={[styles.stepValue, isLight && styles.stepValueLight]}>
+                {respRate} <Text style={[styles.stepUnit, isLight && styles.stepUnitLight]}>RPM</Text>
+              </Text>
               <TouchableOpacity
-                style={styles.stepBtn}
+                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
                 onPress={() => setRespRate((prev) => Math.min(40, prev + 2))}
               >
-                <Text style={styles.stepBtnText}>+</Text>
+                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>+</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
         {/* CARD 4: DISSECTION & EXPLODED VIEW */}
-        <View style={styles.card}>
+        <View style={[styles.card, isLight && styles.cardLight]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>🔬</Text>
             <View>
-              <Text style={styles.cardHeading}>Dissection & Exploded View</Text>
-              <Text style={styles.cardSub}>Separate anatomical layers along normal vectors</Text>
+              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>Dissection & Exploded View</Text>
+              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Separate anatomical layers along normal vectors</Text>
             </View>
           </View>
 
           <View style={styles.stepperRow}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.rowLabel}>Explosion Level</Text>
-              <Text style={styles.rowDesc}>Distance separating organ groups</Text>
+              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Explosion Level</Text>
+              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Distance separating organ groups</Text>
             </View>
-            <View style={styles.stepperControls}>
+            <View style={[styles.stepperControls, isLight && styles.stepperControlsLight]}>
               <TouchableOpacity
-                style={styles.stepBtn}
+                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
                 onPress={() => setExplodeVal((prev) => Math.max(0, +(prev - 0.2).toFixed(1)))}
               >
-                <Text style={styles.stepBtnText}>−</Text>
+                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>−</Text>
               </TouchableOpacity>
-              <Text style={styles.stepValue}>{Math.round(explodeVal * 100)}%</Text>
+              <Text style={[styles.stepValue, isLight && styles.stepValueLight]}>{Math.round(explodeVal * 100)}%</Text>
               <TouchableOpacity
-                style={styles.stepBtn}
+                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
                 onPress={() => setExplodeVal((prev) => Math.min(1, +(prev + 0.2).toFixed(1)))}
               >
-                <Text style={styles.stepBtnText}>+</Text>
+                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>+</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
         {/* CARD 5: MEDICAL ADVISORY DISCLAIMER */}
-        <View style={[styles.card, styles.disclaimerCard]}>
-          <Text style={styles.disclaimerTitle}>⚠️ Educational & Clinical Reference Notice</Text>
-          <Text style={styles.disclaimerBody}>
+        <View style={[styles.card, styles.disclaimerCard, isLight && styles.disclaimerCardLight]}>
+          <Text style={[styles.disclaimerTitle, isLight && styles.disclaimerTitleLight]}>
+            ⚠️ Educational & Clinical Reference Notice
+          </Text>
+          <Text style={[styles.disclaimerBody, isLight && styles.disclaimerBodyLight]}>
             The anatomical illustrations, diseases, solutions, and pharmaceutical classes provided are strictly for educational and scientific reference. Always consult a board-certified medical specialist for personal diagnoses and prescriptions.
           </Text>
         </View>
@@ -356,5 +366,82 @@ const styles = StyleSheet.create({
     color: '#cbd5e1',
     fontSize: 12,
     lineHeight: 18,
+  },
+  // Light Theme Styles
+  containerLight: {
+    backgroundColor: '#f8fafc',
+  },
+  headerLight: {
+    backgroundColor: '#ffffff',
+    borderBottomColor: '#e2e8f0',
+  },
+  titleLight: {
+    color: '#0f172a',
+  },
+  subtitleLight: {
+    color: '#64748b',
+  },
+  cardLight: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 6,
+    elevation: 2,
+  },
+  cardHeadingLight: {
+    color: '#0f172a',
+  },
+  cardSubLight: {
+    color: '#64748b',
+  },
+  themeChipLight: {
+    backgroundColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
+  },
+  themeChipActiveLight: {
+    backgroundColor: 'rgba(2, 132, 199, 0.12)',
+    borderColor: '#0284c7',
+  },
+  themeChipTextLight: {
+    color: '#64748b',
+  },
+  themeChipTextActiveLight: {
+    color: '#0284c7',
+  },
+  rowLabelLight: {
+    color: '#0f172a',
+  },
+  rowDescLight: {
+    color: '#64748b',
+  },
+  rowBorderTopLight: {
+    borderTopColor: '#f1f5f9',
+  },
+  stepperControlsLight: {
+    backgroundColor: '#f1f5f9',
+  },
+  stepBtnLight: {
+    backgroundColor: '#e2e8f0',
+  },
+  stepBtnTextLight: {
+    color: '#0f172a',
+  },
+  stepValueLight: {
+    color: '#0284c7',
+  },
+  stepUnitLight: {
+    color: '#64748b',
+  },
+  disclaimerCardLight: {
+    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  disclaimerTitleLight: {
+    color: '#b45309',
+  },
+  disclaimerBodyLight: {
+    color: '#475569',
   },
 });

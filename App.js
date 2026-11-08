@@ -10,7 +10,7 @@ import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import ModelScreen from './src/screens/ModelScreen';
 import SystemsScreen from './src/screens/SystemsScreen';
 import SearchScreen from './src/screens/SearchScreen';
-import QuizScreen from './src/screens/QuizScreen';
+import MedicineScreen from './src/screens/MedicineScreen';
 import SettingsScreen from './src/screens/SettingsScreen';
 
 export default function App() {
@@ -28,9 +28,11 @@ export default function App() {
     { id: 'model', label: '3D Model', icon: '🧍' },
     { id: 'systems', label: 'Systems', icon: '🧬' },
     { id: 'search', label: 'Search', icon: '🔍' },
-    { id: 'quiz', label: 'Quiz', icon: '🎯' },
+    { id: 'medicine', label: 'Medicine', icon: '💊' },
     { id: 'settings', label: 'Settings', icon: '⚙️' },
   ];
+
+  const isLight = theme === 'light';
 
   const renderActiveScreen = () => {
     switch (activeTab) {
@@ -48,11 +50,11 @@ export default function App() {
           />
         );
       case 'systems':
-        return <SystemsScreen />;
+        return <SystemsScreen theme={theme} />;
       case 'search':
-        return <SearchScreen />;
-      case 'quiz':
-        return <QuizScreen />;
+        return <SearchScreen theme={theme} />;
+      case 'medicine':
+        return <MedicineScreen theme={theme} />;
       case 'settings':
         return (
           <SettingsScreen
@@ -77,25 +79,40 @@ export default function App() {
 
   return (
     <SafeAreaProvider>
-      <View style={styles.appContainer}>
-        <StatusBar barStyle={theme === 'light' ? 'dark-content' : 'light-content'} backgroundColor="#020617" />
+      <View style={[styles.appContainer, isLight && styles.appContainerLight]}>
+        <StatusBar
+          barStyle={isLight ? 'dark-content' : 'light-content'}
+          backgroundColor={isLight ? '#f8fafc' : '#020617'}
+        />
         
         {/* Screen View */}
         <View style={styles.screenArea}>{renderActiveScreen()}</View>
 
         {/* Bottom Tab Bar */}
-        <SafeAreaView edges={['bottom']} style={styles.bottomTabBar}>
+        <SafeAreaView
+          edges={['bottom']}
+          style={[styles.bottomTabBar, isLight && styles.bottomTabBarLight]}
+        >
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <TouchableOpacity
                 key={tab.id}
-                style={[styles.tabButton, isActive && styles.tabButtonActive]}
+                style={[
+                  styles.tabButton,
+                  isActive && (isLight ? styles.tabButtonActiveLight : styles.tabButtonActive),
+                ]}
                 activeOpacity={0.7}
                 onPress={() => setActiveTab(tab.id)}
               >
                 <Text style={styles.tabIcon}>{tab.icon}</Text>
-                <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
+                <Text
+                  style={[
+                    styles.tabLabel,
+                    isLight && styles.tabLabelLight,
+                    isActive && (isLight ? styles.tabLabelActiveLight : styles.tabLabelActive),
+                  ]}
+                >
                   {tab.label}
                 </Text>
               </TouchableOpacity>
@@ -112,6 +129,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#020617',
   },
+  appContainerLight: {
+    backgroundColor: '#f8fafc',
+  },
   screenArea: {
     flex: 1,
   },
@@ -124,6 +144,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     justifyContent: 'space-around',
   },
+  bottomTabBarLight: {
+    backgroundColor: '#ffffff',
+    borderTopColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 4,
+    elevation: 8,
+  },
   tabButton: {
     alignItems: 'center',
     justifyContent: 'center',
@@ -134,6 +163,9 @@ const styles = StyleSheet.create({
   tabButtonActive: {
     backgroundColor: 'rgba(56, 189, 248, 0.12)',
   },
+  tabButtonActiveLight: {
+    backgroundColor: 'rgba(2, 132, 199, 0.12)',
+  },
   tabIcon: {
     fontSize: 18,
     marginBottom: 2,
@@ -143,7 +175,14 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '600',
   },
+  tabLabelLight: {
+    color: '#64748b',
+  },
   tabLabelActive: {
     color: '#38bdf8',
+  },
+  tabLabelActiveLight: {
+    color: '#0284c7',
+    fontWeight: '700',
   },
 });
