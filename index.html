@@ -1,0 +1,2826 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>৩D মানব শরীরস্থান মানচিত্র | 3D Human Anatomy Mobile App</title>
+
+<!-- Google Fonts: Hind Siliguri (Bangla), Plus Jakarta Sans, JetBrains Mono -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Playfair+Display:ital,wght@1,600&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg-deep: #060a12;
+  --bg-surface: #0b1322;
+  --bg-panel: rgba(11, 19, 34, 0.94);
+  --bg-card: rgba(18, 30, 52, 0.78);
+  --bg-chip: rgba(28, 44, 72, 0.75);
+  --border: rgba(148, 163, 184, 0.18);
+  --border-focus: #38bdf8;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+  --accent: #0ea5e9;
+  --accent-glow: rgba(14, 165, 233, 0.45);
+  --danger: #ef4444;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --purple: #8b5cf6;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-full: 9999px;
+  --shadow-nav: 0 -8px 25px rgba(0, 0, 0, 0.55), 0 -2px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 30px -5px rgba(0, 0, 0, 0.65);
+  --blur: blur(24px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+[data-theme="light"] {
+  --bg-deep: #f1f5fa;
+  --bg-surface: #ffffff;
+  --bg-panel: rgba(255, 255, 255, 0.96);
+  --bg-card: rgba(241, 245, 252, 0.92);
+  --bg-chip: rgba(226, 232, 240, 0.88);
+  --border: rgba(148, 163, 184, 0.32);
+  --border-focus: #0284c7;
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
+  --accent: #0284c7;
+  --accent-glow: rgba(2, 132, 199, 0.25);
+  --shadow-nav: 0 -8px 25px rgba(0, 0, 0, 0.08), 0 -2px 6px rgba(0, 0, 0, 0.04);
+}
+
+[data-theme="xray"] {
+  --bg-deep: #030814;
+  --bg-surface: #06152d;
+  --bg-panel: rgba(6, 21, 45, 0.95);
+  --bg-card: rgba(10, 34, 72, 0.8);
+  --bg-chip: rgba(18, 56, 115, 0.75);
+  --border: rgba(56, 189, 248, 0.35);
+  --border-focus: #38bdf8;
+  --text-main: #e0f2fe;
+  --text-muted: #7dd3fc;
+  --text-dim: #38bdf8;
+  --accent: #38bdf8;
+  --accent-glow: rgba(56, 189, 248, 0.6);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  font-family: 'Hind Siliguri', 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background: var(--bg-deep);
+  color: var(--text-main);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+#app {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 3D WebGL Canvas Stage */
+#stage {
+  position: absolute;
+  inset: 0;
+  touch-action: none;
+  background: radial-gradient(circle at 50% 32%, rgba(14, 165, 233, 0.1) 0%, transparent 68%), var(--bg-deep);
+}
+canvas { display: block; width: 100%; height: 100%; }
+
+/* Mobile Floating Top Bar */
+#top-bar {
+  position: absolute;
+  top: max(8px, var(--safe-top));
+  left: 10px;
+  right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  pointer-events: none;
+  z-index: 30;
+}
+.hud-pill {
+  pointer-events: auto;
+  background: var(--bg-panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+}
+
+.brand-pill {
+  padding: 5px 12px 5px 6px;
+  gap: 8px;
+  cursor: pointer;
+}
+.brand-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, #0284c7, #0ea5e9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  box-shadow: 0 0 10px var(--accent-glow);
+}
+.brand-title {
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+.brand-subtitle {
+  font-size: 9px;
+  color: var(--accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.top-actions {
+  display: flex;
+  gap: 6px;
+}
+.top-btn {
+  pointer-events: auto;
+  background: var(--bg-panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  height: 36px;
+  padding: 0 10px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: all 0.15s ease;
+}
+.top-btn:active {
+  transform: scale(0.92);
+  background: var(--accent);
+  color: #fff;
+}
+.top-btn.btn-icon {
+  width: 36px;
+  padding: 0;
+}
+.lang-toggle {
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.18), rgba(99, 102, 241, 0.18));
+  border-color: var(--border-focus);
+  color: var(--accent);
+}
+
+/* Floating Camera View Navigator Pills */
+#camera-nav {
+  position: absolute;
+  top: calc(max(8px, var(--safe-top)) + 48px);
+  left: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  z-index: 25;
+  pointer-events: auto;
+}
+.cam-pill-scroll {
+  display: flex;
+  flex-wrap: wrap;
+  max-width: 250px;
+  gap: 4px;
+  background: var(--bg-panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  padding: 5px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.cam-pill {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.cam-pill:active, .cam-pill.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+/* Zoom / Reset FABs */
+#stage-controls {
+  position: absolute;
+  right: 10px;
+  top: calc(max(8px, var(--safe-top)) + 48px);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 25;
+}
+.ctrl-fab {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background: var(--bg-panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+.ctrl-fab:active { transform: scale(0.9); background: var(--accent); color: #fff; }
+
+/* Real-Time Floating ECG & Vitals Pill */
+#vitals-pill {
+  position: absolute;
+  top: calc(max(8px, var(--safe-top)) + 48px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  padding: 3px 9px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+  z-index: 20;
+}
+#ecg-canvas {
+  width: 65px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 3px;
+}
+.pulse-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--danger);
+  box-shadow: 0 0 8px var(--danger);
+  animation: pulseBeat 1s infinite;
+}
+@keyframes pulseBeat {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.6); opacity: 1; }
+}
+.vital-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+/* 3D World Space Pins */
+#world-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 15;
+}
+.world-pin {
+  position: absolute;
+  left: 0;
+  top: 0;
+  pointer-events: auto;
+  cursor: pointer;
+  transform: translate(-50%, -100%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: var(--bg-panel);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-main);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  white-space: nowrap;
+}
+.world-pin:active, .world-pin.selected {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #fff;
+  transform: translate(-50%, -105%) scale(1.06);
+}
+.world-pin-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.world-pin.selected .world-pin-dot { background: #fff; }
+
+/* Pointer Hover Tooltip */
+#hover-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(11, 19, 34, 0.95);
+  backdrop-filter: blur(10px);
+  color: #fff;
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  font-weight: 600;
+  display: none;
+  z-index: 50;
+  box-shadow: var(--shadow-lg);
+  transform: translate(12px, 12px);
+  white-space: nowrap;
+}
+#hover-tooltip small {
+  display: block;
+  font-size: 9px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   FLOATING ORGAN PEEK HUD CARD (Above the bottom navbar)
+   ========================================================================== */
+#organ-peek-card {
+  position: absolute;
+  bottom: calc(68px + var(--safe-bottom));
+  left: 12px;
+  right: 12px;
+  background: var(--bg-panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  z-index: 35;
+  transition: transform 0.25s ease, opacity 0.25s ease;
+}
+#organ-peek-card.hidden {
+  transform: translateY(20px);
+  opacity: 0;
+  pointer-events: none;
+}
+.peek-info-area {
+  flex: 1;
+  min-width: 0;
+  cursor: pointer;
+}
+.peek-name {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-main);
+}
+.peek-meta {
+  font-size: 11px;
+  color: var(--accent);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.peek-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.card-action-btn {
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.12s;
+}
+.card-action-btn:active {
+  transform: scale(0.92);
+  background: var(--accent);
+  color: #fff;
+}
+.card-action-btn.accent {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+  box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* ==========================================================================
+   MOBILE APP BOTTOM DRAWER / MODAL SHEETS (For Details, Systems, Tools, Quiz)
+   ========================================================================== */
+.app-sheet {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-panel);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-top: 1px solid var(--border-focus);
+  border-radius: 22px 22px 0 0;
+  box-shadow: 0 -12px 35px rgba(0, 0, 0, 0.7);
+  display: flex;
+  flex-direction: column;
+  z-index: 45;
+  transform: translateY(105%);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 82vh;
+  padding-bottom: calc(65px + var(--safe-bottom));
+}
+.app-sheet.open {
+  transform: translateY(0);
+}
+.sheet-header {
+  padding: 12px 18px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+}
+.sheet-header-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sheet-close-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background: var(--bg-chip);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+}
+.sheet-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Cards & Content inside sheets */
+.detail-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.section-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--accent);
+  letter-spacing: 0.05em;
+}
+.detail-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-main);
+}
+.bullets-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bullets-list li {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+  position: relative;
+  padding-left: 14px;
+}
+.bullets-list li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: var(--accent);
+}
+.fact-box {
+  background: rgba(14, 165, 233, 0.08);
+  border-left: 3px solid var(--accent);
+  padding: 8px 10px;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.fact-box strong { color: var(--text-main); }
+
+/* Systems Grid List */
+.systems-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.system-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.system-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.system-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.system-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.slider-row input[type=range] {
+  flex: 1;
+  accent-color: var(--accent);
+  height: 4px;
+  background: var(--bg-chip);
+  border-radius: 2px;
+}
+
+/* ==========================================================================
+   AUTHENTIC MOBILE APP BOTTOM BASE NAVBAR (Instagram / Apple Health Style)
+   ========================================================================== */
+#mobile-bottom-navbar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: calc(58px + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background: rgba(9, 15, 26, 0.96);
+  backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
+  border-top: 1px solid var(--border);
+  box-shadow: var(--shadow-nav);
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  z-index: 50;
+}
+
+.nav-tab-item {
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.15s ease;
+  user-select: none;
+  outline: none;
+}
+.nav-tab-item .tab-icon {
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s;
+}
+.nav-tab-item .tab-label {
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1;
+  color: inherit;
+  transition: color 0.15s;
+}
+.nav-tab-item:active {
+  transform: scale(0.92);
+}
+.nav-tab-item.active {
+  color: var(--accent);
+}
+.nav-tab-item.active .tab-icon {
+  transform: translateY(-2px) scale(1.15);
+  filter: drop-shadow(0 0 8px var(--accent-glow));
+}
+.nav-tab-item.active .tab-label {
+  font-weight: 700;
+}
+.nav-tab-indicator {
+  position: absolute;
+  top: 0;
+  width: 24px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 0 0 3px 3px;
+  box-shadow: 0 2px 8px var(--accent-glow);
+  display: none;
+}
+.nav-tab-item.active .nav-tab-indicator {
+  display: block;
+}
+
+/* ==========================================================================
+   QUIZ OVERLAY SHEET
+   ========================================================================== */
+.quiz-prompt {
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-main);
+}
+.quiz-feedback {
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  display: none;
+  font-weight: 600;
+}
+.quiz-feedback.correct {
+  display: block;
+  background: rgba(16, 185, 129, 0.16);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+.quiz-feedback.incorrect {
+  display: block;
+  background: rgba(239, 68, 68, 0.16);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* Search results list */
+.search-input-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-focus);
+  border-radius: var(--radius-full);
+  padding: 8px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  margin-bottom: 6px;
+}
+.search-input-box input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 14px;
+}
+.search-result-row {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.search-result-row:active {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Toast Message */
+#toast {
+  position: absolute;
+  top: max(55px, calc(var(--safe-top) + 50px));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-panel);
+  border: 1px solid var(--accent);
+  color: var(--text-main);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 8px 24px var(--accent-glow);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 90;
+  white-space: nowrap;
+}
+#toast.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <!-- 3D Canvas Stage -->
+  <div id="stage" tabindex="0">
+    <!-- Top Mobile Header -->
+    <header id="top-bar">
+      <!-- App Brand Title -->
+      <div class="hud-pill brand-pill" id="brand-home" title="হোম ভিউ / Reset Home">
+        <div class="brand-icon">🧬</div>
+        <div>
+          <div class="brand-title" id="txt-app-title">মানব শরীরস্থান ৩D</div>
+          <div class="brand-subtitle" id="txt-app-sub">Human Anatomy Pro</div>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="top-actions">
+        <!-- Language Switcher: Bangla | EN -->
+        <button class="top-btn lang-toggle" id="btn-lang" title="ভাষা পরিবর্তন / Switch Language">
+          <span>🌐</span> <strong id="lbl-lang">English</strong>
+        </button>
+
+        <!-- Stethoscope Heart Audio -->
+        <button class="top-btn btn-icon" id="btn-audio" title="হৃৎস্পন্দন শব্দ / Stethoscope Audio">
+          <span>🔊</span>
+        </button>
+
+        <!-- Color Theme (Dark / Light / X-Ray) -->
+        <button class="top-btn btn-icon" id="btn-theme" title="থিম পরিবর্তন / Theme">
+          <span>🎨</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Floating Camera View Navigator Pills -->
+    <nav id="camera-nav" aria-label="Camera Views">
+      <div class="cam-pill-scroll">
+        <button class="cam-pill active" data-view="full" id="cam-full">পুরো শরীর</button>
+        <button class="cam-pill" data-view="head" id="cam-head">মাথা ও মস্তিষ্ক</button>
+        <button class="cam-pill" data-view="thorax" id="cam-thorax">বক্ষ ও হৃৎপিণ্ড</button>
+        <button class="cam-pill" data-view="abdomen" id="cam-abdomen">উদর ও যকৃত</button>
+        <button class="cam-pill" data-view="pelvis" id="cam-pelvis">শ্রোণিদেশ</button>
+        <button class="cam-pill" data-view="arms" id="cam-arms">হাত</button>
+        <button class="cam-pill" data-view="legs" id="cam-legs">পা ও উরু</button>
+        <button class="cam-pill" data-view="spine" id="cam-spine">মেরুদণ্ড</button>
+      </div>
+    </nav>
+
+    <!-- Stage Zoom & Reset FABs -->
+    <div id="stage-controls">
+      <button class="ctrl-fab" id="btn-zin" title="কাছে আনুন / Zoom In">+</button>
+      <button class="ctrl-fab" id="btn-zout" title="দূরে নিন / Zoom Out">−</button>
+      <button class="ctrl-fab" id="btn-reset-cam" title="রিসেট / Reset View">🎯</button>
+    </div>
+
+    <!-- Real-Time Floating ECG & Vitals Pill -->
+    <div id="vitals-pill">
+      <div class="pulse-dot"></div>
+      <canvas id="ecg-canvas" width="65" height="20"></canvas>
+      <span class="vital-text" id="vital-bpm-text">৭২ BPM</span>
+    </div>
+
+    <!-- 3D World Space Pins -->
+    <div id="world-labels"></div>
+
+    <!-- Hover Tooltip -->
+    <div id="hover-tooltip">
+      <span id="tooltip-text">হৃৎপিণ্ড</span>
+      <small id="tooltip-system">রক্তসংবহনতন্ত্র</small>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">স্বাগতম</div>
+  </div>
+
+  <!-- FLOATING ORGAN PEEK HUD CARD (Quick preview on the 3D model) -->
+  <div id="organ-peek-card">
+    <div class="peek-info-area" id="peek-tap-area">
+      <div class="peek-name" id="peek-title">হৃৎপিণ্ড</div>
+      <div class="peek-meta">
+        <span id="peek-system">❤️ রক্তসংবহনতন্ত্র</span>
+        <span style="font-family:'Playfair Display',serif;font-style:italic;color:var(--text-dim);" id="peek-latin">Cor</span>
+      </div>
+    </div>
+    <div class="peek-btn-group">
+      <button class="card-action-btn" id="btn-peek-focus">🔍 জুম</button>
+      <button class="card-action-btn accent" id="btn-peek-details">📋 বিস্তারিত</button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       APP SHEETS / SLIDE-UP DRAWERS (Toggled by Bottom App Navbar)
+       ========================================================================= -->
+
+  <!-- SHEET 1: ORGAN DETAILS DOSSIER -->
+  <section class="app-sheet" id="sheet-details">
+    <div class="sheet-header">
+      <div class="sheet-header-title">
+        <span id="sh-details-icon">🧬</span>
+        <span id="sh-details-title">অঙ্গের বিস্তারিত তথ্য</span>
+      </div>
+      <button class="sheet-close-btn" data-close="sheet-details">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="detail-card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <h2 style="font-size:20px;font-weight:700;" id="det-title">হৃৎপিণ্ড</h2>
+            <div style="font-family:'Playfair Display',serif;font-style:italic;color:var(--accent);font-size:13px;" id="det-latin">Cor</div>
+          </div>
+          <span class="card-action-btn" id="det-badge" style="cursor:default;">❤️ রক্তসংবহনতন্ত্র</span>
+        </div>
+
+        <div style="display:flex;gap:6px;margin:4px 0;">
+          <button class="card-action-btn" id="btn-isolate-part">🎯 অঙ্গটি আলাদা করুন</button>
+          <button class="card-action-btn" id="btn-sound-part">🔊 স্টেথোস্কোপ শুনুন</button>
+        </div>
+
+        <div class="section-title" id="lbl-anatomy-desc">অঙ্গসংস্থান ও ভূমিকা</div>
+        <p class="detail-text" id="det-desc">
+          হৃৎপিণ্ড একটি পেশীবহুল দ্বিমুখী জৈব পাম্প যা মধ্য বক্ষগহ্বরে ফুসফুসের মাঝে অবস্থিত। এটি মানবদেহের প্রতিটি কোষে অক্সিজেন ও পুষ্টিসমৃদ্ধ রক্ত সংবহন করে।
+        </p>
+
+        <div class="section-title" id="lbl-anatomy-funcs" style="margin-top:6px;">প্রধান শারীরবৃত্তীয় কাজ</div>
+        <ul class="bullets-list" id="det-functions">
+          <li>মহাধমনীর মাধ্যমে সারাদেহে অক্সিজেনযুক্ত রক্ত পাম্প করে।</li>
+          <li>ঊর্ধ্ব ও নিম্ন মহাশিরার মাধ্যমে দূষিত রক্ত ডান অলিন্দে গ্রহণ করে।</li>
+          <li>অবিরাম স্পন্দনের মাধ্যমে রক্তচাপ বজায় রাখে।</li>
+        </ul>
+
+        <div class="fact-box">
+          <strong id="lbl-fact">আশ্চর্য তথ্য:</strong> <span id="det-fact">মানব হৃৎপিণ্ড প্রতিদিন প্রায় ১,০০,০০০ বার স্পন্দিত হয় এবং প্রায় ৭,৫০০ লিটার রক্ত পাম্প করে।</span>
+        </div>
+
+        <div class="section-title" id="lbl-pathologies" style="margin-top:6px;">সাধারণ রোগ ও জটিলতা</div>
+        <p class="detail-text" style="font-size:12px;color:var(--text-muted);" id="det-pathologies">
+          করোনারি ধমনী রোগ, হার্ট অ্যাটাক, অ্যারিথমিয়া, হার্ট ফেইলিউর।
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SHEET 2: SYSTEMS & LAYERS -->
+  <section class="app-sheet" id="sheet-systems">
+    <div class="sheet-header">
+      <div class="sheet-header-title">
+        <span>🧬</span>
+        <span id="sh-systems-title">মানবদেহের অঙ্গতন্ত্র</span>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button class="card-action-btn" id="btn-show-all-sys" style="font-size:10px;">সব দেখান</button>
+        <button class="card-action-btn" id="btn-hide-all-sys" style="font-size:10px;">লুকান</button>
+        <button class="sheet-close-btn" data-close="sheet-systems">✕</button>
+      </div>
+    </div>
+    <div class="sheet-body">
+      <div class="systems-grid" id="systems-grid-box"></div>
+    </div>
+  </section>
+
+  <!-- SHEET 3: SEARCH DIRECTORY -->
+  <section class="app-sheet" id="sheet-search">
+    <div class="sheet-header">
+      <div class="sheet-header-title">
+        <span>🔍</span>
+        <span id="sh-search-title">অঙ্গ অনুসন্ধান ও তালিকা</span>
+      </div>
+      <button class="sheet-close-btn" data-close="sheet-search">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="search-input-box">
+        <span style="font-size:16px;">🔍</span>
+        <input type="text" id="app-search-input" placeholder="অঙ্গ, অস্থি বা পেশী খুঁজুন..." autocomplete="off">
+        <span id="search-clear-btn" style="cursor:pointer;font-size:12px;color:var(--text-dim);display:none;">✕</span>
+      </div>
+      <div id="search-results-container" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+  </section>
+
+  <!-- SHEET 4: ANATOMY QUIZ CHALLENGE -->
+  <section class="app-sheet" id="sheet-quiz">
+    <div class="sheet-header">
+      <div class="sheet-header-title">
+        <span>🎯</span>
+        <span id="sh-quiz-title">অ্যানাটমি কুইজ চ্যালেঞ্জ</span>
+      </div>
+      <button class="sheet-close-btn" data-close="sheet-quiz">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="detail-card">
+        <div class="quiz-prompt" id="quiz-prompt">
+          ৩D মডেলে <strong>হৃৎপিণ্ড (Heart)</strong> খুঁজে স্পর্শ করুন।
+        </div>
+        <div class="quiz-feedback" id="quiz-feedback"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-muted);margin-top:6px;">
+          <span>স্কোর: <strong id="quiz-score" style="color:var(--accent);">০</strong></span>
+          <span>ধারাবাহিকতা: <strong id="quiz-streak">০ 🔥</strong></span>
+          <button class="card-action-btn accent" id="btn-skip-quiz">পরবর্তী অঙ্গ ▸</button>
+        </div>
+      </div>
+      <p style="font-size:12px;color:var(--text-muted);text-align:center;">
+        ৩D মডেলে সঠিক অঙ্গটি স্পর্শ করে আপনার দক্ষতা যাচাই করুন।
+      </p>
+    </div>
+  </section>
+
+  <!-- SHEET 5: TOOLS & VITALS SIMULATOR -->
+  <section class="app-sheet" id="sheet-tools">
+    <div class="sheet-header">
+      <div class="sheet-header-title">
+        <span>⚙️</span>
+        <span id="sh-tools-title">শারীরবৃত্তীয় টুলস ও সিমুলেটর</span>
+      </div>
+      <button class="sheet-close-btn" data-close="sheet-tools">✕</button>
+    </div>
+    <div class="sheet-body">
+      <!-- Exploded View -->
+      <div class="detail-card">
+        <div class="section-title" id="lbl-explode-title">বিস্ফোরিত ভিউ (Exploded View)</div>
+        <div class="slider-row">
+          <span id="lbl-explode-sep">ব্যবধান</span>
+          <input type="range" id="slider-explode" min="0" max="1" step="0.01" value="0">
+          <span id="val-explode" style="font-family:'JetBrains Mono';width:32px;">০%</span>
+        </div>
+      </div>
+
+      <!-- Cross Section Plane -->
+      <div class="detail-card">
+        <div class="section-title" id="lbl-cutaway-title">শারীরস্থান ব্যবচ্ছেদ / স্লাইস তল</div>
+        <div style="display:flex;gap:4px;margin-bottom:6px;">
+          <button class="card-action-btn active" id="btn-clip-off">স্বাভাবিক</button>
+          <button class="card-action-btn" id="btn-clip-axial">অক্ষীয় (Z)</button>
+          <button class="card-action-btn" id="btn-clip-coronal">সম্মুখ (Y)</button>
+          <button class="card-action-btn" id="btn-clip-sagittal">পার্শ্বীয় (X)</button>
+        </div>
+        <div class="slider-row" id="clip-slider-box" style="display:none;">
+          <span id="lbl-depth">গভীরতা</span>
+          <input type="range" id="slider-clip" min="-10" max="25" step="0.1" value="12">
+        </div>
+      </div>
+
+      <!-- Vitals Simulation -->
+      <div class="detail-card">
+        <div class="section-title" id="lbl-sim-title">শারীরবৃত্তীয় সিমুলেটর</div>
+        <div class="slider-row">
+          <span id="lbl-bpm">হৃৎস্পন্দন হার (BPM)</span>
+          <input type="range" id="slider-bpm" min="40" max="180" step="1" value="72">
+          <span id="val-bpm" style="font-family:'JetBrains Mono';width:35px;">৭২</span>
+        </div>
+        <div class="slider-row">
+          <span id="lbl-resp">শ্বাসক্রিয়ার হার (RPM)</span>
+          <input type="range" id="slider-resp" min="8" max="40" step="1" value="16">
+          <span id="val-resp" style="font-family:'JetBrains Mono';width:35px;">১৬</span>
+        </div>
+        <div class="slider-row">
+          <span id="lbl-flow">রক্তকণিকা প্রবাহ গতি</span>
+          <input type="range" id="slider-flow" min="0" max="2" step="0.1" value="1">
+          <span id="val-flow" style="font-family:'JetBrains Mono';width:35px;">১.০x</span>
+        </div>
+      </div>
+
+      <!-- View Helpers -->
+      <div class="detail-card" style="flex-direction:row;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;" id="lbl-auto-spin">স্বয়ংক্রিয় ঘূর্ণন</span>
+        <button class="card-action-btn" id="btn-tool-spin">🔄 চালু / বন্ধ</button>
+      </div>
+
+      <div class="detail-card" style="flex-direction:row;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;" id="lbl-xray-mode">হোলোগ্রাফিক এক্স-রে</span>
+        <button class="card-action-btn" id="btn-tool-xray">🩻 এক্স-রে</button>
+      </div>
+
+      <div class="detail-card" style="flex-direction:row;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;" id="lbl-pin-tags">৩D পিন ট্যাগ</span>
+        <button class="card-action-btn" id="btn-tool-pins">🏷️ ট্যাগ দেখান</button>
+      </div>
+
+      <div class="detail-card" style="flex-direction:row;justify-content:space-between;align-items:center;">
+        <span style="font-size:13px;font-weight:600;" id="lbl-save-snap">এইচডি স্ক্রিনশট</span>
+        <button class="card-action-btn accent" id="btn-tool-snap">📸 ডাউনলোড</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       NATIVE MOBILE APP BOTTOM BASE NAVBAR (5 Core Tabs)
+       ========================================================================= -->
+  <nav id="mobile-bottom-navbar" role="navigation" aria-label="Main App Navigation">
+    <!-- TAB 1: 3D MODEL HOME -->
+    <button class="nav-tab-item active" data-tab="model" id="nav-item-model">
+      <div class="nav-tab-indicator"></div>
+      <div class="tab-icon">👤</div>
+      <span class="tab-label" id="nav-lbl-model">মডেল</span>
+    </button>
+
+    <!-- TAB 2: SYSTEMS & LAYERS -->
+    <button class="nav-tab-item" data-tab="systems" id="nav-item-systems">
+      <div class="nav-tab-indicator"></div>
+      <div class="tab-icon">🧬</div>
+      <span class="tab-label" id="nav-lbl-systems">অঙ্গতন্ত্র</span>
+    </button>
+
+    <!-- TAB 3: SEARCH DIRECTORY -->
+    <button class="nav-tab-item" data-tab="search" id="nav-item-search">
+      <div class="nav-tab-indicator"></div>
+      <div class="tab-icon">🔍</div>
+      <span class="tab-label" id="nav-lbl-search">খুঁজুন</span>
+    </button>
+
+    <!-- TAB 4: QUIZ CHALLENGE -->
+    <button class="nav-tab-item" data-tab="quiz" id="nav-item-quiz">
+      <div class="nav-tab-indicator"></div>
+      <div class="tab-icon">🎯</div>
+      <span class="tab-label" id="nav-lbl-quiz">কুইজ</span>
+    </button>
+
+    <!-- TAB 5: TOOLS & VITALS -->
+    <button class="nav-tab-item" data-tab="tools" id="nav-item-tools">
+      <div class="nav-tab-indicator"></div>
+      <div class="tab-icon">⚙️</div>
+      <span class="tab-label" id="nav-lbl-tools">টুলস</span>
+    </button>
+  </nav>
+</div>
+
+<!-- Three.js + OrbitControls -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+
+<script>
+(function() {
+'use strict';
+
+/* ==========================================================================
+   1. BILINGUAL DICTIONARY & COMPREHENSIVE ANATOMY DATA (BANGLA + ENGLISH)
+   ========================================================================== */
+let currentLang = 'bn'; // Default Bangla
+
+const NUM_BN = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+function toBnNum(num) {
+  return String(num).replace(/[0-9]/g, d => NUM_BN[+d]);
+}
+
+function hapticFeedback() {
+  if (navigator.vibrate) {
+    try { navigator.vibrate(10); } catch(e) {}
+  }
+}
+
+const UI_TEXTS = {
+  bn: {
+    appTitle: 'মানব শরীরস্থান ৩D',
+    appSub: 'Human Anatomy Pro',
+    langBtn: 'English',
+    camFull: 'পুরো শরীর',
+    camHead: 'মাথা ও মস্তিষ্ক',
+    camThorax: 'বক্ষ ও হৃৎপিণ্ড',
+    camAbdomen: 'উদর ও যকৃত',
+    camPelvis: 'শ্রোণিদেশ',
+    camArms: 'হাত',
+    camLegs: 'পা ও উরু',
+    camSpine: 'মেরুদণ্ড',
+    navModel: 'মডেল',
+    navSystems: 'অঙ্গতন্ত্র',
+    navSearch: 'খুঁজুন',
+    navQuiz: 'কুইজ',
+    navTools: 'টুলস',
+    shDetailsTitle: 'অঙ্গের বিস্তারিত তথ্য',
+    shSystemsTitle: 'মানবদেহের অঙ্গতন্ত্র',
+    shSearchTitle: 'অঙ্গ অনুসন্ধান ও তালিকা',
+    shQuizTitle: 'অ্যানাটমি কুইজ চ্যালেঞ্জ',
+    shToolsTitle: 'শারীরবৃত্তীয় টুলস ও সিমুলেটর',
+    btnShowAll: 'সব দেখান',
+    btnHideAll: 'লুকান',
+    btnPeekDetails: '📋 বিস্তারিত',
+    btnPeekFocus: '🔍 জুম',
+    btnIsolatePart: '🎯 অঙ্গটি আলাদা করুন',
+    btnSoundPart: '🔊 স্টেথোস্কোপ শুনুন',
+    lblAnatomyDesc: 'অঙ্গসংস্থান ও ভূমিকা',
+    lblAnatomyFuncs: 'প্রধান শারীরবৃত্তীয় কাজ',
+    lblFact: 'আশ্চর্য তথ্য:',
+    lblPathologies: 'সাধারণ রোগ ও জটিলতা',
+    lblExplodeTitle: 'বিস্ফোরিত ভিউ (Exploded View)',
+    lblExplodeSep: 'ব্যবধান',
+    lblCutawayTitle: 'শারীরস্থান ব্যবচ্ছেদ / স্লাইস তল',
+    lblDepth: 'গভীরতা',
+    lblSimTitle: 'শারীরবৃত্তীয় সিমুলেটর',
+    lblBpm: 'হৃৎস্পন্দন হার (BPM)',
+    lblResp: 'শ্বাসক্রিয়ার হার (RPM)',
+    lblFlow: 'রক্তকণিকা প্রবাহ গতি',
+    lblAutoSpin: 'স্বয়ংক্রিয় ঘূর্ণন',
+    lblXrayMode: 'হোলোগ্রাফিক এক্স-রে',
+    lblPinTags: '৩D পিন ট্যাগ',
+    lblSaveSnap: 'এইচডি স্ক্রিনশট',
+    searchPlaceholder: 'অঙ্গ, অস্থি বা পেশী খুঁজুন...',
+    quizFindPrefix: '৩D মডেলে ',
+    quizFindSuffix: ' খুঁজে স্পর্শ করুন।',
+    quizCorrect: '✓ চমৎকার! আপনি সঠিকভাবে চিহ্নিত করেছেন: ',
+    quizIncorrect: '✗ দুঃখিত! আপনি স্পর্শ করেছেন: ',
+    quizTryAgain: '। অনুগ্রহ করে আবার চেষ্টা করুন: ',
+    skipText: 'পরবর্তী অঙ্গ ▸',
+    welcomeToast: '৩D মানব শরীরস্থানে স্বাগতম! অন্বেষণ করতে স্পর্শ করুন।'
+  },
+  en: {
+    appTitle: '3D Human Anatomy',
+    appSub: 'Biosystems Atlas Pro',
+    langBtn: 'বাংলা',
+    camFull: 'Full Body',
+    camHead: 'Head & Brain',
+    camThorax: 'Thorax & Heart',
+    camAbdomen: 'Abdomen & Liver',
+    camPelvis: 'Pelvis',
+    camArms: 'Upper Limbs',
+    camLegs: 'Lower Limbs',
+    camSpine: 'Spine (Back)',
+    navModel: 'Model',
+    navSystems: 'Systems',
+    navSearch: 'Search',
+    navQuiz: 'Quiz',
+    navTools: 'Tools',
+    shDetailsTitle: 'Structure Details',
+    shSystemsTitle: 'Anatomical Systems',
+    shSearchTitle: 'Search & Directory',
+    shQuizTitle: 'Anatomy Quiz Challenge',
+    shToolsTitle: 'Physiology & Slicing Tools',
+    btnShowAll: 'Show All',
+    btnHideAll: 'Hide All',
+    btnPeekDetails: '📋 Details',
+    btnPeekFocus: '🔍 Zoom',
+    btnIsolatePart: '🎯 Isolate Structure',
+    btnSoundPart: '🔊 Listen Stethoscope',
+    lblAnatomyDesc: 'Anatomy & Overview',
+    lblAnatomyFuncs: 'Primary Physiological Functions',
+    lblFact: 'Clinical Key Fact:',
+    lblPathologies: 'Clinical Pathologies',
+    lblExplodeTitle: 'Exploded Anatomy View',
+    lblExplodeSep: 'Separation',
+    lblCutawayTitle: 'Cross-Section Clipping Plane',
+    lblDepth: 'Slice Depth',
+    lblSimTitle: 'Physiological Life Simulator',
+    lblBpm: 'Heart Rate (BPM)',
+    lblResp: 'Respiratory Rate (RPM)',
+    lblFlow: 'Blood Particle Speed',
+    lblAutoSpin: 'Auto Rotation',
+    lblXrayMode: 'Holographic X-Ray',
+    lblPinTags: '3D Pin Tags',
+    lblSaveSnap: 'HD Screenshot',
+    searchPlaceholder: 'Search organs, bones, muscles...',
+    quizFindPrefix: 'Locate and tap the ',
+    quizFindSuffix: ' on the 3D model.',
+    quizCorrect: '✓ Correct! You accurately identified: ',
+    quizIncorrect: '✗ Incorrect! You tapped: ',
+    quizTryAgain: '. Please locate: ',
+    skipText: 'Skip Next ▸',
+    welcomeToast: 'Welcome to 3D Human Anatomy Atlas Pro!'
+  }
+};
+
+const SYSTEMS = {
+  skeletal: { name_bn: 'কঙ্কালতন্ত্র', name_en: 'Skeletal System', icon: '🦴', color: '#eae4d2', threeColor: 0xede6d2 },
+  muscular: { name_bn: 'পেশীতন্ত্র', name_en: 'Muscular System', icon: '💪', color: '#c45151', threeColor: 0xbd4646 },
+  cardio:   { name_bn: 'রক্তসংবহনতন্ত্র', name_en: 'Cardiovascular System', icon: '❤️', color: '#ef4444', threeColor: 0xd63031 },
+  nervous:  { name_bn: 'স্নায়ুতন্ত্র', name_en: 'Nervous System', icon: '🧠', color: '#facc15', threeColor: 0xf1c40f },
+  respiratory: { name_bn: 'শ্বসনতন্ত্র', name_en: 'Respiratory System', icon: '🫁', color: '#f472b6', threeColor: 0xe07c8c },
+  digestive:   { name_bn: 'পরিপাকতন্ত্র', name_en: 'Digestive System', icon: '🍽️', color: '#f97316', threeColor: 0xe67e22 },
+  urinary:     { name_bn: 'রেচন ও অন্তঃক্ষরা', name_en: 'Urinary & Endocrine', icon: '💧', color: '#06b6d4', threeColor: 0x00cec9 },
+  integumentary: { name_bn: 'ত্বক ও বহিঃত্বক', name_en: 'Body Surface (Skin)', icon: '👤', color: '#e2ab8c', threeColor: 0xdfa78b }
+};
+
+const ANATOMY_DATA = {
+  'Heart': {
+    name_bn: 'হৃৎপিণ্ড', name_en: 'Heart', system: 'cardio', region: 'thorax', latin: 'Cor',
+    desc_bn: 'হৃৎপিণ্ড মানবদেহের কেন্দ্রীয় পেশীবহুল দ্বিমুখী রক্ত পাম্প। এটি ডান ও বাম অলিন্দ এবং ডান ও বাম নিলয়—এই চারটি প্রকোষ্ঠে বিভক্ত।',
+    desc_en: 'The heart is the muscular central hydrostatic pump of the circulatory system, composed of four distinct chambers (left/right atria and ventricles).',
+    funcs_bn: [
+      'মহাধমনীর মাধ্যমে সারাদেহে অক্সিজেনযুক্ত রক্ত সংবহন করে।',
+      'ঊর্ধ্ব ও নিম্ন মহাশিরার মাধ্যমে কার্বন ডাই-অক্সাইডযুক্ত রক্ত ডান অলিন্দে গ্রহণ করে।',
+      'প্রতিনিয়ত সংকোচন ও প্রসারণের মাধ্যমে রক্তচাপ ও টিস্যু পারফিউশন বজায় রাখে।'
+    ],
+    funcs_en: [
+      'Pumps oxygen-rich blood through aorta to systemic tissues.',
+      'Receives venous return blood via venae cavae into the right atrium.',
+      'Maintains arterial perfusion pressure throughout all bodily organs.'
+    ],
+    fact_bn: 'মানবদেহে গড়ে প্রতিদিন হৃৎপিণ্ড প্রায় ১,০০,০০০ বার স্পন্দিত হয় এবং প্রতি মিনিটে প্রায় ৫ লিটার রক্ত পাম্প করে।',
+    fact_en: 'The human heart beats about 100,000 times a day, pumping over 7,500 liters of blood through miles of blood vessels.',
+    patho_bn: 'করোনারি ধমনী রোগ, হার্ট অ্যাটাক (মায়োকার্ডিয়াল ইনফার্কশন), অ্যারিথমিয়া, হার্ট ফেইলিউর।',
+    patho_en: 'Coronary artery disease (CAD), Myocardial infarction, Arrhythmia, Heart failure.'
+  },
+  'Brain (Cerebrum & Cortex)': {
+    name_bn: 'মস্তিষ্ক (সেরিব্রাম ও কর্টেক্স)', name_en: 'Brain (Cerebrum & Cortex)', system: 'nervous', region: 'head', latin: 'Cerebrum',
+    desc_bn: 'মানবদেহের কেন্দ্রীয় স্নায়ুতন্ত্রের প্রধান নিয়ন্ত্রণ কেন্দ্র। এতে প্রায় ৮৬ বিলিয়ন নিউরন এবং ১০০ ট্রিলিয়ন সিন্যাপটিক সংযোগ রয়েছে।',
+    desc_en: 'The crown of the central nervous system composed of two cerebral hemispheres containing approximately 86 billion neurons.',
+    funcs_bn: [
+      'উচ্চতর চেতনা, স্মৃতিশক্তি, ভাষা, চিন্তা ও বিশ্লেষণ পরিচালনা করে।',
+      'ঐচ্ছিক মাংসপেশির নড়াচড়া নির্দেশ করে।',
+      'দৃষ্টি, স্পর্শ, স্বাদ ও শ্রবণ সংবেদন প্রক্রিয়া করে।'
+    ],
+    funcs_en: [
+      'Higher cognition, language, consciousness, memory, reasoning.',
+      'Directs voluntary skeletal motor movements.',
+      'Processes sensory information from sight, touch, sound, taste, smell.'
+    ],
+    fact_bn: 'মানুষের মস্তিষ্ক দেহের মোট ওজনের মাত্র ২% হলেও এটি দেহের মোট শক্তির প্রায় ২০% ব্যবহার করে।',
+    fact_en: 'The brain accounts for only 2% of body mass but consumes over 20% of the body’s total glucose and oxygen.',
+    patho_bn: 'স্ট্রোক, আলঝেইমার্স ডিমেনশিয়া, মৃগীরোগ (এপিলেপসি), মেনিনজাইটিস।',
+    patho_en: 'Ischemic & Hemorrhagic Stroke, Alzheimer’s disease, Epilepsy.'
+  },
+  'Skull (Cranium)': {
+    name_bn: 'করোটিকা বা খুলি', name_en: 'Skull (Cranium)', system: 'skeletal', region: 'head', latin: 'Cranium',
+    desc_bn: 'মস্তিষ্ককে সুরক্ষিত রাখার শক্ত অস্থিময় আবরণ। এটি ৮টি ক্র্যানিয়াল ও ১৪টি ফেসিয়াল মোট ২২টি অস্থির সমন্বয়ে গঠিত।',
+    desc_en: 'The protective bony vault enclosing the brain and supporting facial features. Composed of 22 fused bones.',
+    funcs_bn: [
+      'মস্তিষ্ককে বাহ্যিক আঘাত থেকে রক্ষা করে।',
+      'চোখ, কান ও নাকের সংবেদনশীল ইন্দ্রিয় অঙ্গকে আশ্রয় দেয়।',
+      'মুখমণ্ডলের আকৃতি ও চোয়ালের পেশি যুক্ত রাখে।'
+    ],
+    funcs_en: [
+      'Protects neural cerebral tissue from physical trauma.',
+      'Houses sensory organs for sight, hearing, and olfaction.',
+      'Provides attachment points for facial and neck musculature.'
+    ],
+    fact_bn: 'জন্মের সময় শিশুর খুলির অস্থিগুলো পুরোপুরি জোড়া থাকে না; এগুলোর মাঝে নরম ঝিল্লি থাকে যাকে ফন্টানেল বলা হয়।',
+    fact_en: 'At birth, human skull bones are separated by flexible fibrous membranes known as fontanelles.',
+    patho_bn: 'খুলির ফ্র্যাকচার, ক্র্যানিওসিনোস্টোসিস, কনকাশন।',
+    patho_en: 'Skull fractures, Craniosynostosis, Microcephaly.'
+  },
+  'Lungs (Pulmonary Lobes)': {
+    name_bn: 'ফুসফুস', name_en: 'Lungs (Pulmonary Lobes)', system: 'respiratory', region: 'thorax', latin: 'Pulmones',
+    desc_bn: 'শ্বসনতন্ত্রের প্রধান অঙ্গ। ডান ফুসফুসে তিনটি লোব এবং বাম ফুসফুসে হৃদপিণ্ডের জন্য দুটি লোব ও কার্ডিয়াক নচ থাকে।',
+    desc_en: 'The primary respiratory organs. The right lung has three lobes; the left has two lobes and a cardiac notch.',
+    funcs_bn: [
+      'অ্যালভিওলাইয়ের মাধ্যমে রক্তে অক্সিজেন যুক্ত করে এবং কার্বন ডাই-অক্সাইড ত্যাগ করে।',
+      'রক্তের এসিড-ক্ষারীয় ভারসাম্য (pH) বজায় রাখতে সহায়তা করে।'
+    ],
+    funcs_en: [
+      'Gas exchange: oxygen diffusion into blood and CO2 clearance.',
+      'Regulates systemic arterial pH through carbonic acid equilibrium.'
+    ],
+    fact_bn: 'ফুসফুসের অভ্যন্তরীণ অ্যালভিওলাইগুলো ছড়িয়ে দিলে একটি টেনিস কোর্টের সমান (প্রায় ৭০-১০০ বর্গমিটার) ক্ষেত্রফল হবে!',
+    fact_en: 'Unfolded, the total internal alveolar surface area of human lungs is roughly the size of a tennis court (70-100 sqm)!',
+    patho_bn: 'নিউমোনিয়া, হাঁপানি (অ্যাজমা), সিওপিডি (COPD), পালমোনারি এমবোলিজম।',
+    patho_en: 'Pneumonia, Chronic obstructive pulmonary disease (COPD), Asthma.'
+  },
+  'Liver': {
+    name_bn: 'যকৃত (কলিজা)', name_en: 'Liver', system: 'digestive', region: 'abdomen', latin: 'Hepar',
+    desc_bn: 'মানবদেহের বৃহত্তম অভ্যন্তরীণ অঙ্গ ও জৈব রসায়নাগার। একজন পূর্ণবয়স্ক মানুষের যকৃতের ওজন প্রায় ১.৫ কেজি।',
+    desc_en: 'The largest internal organ and primary metabolic processing gland, weighing roughly 1.5 kg.',
+    funcs_bn: [
+      'স্নেহজাতীয় খাদ্য পরিপাকের জন্য পিত্তরস (Bile) তৈরি করে।',
+      'ওষুধ, অ্যালকোহল ও দূষিত বর্জ্য নিষ্কাশন করে।',
+      'গ্লাইকোজেন আকারে শক্তি সঞ্চয় করে এবং রক্তের প্রোটিন তৈরি করে।'
+    ],
+    funcs_en: [
+      'Synthesizes bile salts for dietary fat emulsification.',
+      'Detoxifies metabolic byproducts, alcohol, and medications.',
+      'Synthesizes plasma proteins and stores glycogen.'
+    ],
+    fact_bn: 'যকৃত মানবদেহের একমাত্র অঙ্গ যা নিজেকে পুনরায় পুনরুজ্জীবিত করতে পারে; ২৫% অবশিষ্ট থাকলেও এটি পুরোটি আবার তৈরি হতে পারে।',
+    fact_en: 'The liver is the only visceral organ capable of true regeneration, regrowing from as little as 25% of healthy tissue.',
+    patho_bn: 'লিভার সিরোসিস, ফ্যাটি লিভার, হেপাটাইটিস, জন্ডিস।',
+    patho_en: 'Cirrhosis, Non-alcoholic fatty liver disease (NAFLD), Hepatitis.'
+  },
+  'Stomach': {
+    name_bn: 'পাকস্থলী', name_en: 'Stomach', system: 'digestive', region: 'abdomen', latin: 'Gaster',
+    desc_bn: 'একটি পেশীবহুল ইংরেজি ‘J’ আকৃতির থলি যা খাদ্য সাময়িকভাবে জমা রাখে এবং অ্যাসিড ও এনজাইম দ্বারা পাচন শুরু করে।',
+    desc_en: 'A muscular J-shaped expandable digestive organ situated in the left upper quadrant of the abdominal cavity.',
+    funcs_bn: [
+      'তীব্র হাইড্রোক্লোরিক অ্যাসিড (pH ১.৫-২) ও পেপসিন নিঃসরণ করে আমিষ জাতীয় খাদ্য ভাঙে।',
+      'খাদ্যকে পিষে অর্ধ-তরল কাইমে (Chyme) পরিণত করে।'
+    ],
+    funcs_en: [
+      'Secretes hydrochloric acid (pH 1.5-2) and pepsinogen to digest proteins.',
+      'Mechanically churns food into semi-liquid chyme.'
+    ],
+    fact_bn: 'পাকস্থলীর অ্যাসিডের তীব্রতায় যেন পাকস্থলী নিজেই গলে না যায়, তাই প্রতি ৩ থেকে ৫ দিনে এর অভ্যন্তরীণ আস্তরণ সম্পূর্ণ নতুনভাবে তৈরি হয়।',
+    fact_en: 'The stomach replaces its inner epithelial lining every 3 to 5 days to prevent auto-digestion by hydrochloric acid.',
+    patho_bn: 'গ্যাস্ট্রিক আলসার, গ্যাস্ট্রাইটিস, অ্যাসিড রিফ্লাক্স (GERD)।',
+    patho_en: 'Peptic ulcer disease, Gastritis, Acid reflux (GERD).'
+  },
+  'Kidneys': {
+    name_bn: 'বৃক্ক বা কিডনি', name_en: 'Kidneys', system: 'urinary', region: 'abdomen', latin: 'Renes',
+    desc_bn: 'পিঠের নিচের অংশে অবস্থিত শিমের বীজের মতো দুটি ফিল্টারিং অঙ্গ।',
+    desc_en: 'Two bean-shaped retroperitoneal organs located against the posterior abdominal wall beneath the ribs.',
+    funcs_bn: [
+      'প্রতিদিন প্রায় ১৮০ লিটার রক্ত ছেঁকে মূত্রের মাধ্যমে ক্ষতিকর বর্জ্য বের করে।',
+      'শরীরের তরল, সোডিয়াম-পটাসিয়াম ও রক্তচাপ নিয়ন্ত্রণ করে।'
+    ],
+    funcs_en: [
+      'Filters approximately 180 liters of blood plasma daily, producing urine.',
+      'Regulates systemic blood pressure and fluid/electrolyte balance.'
+    ],
+    fact_bn: 'প্রতিটি কিডনিতে প্রায় ১০ লাখ অতিক্ষুদ্র ফিল্টার বা নেফ্রন থাকে।',
+    fact_en: 'Each kidney contains roughly 1 million microscopic filtering units called nephrons.',
+    patho_bn: 'কিডনিতে পাথর, দীর্ঘস্থায়ী কিডনি রোগ (CKD), গ্লোমেরুলোনেফ্রাইটিস।',
+    patho_en: 'Chronic kidney disease (CKD), Kidney stones, Glomerulonephritis.'
+  },
+  'Femur': {
+    name_bn: 'ফিমার (উর্বস্থি)', name_en: 'Femur (Thigh Bone)', system: 'skeletal', region: 'limbs', latin: 'Os femoris',
+    desc_bn: 'উভয় উরুতে অবস্থিত মানব কঙ্কালের সবচেয়ে দীর্ঘ, ভারী ও শক্তিশালী অস্থি।',
+    desc_en: 'The thigh bone: the longest, heaviest, and strongest tubular bone in the entire human skeletal system.',
+    funcs_bn: [
+      'দাঁড়ানো, হাঁটা ও দৌড়ানোর সময় দেহের সম্পূর্ণ ওজন বহন করে।',
+      'পায়ের প্রধান প্রধান গতিময় পেশীগুলোকে যুক্ত রাখে।'
+    ],
+    funcs_en: [
+      'Bears full body weight during standing, walking, and jumping.',
+      'Provides a powerful mechanical lever arm for locomotion.'
+    ],
+    fact_bn: 'ফিমার মানবদেহের ওজনের চেয়ে ৩০ গুণ বেশি চাপ সহ্য করতে পারে!',
+    fact_en: 'The femur can support up to 30 times an adult’s body weight and withstand immense impact force.',
+    patho_bn: 'ফিমার ফ্র্যাকচার, অ্যাভাসকুলার নেক্রোসিস, অস্টিওআর্থ্রাইটিস।',
+    patho_en: 'Femoral neck fracture, Femoral shaft fracture, Avascular necrosis.'
+  },
+  'Thoracic & Lumbar Spine': {
+    name_bn: 'মেরুদণ্ড (শিরদাঁড়া)', name_en: 'Thoracic & Lumbar Spine', system: 'skeletal', region: 'thorax', latin: 'Columna vertebralis',
+    desc_bn: '৩৩টি কশেরুকার সমন্বয়ে গঠিত মানবদেহের কেন্দ্রীয় অক্ষীয় স্তম্ভ।',
+    desc_en: 'The central axial pillar comprising stacked vertebrae supporting upper body weight and sheltering the spinal cord.',
+    funcs_bn: [
+      'স্পাইনাল কর্ড বা সুষুম্নাকাণ্ডকে সুরক্ষিত রাখে।',
+      'দেহের সোজা হয়ে দাঁড়ানো এবং বাঁকা ও ঘোরার সক্ষমতা দেয়।'
+    ],
+    funcs_en: [
+      'Shields the spinal cord and spinal nerve roots.',
+      'Distributes mechanical loading and enables bending and twisting.'
+    ],
+    fact_bn: 'দিনের বেলা অভিকর্ষজ চাপে কশেরুকার মধ্যবর্তী ডিস্ক সংকুচিত হওয়ায় সন্ধ্যায় একজন মানুষ সকালের চেয়ে প্রায় ১ সেমি খাটো হয়!',
+    fact_en: 'Due to spinal disc compression from gravity, humans are typically about 1 cm shorter in the evening than in the morning.',
+    patho_bn: 'স্লিপ ডিস্ক, স্কোলিওসিস, স্পন্ডাইলোসিস, সায়াটিকা।',
+    patho_en: 'Herniated disc, Scoliosis, Spinal stenosis, Spondylolisthesis.'
+  },
+  'Rib Cage': {
+    name_bn: 'বক্ষপিঞ্জর', name_en: 'Rib Cage', system: 'skeletal', region: 'thorax', latin: 'Cavea thoracis',
+    desc_bn: '১২ জোড়া বাঁকানো পাঁজরের হাড় ও বক্ষাস্থির সমন্বয়ে গঠিত খাঁচা।',
+    desc_en: 'A flexible protective cage formed by 12 pairs of curved ribs enclosing the thoracic cavity.',
+    funcs_bn: [
+      'হৃৎপিণ্ড ও ফুসফুসকে সরাসরি বাইরের আঘাত থেকে ঢালের মতো রক্ষা করে।',
+      'শ্বাসগ্রহণের সময় প্রসারিত ও সংকুচিত হয়ে সাহায্য করে।'
+    ],
+    funcs_en: [
+      'Shields thoracic organs (heart, lungs, major blood vessels).',
+      'Expands and contracts during pulmonary ventilation.'
+    ],
+    fact_bn: 'পাঁজরের ৭ জোড়া হলো আসল পাঁজর (True ribs), ৩ জোড়া নকল (False) এবং শেষ ২ জোড়া ভাসমান পাঁজর (Floating ribs)।',
+    fact_en: 'Ribs 1-7 attach directly to sternum (true ribs), 8-10 indirectly, and 11-12 are floating ribs.',
+    patho_bn: 'পাঁজরের ফ্র্যাকচার, কস্টোকন্ড্রাইটিস।',
+    patho_en: 'Rib fractures, Flail chest, Costochondritis.'
+  },
+  'Gallbladder': {
+    name_bn: 'পিত্তথলি', name_en: 'Gallbladder', system: 'digestive', region: 'abdomen', latin: 'Vesica biliaris',
+    desc_bn: 'যকৃতের নিচে অবস্থিত ছোট নাশপাতি আকৃতির একটি থলি যা পিত্তরস সঞ্চয় ও ঘনীভূত করে।',
+    desc_en: 'A small pear-shaped storage sac located immediately beneath the right anatomical lobe of the liver.',
+    funcs_bn: ['চর্বিযুক্ত খাবার গ্রহণে পিত্তরস ক্ষুদ্রান্ত্রে সরবরাহ করে চর্বি হজমে সহায়তা করে।'],
+    funcs_en: ['Concentrates and stores hepatic bile, contracting to inject it into the duodenum upon eating fat.'],
+    fact_bn: 'পিত্তরসে কোলেস্টেরল অতিরিক্ত জমে গেলে পিত্তথলিতে পাথর (Gallstones) তৈরি হয়।',
+    fact_en: 'Excessive cholesterol or bilirubin in bile can precipitate into painful gallstones.',
+    patho_bn: 'পিত্তথলিতে পাথর (Cholelithiasis), কোলেসিস্টাইটিস।',
+    patho_en: 'Gallstones, Acute cholecystitis.'
+  },
+  'Pancreas': {
+    name_bn: 'অগ্ন্যাশয়', name_en: 'Pancreas', system: 'digestive', region: 'abdomen', latin: 'Pancreas',
+    desc_bn: 'উদরগহ্বরে অবস্থিত একটি মিশ্র গ্রন্থি যা একই সাথে হরমোন ও পাচক রস নিঃসৃত করে।',
+    desc_en: 'An oblong retroperitoneal organ with both exocrine (enzymes) and endocrine (hormone) functions.',
+    funcs_bn: [
+      'ইনসুলিন ও গ্লুকাগন হরমোন তৈরি করে রক্তে শর্করার মাত্রা নিয়ন্ত্রণ করে।',
+      'খাদ্য পরিপাকের জন্য অ্যামাইলেজ, লাইপেজ ও ট্রিপসিন এনজাইম নিঃসরণ করে।'
+    ],
+    funcs_en: [
+      'Secretes insulin and glucagon to govern blood glucose levels.',
+      'Produces digestive enzymes (amylase, lipase, trypsin) for the duodenum.'
+    ],
+    fact_bn: 'অগ্ন্যাশয়ের আইলেটস অব ল্যাঙ্গারহ্যান্সের বিটা কোষ ধ্বংস হলে রক্তে ইনসুলিনের অভাবে টাইপ-১ ডায়াবেটিস হয়।',
+    fact_en: 'Loss of insulin-producing beta cells in the pancreas results in Type 1 diabetes.',
+    patho_bn: 'ডায়াবেটিস মেলাইটাস, অগ্ন্যাশয় প্রদাহ (প্যানক্রিয়াটাইটিস)।',
+    patho_en: 'Diabetes mellitus, Acute/Chronic pancreatitis.'
+  },
+  'Spleen': {
+    name_bn: 'প্লীহা', name_en: 'Spleen', system: 'digestive', region: 'abdomen', latin: 'Splen',
+    desc_bn: 'পাকস্থলীর পেছনে অবস্থিত বেগুনি রঙের একটি লসিকা অঙ্গ যা রক্তের অতন্দ্র প্রহরী।',
+    desc_en: 'A purplish lymphatic organ located in the left hypochondrium posterior to the stomach.',
+    funcs_bn: [
+      'পুরোনো ও ক্ষতিগ্রস্ত লোহিত রক্তকণিকা ভেঙে পরিশোধন করে।',
+      'জীবাণুর বিরুদ্ধে রক্তে অ্যান্টিবডি ও শ্বেতকণিকা তৈরি করে প্রতিরোধ গড়ে তোলে।'
+    ],
+    funcs_en: [
+      'Filters and destroys senescent red blood cells.',
+      'Houses abundant lymphocytes for blood-borne pathogen defense.'
+    ],
+    fact_bn: 'প্লীহাকে বলা হয় লোহিত রক্তকণিকার ‘কবরস্থান’ (Graveyard of RBCs)।',
+    fact_en: 'The spleen is often called the "graveyard of red blood cells" due to its recycling role.',
+    patho_bn: 'প্লেনোমেগালি (প্লীহা বৃদ্ধি), প্লীহা ফেটে রক্তক্ষরণ।',
+    patho_en: 'Splenomegaly, Splenic rupture.'
+  },
+  'Small Intestine': {
+    name_bn: 'ক্ষুদ্রান্ত্র', name_en: 'Small Intestine', system: 'digestive', region: 'abdomen', latin: 'Intestinum tenue',
+    desc_bn: 'প্রায় ৬ মিটার (২০ ফুট) দীর্ঘ প্যাঁচানো নালি যা ডিওডেনাম, জেজুনাম ও ইলিয়ামে বিভক্ত।',
+    desc_en: 'A convoluted muscular tube roughly 6 meters long, divided into duodenum, jejunum, and ileum.',
+    funcs_bn: ['খাদ্যের পুষ্টি উপাদান প্রায় ৯০% এই ক্ষুদ্রান্ত্রের ভিলাইয়ের মাধ্যমে রক্তে শোষিত হয়।'],
+    funcs_en: ['Primary site for chemical nutrient absorption into mesenteric bloodstream.'],
+    fact_bn: 'ক্ষুদ্রান্ত্রের অভ্যন্তরীণ ভিলাইয়ের মোট শোষণ এলাকা প্রায় ৩০ বর্গমিটার।',
+    fact_en: 'Intestinal microvilli expand nutrient absorption area to over 30 square meters.',
+    patho_bn: 'সিলিয়াক রোগ, ক্রোহনস ডিজিজ, অন্ত্রের বাধা।',
+    patho_en: 'Celiac disease, Crohn’s disease, Bowel obstruction.'
+  },
+  'Large Intestine (Colon)': {
+    name_bn: 'বৃহদান্ত্র বা কোলন', name_en: 'Large Intestine (Colon)', system: 'digestive', region: 'abdomen', latin: 'Intestinum crassum',
+    desc_bn: 'ক্ষুদ্রান্ত্রের চারপাশ ঘিরে ফ্রেমের মতো থাকা পরিপাকতন্ত্রের শেষ অংশ।',
+    desc_en: 'The terminal digestive tract forming an anatomical frame around the small intestine.',
+    funcs_bn: [
+      'অপাচ্য খাদ্য থেকে পানি ও খনিজ লবণ শোষণ করে।',
+      'উপকারী অন্ত্রের জীবাণুর সাহায্যে ভিটামিন-কে তৈরি করে ও মল নিষ্কাশন করে।'
+    ],
+    funcs_en: [
+      'Absorbs water and electrolytes from indigestible residues.',
+      'Hosts trillions of symbiotic microbiome flora making vitamin K.'
+    ],
+    fact_bn: 'মানব বৃহদান্ত্রে প্রায় ১০০ ট্রিলিয়নেরও বেশি উপকারী ব্যাকটেরিয়া বসবাস করে।',
+    fact_en: 'The human colon hosts over 100 trillion symbiotic gut microbes aiding digestion.',
+    patho_bn: 'কোলন ক্যান্সার, আলসারেটিভ কোলাইটিস, আইবিএস (IBS)।',
+    patho_en: 'Colorectal cancer, Ulcerative colitis, Irritable bowel syndrome.'
+  },
+  'Appendix': {
+    name_bn: 'অ্যাপেন্ডিক্স', name_en: 'Appendix', system: 'digestive', region: 'abdomen', latin: 'Appendix vermiformis',
+    desc_bn: 'বৃহদান্ত্রের সিকাম অংশের সাথে যুক্ত ছোট আঙুলের মতো একটি নলাকার থলি।',
+    desc_en: 'A small blind-ended finger-like pouch projecting from the cecum near the junction of intestines.',
+    funcs_bn: ['উপকারী ব্যাকটেরিয়ার প্রাকৃতিক নিরাপদ আধার হিসেবে কাজ করে।'],
+    funcs_en: ['Serves as a "safe house" reservoir for beneficial probiotic gut flora.'],
+    fact_bn: 'অ্যাপেন্ডিক্সে হঠাৎ ইনফেকশন হয়ে ফুলে গেলে মারাত্মক অ্যাপেন্ডিসাইটিস হয় যা জরুরি অস্ত্রোপচার প্রয়োজন।',
+    fact_en: 'Acute inflammation of the appendix is the most common emergency abdominal surgery.',
+    patho_bn: 'তীব্র অ্যাপেন্ডিসাইটিস (Acute Appendicitis)।',
+    patho_en: 'Acute appendicitis.'
+  },
+  'Thyroid Gland': {
+    name_bn: 'থাইরয়েড গ্রন্থি', name_en: 'Thyroid Gland', system: 'urinary', region: 'head', latin: 'Glandula thyroidea',
+    desc_bn: 'গলার সম্মুখভাগে অবস্থিত প্রজাপতি আকৃতির প্রধান বিপাকীয় অন্তঃক্ষরা গ্রন্থি।',
+    desc_en: 'A butterfly-shaped endocrine gland positioned across the anterior trachea in the neck.',
+    funcs_bn: ['টি৩ ও টি৪ হরমোন ক্ষরণের মাধ্যমে দেহের সকল কোষের মেটাবলিজম বা বিপাক হার নিয়ন্ত্রণ করে।'],
+    funcs_en: ['Synthesizes T3 and T4 hormones to regulate basal metabolic rate.'],
+    fact_bn: 'থাইরয়েড হরমোন তৈরির জন্য খাদ্যে আয়োডিনের উপস্থিতি অপরিহার্য।',
+    fact_en: 'The thyroid requires dietary iodine to manufacture essential metabolic hormones.',
+    patho_bn: 'হাইপোথাইরয়েডিজম, হাইপারথাইরয়েডিজম, গলগণ্ড (Goiter)।',
+    patho_en: 'Hypothyroidism, Hyperthyroidism, Goiter.'
+  },
+  'Sciatic Nerve': {
+    name_bn: 'সায়াটিক স্নায়ু', name_en: 'Sciatic Nerve', system: 'nervous', region: 'limbs', latin: 'Nervus ischiadicus',
+    desc_bn: 'মানবদেহের সবচেয়ে দীর্ঘ ও পুরু একক স্নায়ু, যা পিঠের নিচ থেকে পা পর্যন্ত বিস্তৃত।',
+    desc_en: 'The largest and longest individual nerve in the human body, running down the legs.',
+    funcs_bn: ['উরুর পেছনের ও পায়ের পেশীসমূহে সংকেত পাঠায় এবং ত্বকের অনুভূতি মস্তিষ্কে বহন করে।'],
+    funcs_en: ['Innervates hamstring and lower leg muscles and transmits cutaneous sensory signals.'],
+    fact_bn: 'এই স্নায়ু একজন মানুষের আঙুলের সমান পুরু হতে পারে। এটিতে চাপ পড়লে তীব্র ব্যথাজনক সায়াটিকা রোগ হয়।',
+    fact_en: 'The sciatic nerve can be as thick as an adult’s thumb; impingement causes shooting sciatica pain.',
+    patho_bn: 'সায়াটিকা (Sciatica), পেরিফেরাল নিউরোপ্যাথি।',
+    patho_en: 'Sciatica, Piriformis syndrome.'
+  },
+  'Pectoralis Major': {
+    name_bn: 'পেক্টোরালিস মেজর (বক্ষপেশী)', name_en: 'Pectoralis Major', system: 'muscular', region: 'thorax', latin: 'Musculus pectoralis major',
+    desc_bn: 'বুকের ওপরের অংশে অবস্থিত পাখা সদৃশ শক্তিশালী বৃহদাকার বক্ষপেশী।',
+    desc_en: 'A large, fan-shaped muscle covering the upper chest, anchoring to the humerus.',
+    funcs_bn: ['বাহুকে বুকের কাছাকাছি আনা ও ঘোরানো এবং পুশ-আপ বা ধাক্কা দেওয়ার কাজে সাহায্য করে।'],
+    funcs_en: ['Performs adduction and internal rotation of the arm (pushing movements).'],
+    fact_bn: 'ব্যায়ামবীরদের বেঞ্চ প্রেস ও বুকডন অনুশীলনে এই পেশীটি সর্বাধিক ব্যবহৃত হয়।',
+    fact_en: 'Essential for upper body pushing force, heavily trained in bench press and push-ups.',
+    patho_bn: 'পেশির টান ও টেন্ডন ছিঁড়ে যাওয়া (Tendon rupture)।',
+    patho_en: 'Pectoralis tendon rupture, Muscle strain.'
+  },
+  'Body Surface (Skin)': {
+    name_bn: 'ত্বক বা শরীরের চামড়া', name_en: 'Body Surface (Skin)', system: 'integumentary', region: 'all', latin: 'Integumentum commune',
+    desc_bn: 'মানবদেহের সর্ববৃহৎ প্রতিরক্ষামূলক বাহ্যিক অঙ্গ যা পুরো শরীর ঢেকে রাখে।',
+    desc_en: 'The human body’s outer anatomical boundary: epidermis, dermis, and hypodermis.',
+    funcs_bn: [
+      'জীবাণু ও আঘাত থেকে অভ্যন্তরীণ অঙ্গকে বাঁচায়।',
+      'ঘাম নিঃসরণের মাধ্যমে শরীরের তাপমাত্রা নিয়ন্ত্রণ করে।',
+      'সূর্যালোকের সাহায্যে ভিটামিন-ডি তৈরি করে।'
+    ],
+    funcs_en: [
+      'Impermeable barrier against trauma, pathogens, and UV.',
+      'Thermoregulation via sweat evaporation.',
+      'Synthesizes vitamin D in response to sunlight.'
+    ],
+    fact_bn: 'একজন পূর্ণবয়স্ক মানুষের ত্বকের ওজন মোট শরীরের ওজনের প্রায় ১৬% এবং এটি প্রায় ২ বর্গমিটার বিস্তৃত।',
+    fact_en: 'Skin is the largest organ of the body, accounting for roughly 16% of total adult body mass.',
+    patho_bn: 'মেলানোমা (ত্বকের ক্যান্সার), ডার্মাটাইটিস, সোরিয়াসিস, একজিমা।',
+    patho_en: 'Melanoma, Dermatitis, Burns, Psoriasis, Eczema.'
+  }
+};
+
+/* ==========================================================================
+   2. DOM ELEMENT REFERENCES & APPLICATION STATE
+   ========================================================================= */
+const $ = id => document.getElementById(id);
+const stage = $('stage');
+const worldLabelsEl = $('world-labels');
+const hoverTip = $('hover-tooltip');
+const tooltipText = $('tooltip-text');
+const tooltipSystem = $('tooltip-system');
+const toastEl = $('toast');
+const organPeekCard = $('organ-peek-card');
+
+const state = {
+  lang: 'bn',
+  theme: 'dark',
+  activeTab: 'model', // 'model', 'systems', 'search', 'quiz', 'tools'
+  autoRotate: false,
+  xray: false,
+  showPins: false,
+  audioEnabled: false,
+  skinOpacity: 0.28,
+  explodeVal: 0,
+  activeClipAxis: null,
+  clipPlane: null,
+  clipVal: 12,
+  bpm: 72,
+  respRate: 16,
+  flowSpeed: 1.0,
+  selectedPartName: 'Heart',
+  hoveredPart: null,
+  systemVisibility: {
+    skeletal: true, muscular: true, cardio: true, nervous: true,
+    respiratory: true, digestive: true, urinary: true, integumentary: true
+  },
+  systemOpacity: {
+    skeletal: 1.0, muscular: 0.85, cardio: 1.0, nervous: 1.0,
+    respiratory: 0.95, digestive: 1.0, urinary: 1.0, integumentary: 0.28
+  },
+  quiz: {
+    active: false,
+    targetKey: null,
+    score: 0,
+    streak: 0
+  }
+};
+
+/* ==========================================================================
+   3. THREE.JS 3D ENGINE & ANATOMICAL PROCEDURAL MODELING
+   ========================================================================== */
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 300);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+renderer.shadowMap.enabled = true;
+renderer.localClippingEnabled = true;
+stage.insertBefore(renderer.domElement, stage.firstChild);
+
+const controls = new THREE.OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.minDistance = 3;
+controls.maxDistance = 65;
+controls.autoRotateSpeed = 1.8;
+
+// Camera views (optimized for mobile portrait & desktop)
+const CAM_VIEWS = {
+  full:    { p: new THREE.Vector3(0, 11, 36), t: new THREE.Vector3(0, 9.5, 0) },
+  head:    { p: new THREE.Vector3(0, 16.8, 9), t: new THREE.Vector3(0, 16.5, 0) },
+  thorax:  { p: new THREE.Vector3(0, 13.5, 12), t: new THREE.Vector3(0, 13.2, 0) },
+  abdomen: { p: new THREE.Vector3(0, 11, 11), t: new THREE.Vector3(0, 10.8, 0) },
+  pelvis:  { p: new THREE.Vector3(0, 8.8, 10), t: new THREE.Vector3(0, 8.5, 0) },
+  arms:    { p: new THREE.Vector3(3.2, 11.5, 13), t: new THREE.Vector3(2.5, 11, 0) },
+  legs:    { p: new THREE.Vector3(0, 4.5, 18), t: new THREE.Vector3(0, 4, 0) },
+  spine:   { p: new THREE.Vector3(0, 12, -26), t: new THREE.Vector3(0, 11, 0) }
+};
+camera.position.copy(CAM_VIEWS.full.p);
+controls.target.copy(CAM_VIEWS.full.t);
+
+// Illumination
+const hemiLight = new THREE.HemisphereLight(0xffffff, 0x182438, 0.95);
+scene.add(hemiLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
+dirLight.position.set(10, 22, 18);
+scene.add(dirLight);
+
+const backLight = new THREE.DirectionalLight(0x38bdf8, 0.45);
+backLight.position.set(-10, 8, -16);
+scene.add(backLight);
+
+// Floor grid
+const grid = new THREE.GridHelper(30, 30, 0x0ea5e9, 0x1e293b);
+grid.material.transparent = true;
+grid.material.opacity = 0.2;
+grid.position.y = -0.05;
+scene.add(grid);
+
+// Biological system groups
+const systemGroups = {};
+Object.keys(SYSTEMS).forEach(key => {
+  const g = new THREE.Group();
+  g.name = key;
+  systemGroups[key] = g;
+  scene.add(g);
+});
+
+const anatomyMeshes = [];
+const worldPins = [];
+let heartMesh = null, leftLungMesh = null, rightLungMesh = null;
+
+// Helpers for shapes
+const S = (r) => new THREE.SphereGeometry(r, 26, 18);
+const C = (rt, rb, h) => new THREE.CylinderGeometry(rt, rb, h, 22);
+const T = (r, t) => new THREE.TorusGeometry(r, t, 10, 28);
+const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
+
+function createMaterial(sysKey, colorHex, isTrans = false, opacityVal = 1.0) {
+  return new THREE.MeshStandardMaterial({
+    color: colorHex,
+    roughness: sysKey === 'skeletal' ? 0.45 : (sysKey === 'cardio' ? 0.3 : 0.6),
+    metalness: sysKey === 'cardio' ? 0.2 : 0.05,
+    transparent: isTrans,
+    opacity: opacityVal,
+    depthWrite: !isTrans,
+    side: THREE.DoubleSide
+  });
+}
+
+function registerPart(sysKey, nameKey, geo, colorHex, x, y, z, opts = {}) {
+  const isSkin = sysKey === 'integumentary';
+  const mat = createMaterial(sysKey, colorHex, isSkin, isSkin ? state.skinOpacity : 1.0);
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.position.set(x, y, z);
+  if (opts.s) mesh.scale.set(opts.s[0], opts.s[1], opts.s[2]);
+  if (opts.r) mesh.rotation.set(opts.r[0], opts.r[1], opts.r[2]);
+
+  mesh.userData = {
+    nameKey,
+    system: sysKey,
+    origPos: mesh.position.clone(),
+    explodeDir: new THREE.Vector3(x, y - 9.5, z).normalize()
+  };
+
+  systemGroups[sysKey].add(mesh);
+  anatomyMeshes.push(mesh);
+  return mesh;
+}
+
+function registerBilateral(sysKey, nameKey, geoFunc, colorHex, x, y, z, opts = {}) {
+  const left = registerPart(sysKey, nameKey, geoFunc(), colorHex, x, y, z, opts);
+  const optsR = Object.assign({}, opts);
+  if (opts.r) optsR.r = [opts.r[0], -opts.r[1], -opts.r[2]];
+  const right = registerPart(sysKey, nameKey, geoFunc(), colorHex, -x, y, z, optsR);
+  return { left, right };
+}
+
+function buildModel() {
+  const SK = SYSTEMS.skeletal.threeColor;
+  const MU = SYSTEMS.muscular.threeColor;
+  const CA = SYSTEMS.cardio.threeColor;
+  const NE = SYSTEMS.nervous.threeColor;
+  const RE = SYSTEMS.respiratory.threeColor;
+  const DI = SYSTEMS.digestive.threeColor;
+  const UR = SYSTEMS.urinary.threeColor;
+  const IN = SYSTEMS.integumentary.threeColor;
+
+  // 1. SKELETON
+  registerPart('skeletal', 'Skull (Cranium)', S(1.05), SK, 0, 16.8, 0, { s: [0.92, 1.08, 1.08] });
+  registerPart('skeletal', 'Thoracic & Lumbar Spine', C(0.22, 0.24, 6.2), SK, 0, 11.8, -0.6);
+  registerPart('skeletal', 'Rib Cage', B(0.38, 2.4, 0.14), SK, 0, 13.5, 0.98); // Sternum
+  [1.3, 1.5, 1.62, 1.6, 1.5, 1.35].forEach((rad, i) => {
+    registerPart('skeletal', 'Rib Cage', T(rad, 0.075), SK, 0, 14.6 - i * 0.48, 0.05, {
+      s: [1, 0.62, 1], r: [Math.PI / 2 + 0.08, 0, 0]
+    });
+  });
+  registerBilateral('skeletal', 'Femur', () => C(0.18, 0.17, 4.3), SK, 0.88, 6.8, 0);
+
+  // 2. CARDIOVASCULAR
+  heartMesh = registerPart('cardio', 'Heart', S(0.62), CA, 0.32, 13.3, 0.4, { s: [1.05, 1.25, 0.95], r: [0, 0, 0.35] });
+  registerPart('cardio', 'Heart', C(0.15, 0.15, 4.8), 0xe11d48, 0.15, 12.8, -0.15); // Aorta
+  registerPart('cardio', 'Heart', C(0.16, 0.16, 4.6), 0x2563eb, -0.2, 12.8, -0.1); // Vena Cava
+
+  // 3. NERVOUS
+  registerPart('nervous', 'Brain (Cerebrum & Cortex)', S(0.85), NE, 0, 17.0, 0.05, { s: [0.95, 0.82, 1.05] });
+  registerBilateral('nervous', 'Sciatic Nerve', () => C(0.07, 0.05, 4.2), NE, 0.82, 6.7, -0.2);
+
+  // 4. RESPIRATORY
+  rightLungMesh = registerPart('respiratory', 'Lungs (Pulmonary Lobes)', S(0.82), RE, -0.78, 13.5, 0.05, { s: [0.75, 1.55, 0.8] });
+  leftLungMesh = registerPart('respiratory', 'Lungs (Pulmonary Lobes)', S(0.76), RE, 0.82, 13.5, 0.05, { s: [0.72, 1.5, 0.75] });
+
+  // 5. DIGESTIVE
+  registerPart('digestive', 'Stomach', S(0.55), DI, 0.65, 11.6, 0.38, { s: [1.1, 0.9, 0.8], r: [0, 0, 0.55] });
+  registerPart('digestive', 'Liver', S(0.85), 0xb45309, -0.72, 11.8, 0.32, { s: [1.4, 0.65, 0.85] });
+  registerPart('digestive', 'Gallbladder', S(0.18), 0x84cc16, -0.55, 11.2, 0.65, { s: [0.8, 1.3, 0.8] });
+  registerPart('digestive', 'Pancreas', B(0.9, 0.25, 0.25), 0xf59e0b, 0.1, 11.3, 0.1, { r: [0, 0, 0.2] });
+  registerPart('digestive', 'Spleen', S(0.32), 0x9333ea, 1.15, 11.9, 0.1, { s: [0.8, 1.2, 0.6] });
+  registerPart('digestive', 'Small Intestine', T(0.68, 0.28), 0xfb923c, 0, 10.3, 0.22, { r: [Math.PI / 2, 0, 0] });
+  registerPart('digestive', 'Large Intestine (Colon)', T(1.08, 0.22), 0xd97706, 0, 10.3, 0.18, { r: [Math.PI / 2, 0, 0] });
+  registerPart('digestive', 'Appendix', C(0.04, 0.04, 0.35), 0xe11d48, -0.88, 9.4, 0.45, { r: [0.3, 0, 0.6] });
+
+  // 6. URINARY & ENDOCRINE
+  registerBilateral('urinary', 'Kidneys', () => S(0.35), UR, 0.78, 11.4, -0.42, { s: [0.72, 1.25, 0.65] });
+  registerPart('urinary', 'Thyroid Gland', S(0.32), 0xa855f7, 0, 15.2, 0.52, { s: [1.2, 0.6, 0.5] });
+
+  // 7. MUSCULAR
+  registerBilateral('muscular', 'Pectoralis Major', () => B(0.9, 0.8, 0.18), MU, 0.75, 13.6, 0.85, { r: [0, -0.2, 0.15] });
+
+  // 8. INTEGUMENTARY (Transparent Body Shell)
+  registerPart('integumentary', 'Body Surface (Skin)', S(1.08), IN, 0, 16.8, 0, { s: [0.95, 1.12, 1.05] }); // Head
+  registerPart('integumentary', 'Body Surface (Skin)', C(0.5, 0.55, 1.2), IN, 0, 15.4, 0); // Neck
+  registerPart('integumentary', 'Body Surface (Skin)', C(2.1, 1.6, 3.4), IN, 0, 13.4, 0, { s: [1, 1, 0.64] }); // Thorax
+  registerPart('integumentary', 'Body Surface (Skin)', C(1.6, 1.5, 2.5), IN, 0, 10.9, 0, { s: [1, 1, 0.66] }); // Abdomen
+  registerPart('integumentary', 'Body Surface (Skin)', C(1.5, 1.25, 1.8), IN, 0, 9.1, 0, { s: [1.05, 1, 0.72] }); // Pelvis
+  registerBilateral('integumentary', 'Body Surface (Skin)', () => C(0.55, 0.45, 2.9), IN, 2.5, 13.0, 0); // Arms
+  registerBilateral('integumentary', 'Body Surface (Skin)', () => C(0.8, 0.58, 4.3), IN, 0.88, 6.9, 0); // Legs
+}
+buildModel();
+
+/* ==========================================================================
+   4. BLOOD CELL PARTICLES
+   ========================================================================== */
+const bloodParticleCount = 120;
+const bloodGeo = new THREE.BufferGeometry();
+const bloodPos = new Float32Array(bloodParticleCount * 3);
+const bloodColors = new Float32Array(bloodParticleCount * 3);
+const bloodSpeeds = new Float32Array(bloodParticleCount);
+
+for (let i = 0; i < bloodParticleCount; i++) {
+  const isArtery = i % 2 === 0;
+  const progress = Math.random();
+  const y = 16.5 - progress * 14.5;
+  const x = (Math.random() - 0.5) * (y < 8.8 ? 1.8 : 0.8);
+  const z = (Math.random() - 0.5) * 0.4;
+  bloodPos[i * 3] = x;
+  bloodPos[i * 3 + 1] = y;
+  bloodPos[i * 3 + 2] = z;
+
+  if (isArtery) {
+    bloodColors[i * 3] = 0.95; bloodColors[i * 3 + 1] = 0.12; bloodColors[i * 3 + 2] = 0.18;
+  } else {
+    bloodColors[i * 3] = 0.15; bloodColors[i * 3 + 1] = 0.45; bloodColors[i * 3 + 2] = 0.95;
+  }
+  bloodSpeeds[i] = 0.03 + Math.random() * 0.04;
+}
+bloodGeo.setAttribute('position', new THREE.BufferAttribute(bloodPos, 3));
+bloodGeo.setAttribute('color', new THREE.BufferAttribute(bloodColors, 3));
+const bloodMat = new THREE.PointsMaterial({
+  size: 0.18,
+  vertexColors: true,
+  transparent: true,
+  opacity: 0.85,
+  blending: THREE.AdditiveBlending
+});
+const bloodPoints = new THREE.Points(bloodGeo, bloodMat);
+systemGroups.cardio.add(bloodPoints);
+
+/* ==========================================================================
+   5. 3D WORLD PIN LABELS
+   ========================================================================== */
+function buildWorldPins() {
+  worldLabelsEl.innerHTML = '';
+  worldPins.length = 0;
+  const uniqueKeys = Object.keys(ANATOMY_DATA).filter(k => k !== 'Body Surface (Skin)');
+
+  uniqueKeys.forEach(k => {
+    const mesh = anatomyMeshes.find(m => m.userData.nameKey === k);
+    if (!mesh) return;
+
+    const data = ANATOMY_DATA[k];
+    const pin = document.createElement('div');
+    pin.className = 'world-pin';
+    const displayName = state.lang === 'bn' ? data.name_bn : data.name_en;
+    pin.innerHTML = `<span class="world-pin-dot"></span><span>${displayName}</span>`;
+    pin.onclick = () => selectPartByKey(k, true);
+    worldLabelsEl.appendChild(pin);
+    worldPins.push({ el: pin, mesh, nameKey: k });
+  });
+  worldLabelsEl.style.display = state.showPins ? 'block' : 'none';
+}
+buildWorldPins();
+
+/* ==========================================================================
+   6. WEB AUDIO API SYNTHESIZER
+   ========================================================================== */
+let audioCtx = null;
+function getAudioContext() {
+  if (!audioCtx) {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (AudioContext) audioCtx = new AudioContext();
+  }
+  if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+
+function playStethoscopeBeat() {
+  if (!state.audioEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+
+  // S1 (Lub)
+  const osc1 = ctx.createOscillator();
+  const gain1 = ctx.createGain();
+  osc1.type = 'sine';
+  osc1.frequency.setValueAtTime(65, t);
+  osc1.frequency.exponentialRampToValueAtTime(32, t + 0.12);
+  gain1.gain.setValueAtTime(0.5, t);
+  gain1.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+  osc1.connect(gain1);
+  gain1.connect(ctx.destination);
+  osc1.start(t);
+  osc1.stop(t + 0.15);
+
+  // S2 (Dub)
+  const osc2 = ctx.createOscillator();
+  const gain2 = ctx.createGain();
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(85, t + 0.18);
+  osc2.frequency.exponentialRampToValueAtTime(40, t + 0.28);
+  gain2.gain.setValueAtTime(0.35, t + 0.18);
+  gain2.gain.exponentialRampToValueAtTime(0.001, t + 0.3);
+  osc2.connect(gain2);
+  gain2.connect(ctx.destination);
+  osc2.start(t + 0.18);
+  osc2.stop(t + 0.32);
+}
+
+function playUiChirp(freq = 520, duration = 0.06) {
+  if (!state.audioEnabled) return;
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(freq, t);
+  gain.gain.setValueAtTime(0.12, t);
+  gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + duration);
+}
+
+/* ==========================================================================
+   7. REAL-TIME ECG / EKG CANVAS
+   ========================================================================== */
+const ecgCanvas = $('ecg-canvas');
+const ecgCtx = ecgCanvas.getContext('2d');
+const ecgBuffer = new Array(65).fill(10);
+let ecgPhase = 0;
+
+function updateECG() {
+  const period = 3600 / state.bpm;
+  ecgPhase = (ecgPhase + 1) % period;
+  const normPhase = ecgPhase / period;
+
+  let yVal = 10;
+  if (normPhase >= 0.12 && normPhase < 0.18) yVal = 10 - Math.sin((normPhase - 0.12) / 0.06 * Math.PI) * 3;
+  else if (normPhase >= 0.24 && normPhase < 0.26) yVal = 12;
+  else if (normPhase >= 0.26 && normPhase < 0.32) yVal = 2 + (normPhase - 0.26) * 6;
+  else if (normPhase >= 0.32 && normPhase < 0.35) yVal = 16;
+  else if (normPhase >= 0.45 && normPhase < 0.60) yVal = 10 - Math.sin((normPhase - 0.45) / 0.15 * Math.PI) * 4;
+
+  ecgBuffer.shift();
+  ecgBuffer.push(yVal + (Math.random() - 0.5) * 0.5);
+
+  ecgCtx.clearRect(0, 0, 65, 20);
+  ecgCtx.strokeStyle = '#0ea5e9';
+  ecgCtx.lineWidth = 1.4;
+  ecgCtx.beginPath();
+  for (let i = 0; i < ecgBuffer.length; i++) {
+    if (i === 0) ecgCtx.moveTo(i, ecgBuffer[i]);
+    else ecgCtx.lineTo(i, ecgBuffer[i]);
+  }
+  ecgCtx.stroke();
+}
+
+/* ==========================================================================
+   8. INTERACTION, TOUCH SELECTION & CAMERA TWEEN
+   ========================================================================== */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let cameraTargetGoal = null;
+
+function pickMesh(event) {
+  const rect = renderer.domElement.getBoundingClientRect();
+  const clientX = event.clientX || (event.touches && event.touches[0].clientX);
+  const clientY = event.clientY || (event.touches && event.touches[0].clientY);
+  if (clientX === undefined) return null;
+
+  mouse.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+  mouse.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+  raycaster.setFromCamera(mouse, camera);
+
+  const visibleMeshes = anatomyMeshes.filter(m => m.parent.visible);
+  const intersects = raycaster.intersectObjects(visibleMeshes, false);
+  if (!intersects.length) return null;
+
+  const nonSkin = intersects.find(hit => hit.object.userData.system !== 'integumentary');
+  return (nonSkin || intersects[0]).object;
+}
+
+function updateMeshHighlights() {
+  anatomyMeshes.forEach(m => {
+    if (m.material && m.material.emissive) m.material.emissive.setHex(0x000000);
+  });
+
+  if (state.selectedPartName) {
+    anatomyMeshes
+      .filter(m => m.userData.nameKey === state.selectedPartName)
+      .forEach(m => m.material.emissive.setHex(0x5a1a18));
+  }
+
+  if (state.hoveredPart && state.hoveredPart.userData.nameKey !== state.selectedPartName) {
+    const hovKey = state.hoveredPart.userData.nameKey;
+    anatomyMeshes
+      .filter(m => m.userData.nameKey === hovKey)
+      .forEach(m => m.material.emissive.setHex(0x1e3a5f));
+  }
+}
+
+function selectPartByKey(key, shouldFocus = false) {
+  const data = ANATOMY_DATA[key];
+  if (!data) return;
+
+  state.selectedPartName = key;
+  updateMeshHighlights();
+
+  // If in quiz mode, check answer
+  if (state.quiz.active) {
+    handleQuizAnswer(key);
+  }
+
+  // Update Floating Peek Card
+  const title = state.lang === 'bn' ? data.name_bn : data.name_en;
+  const sysName = state.lang === 'bn' ? SYSTEMS[data.system].name_bn : SYSTEMS[data.system].name_en;
+  $('peek-title').textContent = title;
+  $('peek-system').textContent = `${SYSTEMS[data.system].icon} ${sysName}`;
+  $('peek-latin').textContent = data.latin || '';
+  organPeekCard.classList.remove('hidden');
+
+  // Update Details Sheet
+  $('det-title').textContent = title;
+  $('det-latin').textContent = data.latin || '';
+  $('det-badge').textContent = `${SYSTEMS[data.system].icon} ${sysName}`;
+  $('det-desc').textContent = state.lang === 'bn' ? data.desc_bn : data.desc_en;
+  
+  const funcList = $('det-functions');
+  funcList.innerHTML = '';
+  const funcs = state.lang === 'bn' ? data.funcs_bn : data.funcs_en;
+  funcs.forEach(f => {
+    const li = document.createElement('li');
+    li.textContent = f;
+    funcList.appendChild(li);
+  });
+
+  $('det-fact').textContent = state.lang === 'bn' ? data.fact_bn : data.fact_en;
+  $('det-pathologies').textContent = state.lang === 'bn' ? data.patho_bn : data.patho_en;
+
+  // Highlight active pin
+  worldPins.forEach(p => {
+    p.el.classList.toggle('selected', p.nameKey === key);
+  });
+
+  if (shouldFocus) {
+    const mesh = anatomyMeshes.find(m => m.userData.nameKey === key);
+    if (mesh) focusOnMesh(mesh);
+  }
+
+  if (key === 'Heart') playStethoscopeBeat();
+  else playUiChirp(440, 0.05);
+}
+
+function focusOnMesh(mesh) {
+  const box = new THREE.Box3();
+  anatomyMeshes
+    .filter(m => m.userData.nameKey === mesh.userData.nameKey)
+    .forEach(m => box.expandByObject(m));
+
+  const center = box.getCenter(new THREE.Vector3());
+  const size = box.getSize(new THREE.Vector3()).length();
+  cameraTargetGoal = {
+    target: center,
+    dist: Math.max(5.5, size * 2.2)
+  };
+}
+
+// Touch & Click listeners
+let pointerDownPos = null;
+const cv = renderer.domElement;
+
+cv.addEventListener('pointerdown', e => {
+  pointerDownPos = { x: e.clientX, y: e.clientY };
+  hoverTip.style.display = 'none';
+});
+
+cv.addEventListener('pointerup', e => {
+  if (pointerDownPos && Math.hypot(e.clientX - pointerDownPos.x, e.clientY - pointerDownPos.y) < 8) {
+    const hit = pickMesh(e);
+    if (hit) {
+      hapticFeedback();
+      selectPartByKey(hit.userData.nameKey, false);
+    }
+  }
+  pointerDownPos = null;
+});
+
+cv.addEventListener('pointermove', e => {
+  if (e.pointerType === 'touch') return;
+  if (e.buttons) return;
+  const hit = pickMesh(e);
+  if (hit !== state.hoveredPart) {
+    state.hoveredPart = hit;
+    updateMeshHighlights();
+  }
+
+  if (hit) {
+    const data = ANATOMY_DATA[hit.userData.nameKey];
+    if (data) {
+      tooltipText.textContent = state.lang === 'bn' ? data.name_bn : data.name_en;
+      tooltipSystem.textContent = state.lang === 'bn' ? SYSTEMS[data.system].name_bn : SYSTEMS[data.system].name_en;
+      hoverTip.style.display = 'block';
+      hoverTip.style.left = `${e.clientX}px`;
+      hoverTip.style.top = `${e.clientY}px`;
+      cv.style.cursor = 'pointer';
+    }
+  } else {
+    hoverTip.style.display = 'none';
+    cv.style.cursor = 'grab';
+  }
+});
+
+cv.addEventListener('pointerleave', () => {
+  state.hoveredPart = null;
+  hoverTip.style.display = 'none';
+  updateMeshHighlights();
+});
+
+controls.addEventListener('start', () => {
+  cameraTargetGoal = null;
+});
+
+/* ==========================================================================
+   9. MOBILE BASE NAVBAR & APP DRAWER / SHEETS CONTROLLER
+   ========================================================================== */
+function closeAllSheets() {
+  document.querySelectorAll('.app-sheet').forEach(s => s.classList.remove('open'));
+}
+
+function openSheet(sheetId) {
+  closeAllSheets();
+  const target = $(sheetId);
+  if (target) {
+    target.classList.add('open');
+    organPeekCard.classList.add('hidden'); // hide peek card while sheet is open
+  }
+}
+
+function setActiveNavTab(tabKey) {
+  state.activeTab = tabKey;
+  hapticFeedback();
+  document.querySelectorAll('.nav-tab-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tabKey);
+  });
+
+  if (tabKey === 'model') {
+    closeAllSheets();
+    organPeekCard.classList.remove('hidden');
+    state.quiz.active = false;
+  } else if (tabKey === 'systems') {
+    openSheet('sheet-systems');
+    state.quiz.active = false;
+  } else if (tabKey === 'search') {
+    openSheet('sheet-search');
+    state.quiz.active = false;
+    setTimeout(() => $('app-search-input').focus(), 150);
+  } else if (tabKey === 'quiz') {
+    openSheet('sheet-quiz');
+    startQuiz();
+  } else if (tabKey === 'tools') {
+    openSheet('sheet-tools');
+    state.quiz.active = false;
+  }
+}
+
+// Nav bar tab item clicks
+document.querySelectorAll('.nav-tab-item').forEach(btn => {
+  btn.onclick = () => setActiveNavTab(btn.dataset.tab);
+});
+
+// Sheet close buttons
+document.querySelectorAll('.sheet-close-btn').forEach(btn => {
+  btn.onclick = () => {
+    hapticFeedback();
+    closeAllSheets();
+    setActiveNavTab('model');
+  };
+});
+
+// Peek card interactions
+$('btn-peek-details').onclick = () => {
+  hapticFeedback();
+  openSheet('sheet-details');
+};
+$('peek-tap-area').onclick = () => {
+  hapticFeedback();
+  openSheet('sheet-details');
+};
+$('btn-peek-focus').onclick = () => {
+  hapticFeedback();
+  const mesh = anatomyMeshes.find(m => m.userData.nameKey === state.selectedPartName);
+  if (mesh) focusOnMesh(mesh);
+};
+
+/* ==========================================================================
+   10. SYSTEMS & LAYERS LIST RENDERING
+   ========================================================================== */
+const systemsGridBox = $('systems-grid-box');
+function renderSystemsList() {
+  systemsGridBox.innerHTML = '';
+  Object.keys(SYSTEMS).forEach(sysKey => {
+    const sys = SYSTEMS[sysKey];
+    const sysName = state.lang === 'bn' ? sys.name_bn : sys.name_en;
+    const card = document.createElement('div');
+    card.className = 'system-card';
+    card.innerHTML = `
+      <div class="system-card-top">
+        <label class="system-label">
+          <input type="checkbox" id="chk-sys-${sysKey}" ${state.systemVisibility[sysKey] ? 'checked' : ''}>
+          <span class="system-dot" style="background:${sys.color}"></span>
+          <span>${sys.icon} ${sysName}</span>
+        </label>
+        <button class="card-action-btn btn-solo" data-sys="${sysKey}">${state.lang === 'bn' ? 'একক' : 'Solo'}</button>
+      </div>
+      <div class="slider-row">
+        <span>${state.lang === 'bn' ? 'স্বচ্ছতা' : 'Opacity'}</span>
+        <input type="range" id="op-sys-${sysKey}" min="0.05" max="1" step="0.05" value="${state.systemOpacity[sysKey]}">
+      </div>
+    `;
+    systemsGridBox.appendChild(card);
+
+    card.querySelector(`#chk-sys-${sysKey}`).onchange = e => {
+      const checked = e.target.checked;
+      state.systemVisibility[sysKey] = checked;
+      systemGroups[sysKey].visible = checked;
+    };
+
+    card.querySelector('.btn-solo').onclick = () => {
+      hapticFeedback();
+      Object.keys(SYSTEMS).forEach(k => {
+        const isTarget = k === sysKey;
+        state.systemVisibility[k] = isTarget;
+        systemGroups[k].visible = isTarget;
+        const chk = $(`chk-sys-${k}`);
+        if (chk) chk.checked = isTarget;
+      });
+      showToast(`${sysName} ${state.lang === 'bn' ? 'আলাদা করা হলো' : 'Isolated'}`);
+    };
+
+    card.querySelector(`#op-sys-${sysKey}`).oninput = e => {
+      const val = parseFloat(e.target.value);
+      state.systemOpacity[sysKey] = val;
+      systemGroups[sysKey].children.forEach(mesh => {
+        if (mesh.material) {
+          mesh.material.transparent = val < 1.0;
+          mesh.material.opacity = val;
+          mesh.material.depthWrite = val >= 0.95;
+        }
+      });
+    };
+  });
+}
+
+$('btn-show-all-sys').onclick = () => {
+  hapticFeedback();
+  Object.keys(SYSTEMS).forEach(k => {
+    state.systemVisibility[k] = true;
+    systemGroups[k].visible = true;
+    const chk = $(`chk-sys-${k}`);
+    if (chk) chk.checked = true;
+  });
+  showToast(state.lang === 'bn' ? 'সব অঙ্গতন্ত্র প্রদর্শিত' : 'All systems visible');
+};
+
+$('btn-hide-all-sys').onclick = () => {
+  hapticFeedback();
+  Object.keys(SYSTEMS).forEach(k => {
+    state.systemVisibility[k] = false;
+    systemGroups[k].visible = false;
+    const chk = $(`chk-sys-${k}`);
+    if (chk) chk.checked = false;
+  });
+  showToast(state.lang === 'bn' ? 'সব অঙ্গতন্ত্র লুকানো হলো' : 'All systems hidden');
+};
+
+/* ==========================================================================
+   11. SEARCH DIRECTORY TAB LOGIC
+   ========================================================================== */
+const searchInput = $('app-search-input');
+const searchResultsContainer = $('search-results-container');
+const searchClearBtn = $('search-clear-btn');
+
+function renderSearchResults(filterQuery = '') {
+  searchResultsContainer.innerHTML = '';
+  const q = filterQuery.trim().toLowerCase();
+
+  const keys = Object.keys(ANATOMY_DATA).filter(k => {
+    if (!q) return true;
+    const d = ANATOMY_DATA[k];
+    return d.name_bn.toLowerCase().includes(q) ||
+           d.name_en.toLowerCase().includes(q) ||
+           d.latin.toLowerCase().includes(q);
+  });
+
+  if (!keys.length) {
+    searchResultsContainer.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-dim);font-size:13px;">${state.lang === 'bn' ? 'কোনো অঙ্গ খুঁজে পাওয়া যায়নি' : 'No anatomical structures found'}</div>`;
+    return;
+  }
+
+  keys.forEach(k => {
+    const d = ANATOMY_DATA[k];
+    const row = document.createElement('div');
+    row.className = 'search-result-row';
+    const title = state.lang === 'bn' ? d.name_bn : d.name_en;
+    const sysName = state.lang === 'bn' ? SYSTEMS[d.system].name_bn : SYSTEMS[d.system].name_en;
+    row.innerHTML = `
+      <div>
+        <strong style="font-size:14px;">${title}</strong>
+        <div style="font-size:11px;color:var(--text-dim);font-style:italic;">${d.latin}</div>
+      </div>
+      <span class="card-action-btn">${SYSTEMS[d.system].icon} ${sysName}</span>
+    `;
+    row.onclick = () => {
+      hapticFeedback();
+      selectPartByKey(k, true);
+      setActiveNavTab('model');
+      showToast(`${title}`);
+    };
+    searchResultsContainer.appendChild(row);
+  });
+}
+
+searchInput.addEventListener('input', e => {
+  const q = e.target.value;
+  searchClearBtn.style.display = q ? 'block' : 'none';
+  renderSearchResults(q);
+});
+
+searchClearBtn.onclick = () => {
+  searchInput.value = '';
+  searchClearBtn.style.display = 'none';
+  renderSearchResults('');
+};
+
+/* ==========================================================================
+   12. CUTAWAY, EXPLODE & SIMULATION TOOLS
+   ========================================================================== */
+const clipSlider = $('slider-clip');
+const clipSliderBox = $('clip-slider-box');
+
+function setClipping(axis) {
+  hapticFeedback();
+  state.activeClipAxis = axis;
+  ['off', 'axial', 'coronal', 'sagittal'].forEach(a => $(`btn-clip-${a}`).classList.remove('active'));
+  $(`btn-clip-${axis}`).classList.add('active');
+
+  if (axis === 'off') {
+    renderer.clippingPlanes = [];
+    clipSliderBox.style.display = 'none';
+    return;
+  }
+
+  clipSliderBox.style.display = 'flex';
+  let normal = new THREE.Vector3();
+  if (axis === 'axial') normal.set(0, -1, 0);
+  else if (axis === 'coronal') normal.set(0, 0, -1);
+  else if (axis === 'sagittal') normal.set(-1, 0, 0);
+
+  state.clipPlane = new THREE.Plane(normal, state.clipVal);
+  renderer.clippingPlanes = [state.clipPlane];
+  showToast(state.lang === 'bn' ? `${axis.toUpperCase()} স্লাইস তল সক্রিয়` : `${axis.toUpperCase()} Slicing Plane Enabled`);
+}
+
+$('btn-clip-off').onclick = () => setClipping('off');
+$('btn-clip-axial').onclick = () => setClipping('axial');
+$('btn-clip-coronal').onclick = () => setClipping('coronal');
+$('btn-clip-sagittal').onclick = () => setClipping('sagittal');
+
+clipSlider.oninput = e => {
+  state.clipVal = parseFloat(e.target.value);
+  if (state.clipPlane) state.clipPlane.constant = state.clipVal;
+};
+
+// Explode slider
+const explodeSlider = $('slider-explode');
+const explodeVal = $('val-explode');
+
+explodeSlider.oninput = e => {
+  const f = parseFloat(e.target.value);
+  state.explodeVal = f;
+  const pct = Math.round(f * 100);
+  explodeVal.textContent = state.lang === 'bn' ? `${toBnNum(pct)}%` : `${pct}%`;
+
+  anatomyMeshes.forEach(mesh => {
+    if (mesh.userData && mesh.userData.origPos && mesh.userData.explodeDir) {
+      const offset = mesh.userData.explodeDir.clone().multiplyScalar(f * 3.5);
+      mesh.position.copy(mesh.userData.origPos).add(offset);
+    }
+  });
+};
+
+// Vitals Sliders
+$('slider-bpm').oninput = e => {
+  state.bpm = parseInt(e.target.value, 10);
+  $('vital-bpm-text').textContent = state.lang === 'bn' ? `${toBnNum(state.bpm)} BPM` : `${state.bpm} BPM`;
+  $('val-bpm').textContent = state.lang === 'bn' ? toBnNum(state.bpm) : state.bpm;
+};
+
+$('slider-resp').oninput = e => {
+  state.respRate = parseInt(e.target.value, 10);
+  $('val-resp').textContent = state.lang === 'bn' ? toBnNum(state.respRate) : state.respRate;
+};
+
+$('slider-flow').oninput = e => {
+  state.flowSpeed = parseFloat(e.target.value);
+  const formatted = state.flowSpeed.toFixed(1);
+  $('val-flow').textContent = state.lang === 'bn' ? `${toBnNum(formatted)}x` : `${formatted}x`;
+};
+
+// Tool actions inside tools sheet
+$('btn-tool-spin').onclick = function() {
+  hapticFeedback();
+  state.autoRotate = !state.autoRotate;
+  controls.autoRotate = state.autoRotate;
+  this.classList.toggle('active', state.autoRotate);
+};
+
+$('btn-tool-xray').onclick = function() {
+  hapticFeedback();
+  state.xray = !state.xray;
+  this.classList.toggle('active', state.xray);
+  if (state.xray) {
+    document.body.setAttribute('data-theme', 'xray');
+    anatomyMeshes.forEach(m => {
+      if (m.material) {
+        m.material.wireframe = false;
+        m.material.transparent = true;
+        m.material.opacity = 0.5;
+      }
+    });
+    showToast(state.lang === 'bn' ? 'এক্স-রে মোড সক্রিয়' : 'X-Ray Hologram Mode');
+  } else {
+    document.body.setAttribute('data-theme', state.theme);
+    anatomyMeshes.forEach(m => {
+      const sys = m.userData.system;
+      if (m.material) {
+        m.material.transparent = state.systemOpacity[sys] < 1.0;
+        m.material.opacity = state.systemOpacity[sys];
+      }
+    });
+    showToast(state.lang === 'bn' ? 'স্বাভাবিক মোড' : 'Standard Shading');
+  }
+};
+
+$('btn-tool-pins').onclick = function() {
+  hapticFeedback();
+  state.showPins = !state.showPins;
+  worldLabelsEl.style.display = state.showPins ? 'block' : 'none';
+  this.classList.toggle('active', state.showPins);
+  showToast(state.showPins ? (state.lang === 'bn' ? 'পিন ট্যাগ প্রদর্শিত' : '3D Pins Shown') : (state.lang === 'bn' ? 'পিন ট্যাগ লুকানো হলো' : '3D Pins Hidden'));
+};
+
+$('btn-tool-snap').onclick = () => {
+  hapticFeedback();
+  renderer.render(scene, camera);
+  const dataURL = renderer.domElement.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.href = dataURL;
+  a.download = `Human-Anatomy-${state.lang}-${new Date().toISOString().slice(0,10)}.png`;
+  a.click();
+  showToast(state.lang === 'bn' ? 'স্ক্রিনশট সংরক্ষিত হয়েছে 📸' : 'Screenshot Downloaded 📸');
+};
+
+/* ==========================================================================
+   13. ANATOMY QUIZ CHALLENGE MODE
+   ========================================================================== */
+const quizPrompt = $('quiz-prompt');
+const quizFeedback = $('quiz-feedback');
+const quizScore = $('quiz-score');
+const quizStreak = $('quiz-streak');
+
+const QUIZ_KEYS = [
+  'Heart', 'Brain (Cerebrum & Cortex)', 'Skull (Cranium)',
+  'Lungs (Pulmonary Lobes)', 'Liver', 'Stomach', 'Kidneys',
+  'Femur', 'Thoracic & Lumbar Spine', 'Rib Cage', 'Gallbladder',
+  'Pancreas', 'Spleen', 'Thyroid Gland', 'Sciatic Nerve'
+];
+
+function startQuiz() {
+  state.quiz.active = true;
+  nextQuizQuestion();
+}
+
+function nextQuizQuestion() {
+  quizFeedback.className = 'quiz-feedback';
+  quizFeedback.style.display = 'none';
+  const avail = QUIZ_KEYS.filter(k => k !== state.quiz.targetKey);
+  state.quiz.targetKey = avail[Math.floor(Math.random() * avail.length)];
+
+  const data = ANATOMY_DATA[state.quiz.targetKey];
+  const targetName = state.lang === 'bn' ? data.name_bn : data.name_en;
+  const prefix = state.lang === 'bn' ? UI_TEXTS.bn.quizFindPrefix : UI_TEXTS.en.quizFindPrefix;
+  const suffix = state.lang === 'bn' ? UI_TEXTS.bn.quizFindSuffix : UI_TEXTS.en.quizFindSuffix;
+
+  quizPrompt.innerHTML = `${prefix}<strong>${targetName}</strong>${suffix}`;
+}
+
+function handleQuizAnswer(selectedKey) {
+  if (!state.quiz.active) return;
+  const targetData = ANATOMY_DATA[state.quiz.targetKey];
+  const selectedData = ANATOMY_DATA[selectedKey];
+
+  if (selectedKey === state.quiz.targetKey) {
+    state.quiz.score += 100;
+    state.quiz.streak += 1;
+    const name = state.lang === 'bn' ? targetData.name_bn : targetData.name_en;
+    const msg = (state.lang === 'bn' ? UI_TEXTS.bn.quizCorrect : UI_TEXTS.en.quizCorrect) + name;
+    quizFeedback.textContent = msg;
+    quizFeedback.className = 'quiz-feedback correct';
+    quizScore.textContent = state.lang === 'bn' ? toBnNum(state.quiz.score) : state.quiz.score;
+    quizStreak.textContent = `${state.lang === 'bn' ? toBnNum(state.quiz.streak) : state.quiz.streak} 🔥`;
+    playUiChirp(880, 0.12);
+    setTimeout(nextQuizQuestion, 1400);
+  } else {
+    state.quiz.streak = 0;
+    const clickedName = state.lang === 'bn' ? selectedData.name_bn : selectedData.name_en;
+    const targetName = state.lang === 'bn' ? targetData.name_bn : targetData.name_en;
+    const msg = (state.lang === 'bn' ? UI_TEXTS.bn.quizIncorrect : UI_TEXTS.en.quizIncorrect) + clickedName +
+                (state.lang === 'bn' ? UI_TEXTS.bn.quizTryAgain : UI_TEXTS.en.quizTryAgain) + targetName;
+    quizFeedback.textContent = msg;
+    quizFeedback.className = 'quiz-feedback incorrect';
+    quizStreak.textContent = '০ 🔥';
+    playUiChirp(220, 0.18);
+  }
+}
+
+$('btn-skip-quiz').onclick = () => {
+  hapticFeedback();
+  nextQuizQuestion();
+};
+
+/* ==========================================================================
+   14. TOP BAR & CAMERA CONTROLS
+   ========================================================================== */
+$('btn-audio').onclick = function() {
+  hapticFeedback();
+  state.audioEnabled = !state.audioEnabled;
+  this.classList.toggle('active', state.audioEnabled);
+  this.innerHTML = state.audioEnabled ? '<span>🔊</span>' : '<span>🔇</span>';
+  if (state.audioEnabled) {
+    getAudioContext();
+    playUiChirp(600, 0.08);
+    showToast(state.lang === 'bn' ? 'স্টেথোস্কোপ সাউন্ড চালু' : 'Stethoscope Audio Enabled');
+  } else {
+    showToast(state.lang === 'bn' ? 'শব্দ বন্ধ' : 'Audio Muted');
+  }
+};
+
+$('btn-theme').onclick = () => {
+  hapticFeedback();
+  const themes = ['dark', 'light', 'xray'];
+  const next = (themes.indexOf(state.theme) + 1) % themes.length;
+  state.theme = themes[next];
+  document.body.setAttribute('data-theme', state.theme);
+  showToast(`${state.lang === 'bn' ? 'থিম:' : 'Theme:'} ${state.theme.toUpperCase()}`);
+};
+
+$('btn-zin').onclick = () => {
+  hapticFeedback();
+  cameraTargetGoal = null;
+  const dir = camera.position.clone().sub(controls.target);
+  dir.setLength(Math.max(controls.minDistance, dir.length() * 0.8));
+  camera.position.copy(controls.target).add(dir);
+};
+$('btn-zout').onclick = () => {
+  hapticFeedback();
+  cameraTargetGoal = null;
+  const dir = camera.position.clone().sub(controls.target);
+  dir.setLength(Math.min(controls.maxDistance, dir.length() * 1.25));
+  camera.position.copy(controls.target).add(dir);
+};
+$('btn-reset-cam').onclick = () => {
+  hapticFeedback();
+  cameraTargetGoal = { target: CAM_VIEWS.full.t.clone(), dist: CAM_VIEWS.full.p.distanceTo(CAM_VIEWS.full.t) };
+  showToast(state.lang === 'bn' ? 'ক্যামেরা রিসেট' : 'Camera Reset');
+};
+$('brand-home').onclick = $('btn-reset-cam').onclick;
+
+// Camera preset pills
+document.querySelectorAll('.cam-pill').forEach(btn => {
+  btn.onclick = () => {
+    hapticFeedback();
+    document.querySelectorAll('.cam-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const v = CAM_VIEWS[btn.dataset.view];
+    if (v) {
+      cameraTargetGoal = { target: v.t.clone(), dist: v.p.distanceTo(v.t) };
+      showToast(btn.textContent);
+    }
+  };
+});
+
+// Detail card action buttons inside details sheet
+$('btn-isolate-part').onclick = () => {
+  hapticFeedback();
+  const data = ANATOMY_DATA[state.selectedPartName];
+  if (!data) return;
+  const sys = data.system;
+  Object.keys(SYSTEMS).forEach(k => {
+    const isTarget = k === sys;
+    state.systemVisibility[k] = isTarget;
+    systemGroups[k].visible = isTarget;
+    const chk = $(`chk-sys-${k}`);
+    if (chk) chk.checked = isTarget;
+  });
+  const name = state.lang === 'bn' ? data.name_bn : data.name_en;
+  showToast(`${name} ${state.lang === 'bn' ? 'আলাদা করা হলো' : 'Isolated'}`);
+};
+
+$('btn-sound-part').onclick = () => {
+  hapticFeedback();
+  if (state.selectedPartName === 'Heart') {
+    state.audioEnabled = true;
+    $('btn-audio').classList.add('active');
+    $('btn-audio').innerHTML = '<span>🔊</span>';
+    playStethoscopeBeat();
+  } else {
+    playUiChirp(520, 0.08);
+  }
+};
+
+/* ==========================================================================
+   15. BILINGUAL SWITCHER (BANGLA <-> ENGLISH)
+   ========================================================================== */
+function updateLanguageUI() {
+  const t = UI_TEXTS[state.lang];
+  document.documentElement.lang = state.lang;
+  $('lbl-lang').textContent = t.langBtn;
+
+  // Header and title
+  $('txt-app-title').textContent = t.appTitle;
+  $('txt-app-sub').textContent = t.appSub;
+
+  // Camera pills
+  $('cam-full').textContent = t.camFull;
+  $('cam-head').textContent = t.camHead;
+  $('cam-thorax').textContent = t.camThorax;
+  $('cam-abdomen').textContent = t.camAbdomen;
+  $('cam-pelvis').textContent = t.camPelvis;
+  $('cam-arms').textContent = t.camArms;
+  $('cam-legs').textContent = t.camLegs;
+  $('cam-spine').textContent = t.camSpine;
+
+  // Bottom base navbar labels
+  $('nav-lbl-model').textContent = t.navModel;
+  $('nav-lbl-systems').textContent = t.navSystems;
+  $('nav-lbl-search').textContent = t.navSearch;
+  $('nav-lbl-quiz').textContent = t.navQuiz;
+  $('nav-lbl-tools').textContent = t.navTools;
+
+  // Sheet titles
+  $('sh-details-title').textContent = t.shDetailsTitle;
+  $('sh-systems-title').textContent = t.shSystemsTitle;
+  $('sh-search-title').textContent = t.shSearchTitle;
+  $('sh-quiz-title').textContent = t.shQuizTitle;
+  $('sh-tools-title').textContent = t.shToolsTitle;
+
+  $('btn-show-all-sys').textContent = t.btnShowAll;
+  $('btn-hide-all-sys').textContent = t.btnHideAll;
+  $('btn-peek-details').textContent = t.btnPeekDetails;
+  $('btn-peek-focus').textContent = t.btnPeekFocus;
+  $('btn-isolate-part').textContent = t.btnIsolatePart;
+  $('btn-sound-part').textContent = t.btnSoundPart;
+
+  // Section titles
+  $('lbl-anatomy-desc').textContent = t.lblAnatomyDesc;
+  $('lbl-anatomy-funcs').textContent = t.lblAnatomyFuncs;
+  $('lbl-fact').textContent = t.lblFact;
+  $('lbl-pathologies').textContent = t.lblPathologies;
+  $('lbl-explode-title').textContent = t.lblExplodeTitle;
+  $('lbl-explode-sep').textContent = t.lblExplodeSep;
+  $('lbl-cutaway-title').textContent = t.lblCutawayTitle;
+  $('lbl-depth').textContent = t.lblDepth;
+  $('lbl-sim-title').textContent = t.lblSimTitle;
+  $('lbl-bpm').textContent = t.lblBpm;
+  $('lbl-resp').textContent = t.lblResp;
+  $('lbl-flow').textContent = t.lblFlow;
+  $('lbl-auto-spin').textContent = t.lblAutoSpin;
+  $('lbl-xray-mode').textContent = t.lblXrayMode;
+  $('lbl-pin-tags').textContent = t.lblPinTags;
+  $('lbl-save-snap').textContent = t.lblSaveSnap;
+
+  $('app-search-input').placeholder = t.searchPlaceholder;
+  $('btn-skip-quiz').textContent = t.skipText;
+
+  // Numbers
+  $('vital-bpm-text').textContent = state.lang === 'bn' ? `${toBnNum(state.bpm)} BPM` : `${state.bpm} BPM`;
+  $('val-bpm').textContent = state.lang === 'bn' ? toBnNum(state.bpm) : state.bpm;
+  $('val-resp').textContent = state.lang === 'bn' ? toBnNum(state.respRate) : state.respRate;
+  const pct = Math.round(state.explodeVal * 100);
+  $('val-explode').textContent = state.lang === 'bn' ? `${toBnNum(pct)}%` : `${pct}%`;
+
+  // Re-render components
+  buildWorldPins();
+  renderSystemsList();
+  renderSearchResults(searchInput.value);
+  selectPartByKey(state.selectedPartName, false);
+}
+
+$('btn-lang').onclick = () => {
+  hapticFeedback();
+  state.lang = state.lang === 'bn' ? 'en' : 'bn';
+  updateLanguageUI();
+  showToast(state.lang === 'bn' ? 'বাংলা ভাষা নির্বাচন করা হয়েছে' : 'Language set to English');
+};
+
+/* ==========================================================================
+   16. TOAST NOTIFICATION
+   ========================================================================== */
+let toastTimeout = null;
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toastEl.classList.remove('show'), 2000);
+}
+
+/* ==========================================================================
+   17. RESIZE & MAIN RENDER ANIMATION LOOP
+   ========================================================================== */
+function onWindowResize() {
+  const w = stage.clientWidth;
+  const h = stage.clientHeight;
+  if (!w || !h) return;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+}
+window.addEventListener('resize', onWindowResize);
+onWindowResize();
+
+const tempVec = new THREE.Vector3();
+let clock = 0;
+let lastBeatTime = 0;
+
+function animate() {
+  requestAnimationFrame(animate);
+  clock += 0.016;
+
+  // Camera smooth tweening
+  if (cameraTargetGoal) {
+    controls.target.lerp(cameraTargetGoal.target, 0.1);
+    const camDir = camera.position.clone().sub(controls.target);
+    const currLen = camDir.length();
+    const newLen = currLen + (cameraTargetGoal.dist - currLen) * 0.1;
+    camDir.setLength(newLen);
+    camera.position.copy(controls.target).add(camDir);
+
+    if (controls.target.distanceTo(cameraTargetGoal.target) < 0.02 && Math.abs(currLen - cameraTargetGoal.dist) < 0.05) {
+      cameraTargetGoal = null;
+    }
+  }
+  controls.update();
+
+  // Heartbeat pulsing synced with BPM
+  const beatPeriod = 60 / state.bpm;
+  const beatTime = (clock % beatPeriod) / beatPeriod;
+  if (heartMesh) {
+    let s = 1.0;
+    if (beatTime < 0.15) s = 1.0 + Math.sin(beatTime / 0.15 * Math.PI) * 0.18;
+    else if (beatTime > 0.22 && beatTime < 0.35) s = 1.0 + Math.sin((beatTime - 0.22) / 0.13 * Math.PI) * 0.09;
+    heartMesh.scale.set(1.05 * s, 1.25 * s, 0.95 * s);
+  }
+
+  if (state.audioEnabled && clock - lastBeatTime >= beatPeriod) {
+    lastBeatTime = clock;
+    playStethoscopeBeat();
+  }
+
+  // Lung breathing cycle
+  const respPeriod = 60 / state.respRate;
+  const breathCycle = Math.sin((clock % respPeriod) / respPeriod * Math.PI * 2);
+  if (leftLungMesh && rightLungMesh) {
+    const bs = 1.0 + breathCycle * 0.08;
+    leftLungMesh.scale.set(0.72 * bs, 1.5 * bs, 0.75 * bs);
+    rightLungMesh.scale.set(0.75 * bs, 1.55 * bs, 0.8 * bs);
+  }
+
+  // Blood particles
+  if (systemGroups.cardio.visible) {
+    const pArr = bloodGeo.attributes.position.array;
+    for (let i = 0; i < bloodParticleCount; i++) {
+      let y = pArr[i * 3 + 1];
+      y -= bloodSpeeds[i] * state.flowSpeed;
+      if (y < 2.0) y = 16.5;
+      pArr[i * 3 + 1] = y;
+    }
+    bloodGeo.attributes.position.needsUpdate = true;
+  }
+
+  // Update ECG
+  updateECG();
+
+  // Update 3D Pins in World Space
+  if (state.showPins) {
+    const w = stage.clientWidth;
+    const h = stage.clientHeight;
+    worldPins.forEach(p => {
+      const mesh = p.mesh;
+      if (!mesh.parent || !mesh.parent.visible) {
+        p.el.style.display = 'none';
+        return;
+      }
+      mesh.getWorldPosition(tempVec);
+      tempVec.project(camera);
+      if (tempVec.z > 1 || tempVec.x < -1.1 || tempVec.x > 1.1 || tempVec.y < -1.1 || tempVec.y > 1.1) {
+        p.el.style.display = 'none';
+        return;
+      }
+      p.el.style.display = 'flex';
+      const screenX = (tempVec.x * 0.5 + 0.5) * w;
+      const screenY = (-tempVec.y * 0.5 + 0.5) * h;
+      p.el.style.transform = `translate(${screenX}px, ${screenY}px)`;
+    });
+  }
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// Initialize UI
+updateLanguageUI();
+showToast(UI_TEXTS.bn.welcomeToast);
+
+})();
+</script>
+</body>
+</html>
