@@ -9,13 +9,15 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SYSTEMS, ANATOMY_DATA } from '../data/anatomyData';
 import OrganDetailsSheet from '../components/OrganDetailsSheet';
+import { getTheme } from '../theme/theme';
 
 export default function SystemsScreen({ theme = 'dark' }) {
   const [selectedSystem, setSelectedSystem] = useState(null);
   const [selectedOrganData, setSelectedOrganData] = useState(null);
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  const isLight = theme === 'light';
+  const t = getTheme(theme);
+  const isLight = !t.isDark;
 
   const systemKeys = Object.keys(SYSTEMS);
 
@@ -33,11 +35,11 @@ export default function SystemsScreen({ theme = 'dark' }) {
       edges={['top']}
       style={[
         styles.container,
-        { backgroundColor: isLight ? '#ffffff' : '#0b132b' },
+        { backgroundColor: t.bg },
       ]}
     >
       {/* Screen Header */}
-      <View style={[styles.header, isLight && styles.headerLight]}>
+      <View style={[styles.header, { backgroundColor: t.headerBg, borderBottomColor: t.border }]}>
         <Text style={[styles.title, isLight && styles.titleLight]}>Anatomical Systems</Text>
         <Text style={[styles.subtitle, isLight && styles.subtitleLight]}>Explore organ networks and physiological pathways</Text>
       </View>

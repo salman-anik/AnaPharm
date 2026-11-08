@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from 'react-native';
 import { SYSTEMS } from '../data/anatomyData';
+import { getTheme } from '../theme/theme';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -18,7 +19,8 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
 
-  const isLight = theme === 'light';
+  const t = getTheme(theme);
+  const isLight = !t.isDark;
   const systemInfo = SYSTEMS[organData.system] || { name: 'Human Anatomy', icon: '🧬', color: '#38bdf8' };
 
   const tabs = [
@@ -47,7 +49,7 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
         <View
           style={[
             styles.sheetContainer,
-            isLight && styles.sheetContainerLight,
+            { backgroundColor: t.surface, borderColor: t.cardBorder },
             { height: isExpanded ? SCREEN_HEIGHT * 0.93 : SCREEN_HEIGHT * 0.48 },
           ]}
         >

@@ -2,49 +2,56 @@
 setlocal enabledelayedexpansion
 
 echo ========================================================
-echo       AnaPharm - Local Android APK Builder
+echo       AnaPharm - Official Android APK Builder (Release)
 echo ========================================================
 echo.
 
-:: 1. Setup Virtual Drive H: to bypass Windows 260-char path limits
-echo [1/4] Configuring build paths...
-subst H: /d >nul 2>&1
-subst H: "%~dp0." >nul 2>&1
-if not exist "H:\" (
-    echo [ERROR] Failed to map virtual drive H:
-    pause
-    exit /b 1
-)
-
-:: 2. Set Java 17 and Android SDK environment
-echo [2/4] Setting environment variables...
+:: 1. Set Java 17 and Android SDK environment
+echo [1/4] Setting Java 17 and Android SDK paths...
 set "JAVA_HOME=%USERPROFILE%\.jdk\jdk-17.0.21+9"
 set "ANDROID_HOME=%LOCALAPPDATA%\Android\Sdk"
 set "PATH=%JAVA_HOME%\bin;%PATH%"
 
-:: 3. Run Gradle Build inside H:
-echo [3/4] Building Standalone Android APK (Release)...
-cd /d H:\android
+:: 2. Shorten path using virtual drive P: to bypass Windows MAX_PATH (260 char) C++ Ninja limit
+echo [2/4] Initializing virtual drive for build environment...
+subst P: /d >nul 2>&1
+set "PROJ_ROOT=%~dp0"
+if "%PROJ_ROOT:~-1%"=="\" set "PROJ_ROOT=%PROJ_ROOT:~0,-1%"
+subst P: "%PROJ_ROOT%"
+
+:: 3. Run Gradle Release Build from P:\android
+echo [3/4] Building Standalone Official Release APK...
+cd /d P:\android
 call gradlew.bat assembleRelease --no-daemon
-if errorlevel 1 (
-    echo.
-    echo [ERROR] Build failed. Checking debug build fallback...
-    call gradlew.bat assembleDebug --no-daemon
-    if errorlevel 1 (
-        echo [ERROR] Both release and debug builds failed.
-        pause
-        exit /b 1
+set BUILD_STATUS=%errorlevel%
+
+:: 4. Save APK output exclusively to AnaPharm\apk folder (never desktop)
+if %BUILD_STATUS% equ 0 (
+    echo [4/4] Exporting signed release APK to AnaPharm\apk...
+    if not exist "P:\apk" mkdir "P:\apk"
+    if exist "P:\android\app\build\outputs\apk\release\app-release.apk" (
+        copy /y "P:\android\app\build\outputs\apk\release\app-release.apk" "P:\apk\AnaPharm-v1.0.0.apk" >nul
+        echo.
+        echo ========================================================
+        echo [SUCCESS] Official Signed Release APK created successfully!
+        echo Output Location: %~dp0apk\AnaPharm-v1.0.0.apk
+        echo Security Doc:    %~dp0apk\INSTALLATION_SECURITY_GUIDE.md
+        echo ========================================================
+    ) else (
+        echo [ERROR] Expected release APK file was not found.
     )
-    copy /y "H:\android\app\build\outputs\apk\debug\app-debug.apk" "%USERPROFILE%\Desktop\AnaPharm.apk" >nul
 ) else (
-    copy /y "H:\android\app\build\outputs\apk\release\app-release.apk" "%USERPROFILE%\Desktop\AnaPharm.apk" >nul
+    echo.
+    echo [ERROR] Release build encountered an error.
 )
 
-:: 4. Done
-echo.
-echo ========================================================
-echo [SUCCESS] APK built successfully!
-echo Saved to: %USERPROFILE%\Desktop\AnaPharm.apk
-echo ========================================================
+:: Clean up virtual drive
+cd /d "%~dp0"
+subst P: /d >nul 2>&1
+
+if %BUILD_STATUS% neq 0 (
+    pause
+    exit /b %BUILD_STATUS%
+)
 echo.
 pause

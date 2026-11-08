@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MEDICINE_DATABASE, MEDICINE_CATEGORIES } from '../data/medicineData';
+import { getTheme } from '../theme/theme';
 
 export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
   const [searchQuery, setSearchQuery] = useState('');
@@ -19,7 +20,8 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
   const [globalLang, setGlobalLang] = useState('bn'); // 'bn' | 'en'
   const [cardLangMap, setCardLangMap] = useState({});
 
-  const isLight = theme === 'light';
+  const t = getTheme(theme);
+  const isLight = !t.isDark;
 
   const filteredMedicines = useMemo(() => {
     return MEDICINE_DATABASE.filter((med) => {
@@ -204,11 +206,11 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
       edges={['top']}
       style={[
         styles.container,
-        { backgroundColor: isLight ? '#ffffff' : '#0f172a' },
+        { backgroundColor: t.bg },
       ]}
     >
       {/* Top Header */}
-      <View style={[styles.topHeader, isLight && styles.topHeaderLight]}>
+      <View style={[styles.topHeader, { backgroundColor: t.headerBg, borderBottomColor: t.border }]}>
         <View style={styles.titleRow}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={[styles.logoBadge, isLight && styles.logoBadgeLight]}>

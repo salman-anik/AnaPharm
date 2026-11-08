@@ -8,6 +8,7 @@ import {
   Switch,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { THEMES, getTheme } from '../theme/theme';
 
 export default function SettingsScreen({
   theme,
@@ -23,233 +24,265 @@ export default function SettingsScreen({
   explodeVal,
   setExplodeVal,
 }) {
-  const isLight = theme === 'light';
+  const t = getTheme(theme);
+  const isLight = !t.isDark;
+
+  const themeList = Object.values(THEMES);
 
   return (
     <SafeAreaView
       edges={['top']}
       style={[
         styles.container,
-        { backgroundColor: isLight ? '#ffffff' : '#0b132b' },
+        { backgroundColor: t.bg },
       ]}
     >
-      <View style={[styles.header, isLight && styles.headerLight]}>
-        <Text style={[styles.title, isLight && styles.titleLight]}>Settings & Preferences</Text>
-        <Text style={[styles.subtitle, isLight && styles.subtitleLight]}>Configure 3D graphics, physiology, and display</Text>
+      <View style={[styles.header, { backgroundColor: t.headerBg, borderBottomColor: t.border }]}>
+        <Text style={[styles.title, { color: t.text }]}>Settings & Preferences</Text>
+        <Text style={[styles.subtitle, { color: t.textMuted }]}>
+          Configure theme, 3D graphics, physiology, and system
+        </Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollList}>
-        {/* CARD 1: THEME & APPEARANCE */}
-        <View style={[styles.card, isLight && styles.cardLight]}>
+        {/* CARD 1: MULTI-THEME & APPEARANCE */}
+        <View style={[styles.card, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>🎨</Text>
             <View>
-              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>Theme & Appearance</Text>
-              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Viewport atmosphere and background</Text>
+              <Text style={[styles.cardHeading, { color: t.text }]}>Theme & Appearance</Text>
+              <Text style={[styles.cardSub, { color: t.textMuted }]}>
+                Choose your preferred atmosphere (Dark Dark, Blue Dark, etc.)
+              </Text>
             </View>
           </View>
 
-          <View style={styles.themeOptionsRow}>
-            {['dark', 'light'].map((mode) => (
-              <TouchableOpacity
-                key={mode}
-                style={[
-                  styles.themeChip,
-                  isLight && styles.themeChipLight,
-                  theme === mode && (isLight ? styles.themeChipActiveLight : styles.themeChipActive),
-                ]}
-                onPress={() => setTheme(mode)}
-              >
-                <Text
+          <View style={styles.themeGrid}>
+            {themeList.map((item) => {
+              const isSelected = theme === item.id;
+              return (
+                <TouchableOpacity
+                  key={item.id}
                   style={[
-                    styles.themeChipText,
-                    isLight && styles.themeChipTextLight,
-                    theme === mode && (isLight ? styles.themeChipTextActiveLight : styles.themeChipTextActive),
+                    styles.themeOptionCard,
+                    {
+                      backgroundColor: item.card,
+                      borderColor: isSelected ? item.accent : item.cardBorder,
+                      borderWidth: isSelected ? 2 : 1,
+                    },
                   ]}
+                  onPress={() => setTheme(item.id)}
+                  activeOpacity={0.8}
                 >
-                  {mode === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}
-                </Text>
-              </TouchableOpacity>
-            ))}
+                  <View style={styles.themeOptionTop}>
+                    <Text style={styles.themeOptionIcon}>{item.icon}</Text>
+                    {isSelected && (
+                      <View style={[styles.activeCheckBadge, { backgroundColor: item.accent }]}>
+                        <Text style={styles.activeCheckText}>✓</Text>
+                      </View>
+                    )}
+                  </View>
+                  <Text style={[styles.themeOptionLabel, { color: item.text }]}>
+                    {item.label}
+                  </Text>
+                  <Text style={[styles.themeOptionSub, { color: item.textMuted }]}>
+                    {item.subLabel}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
         </View>
 
         {/* CARD 2: 3D VIEW MODES */}
-        <View style={[styles.card, isLight && styles.cardLight]}>
+        <View style={[styles.card, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>👁️</Text>
             <View>
-              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>3D View Controls</Text>
-              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Camera dynamics and visual effects</Text>
+              <Text style={[styles.cardHeading, { color: t.text }]}>3D View Controls</Text>
+              <Text style={[styles.cardSub, { color: t.textMuted }]}>Camera dynamics and visual effects</Text>
             </View>
           </View>
 
           <View style={styles.settingRow}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Auto-Rotate Model</Text>
-              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Smooth 360° continuous turntable rotation</Text>
+              <Text style={[styles.rowLabel, { color: t.text }]}>Auto-Rotate Model</Text>
+              <Text style={[styles.rowDesc, { color: t.textMuted }]}>Smooth 360° continuous turntable rotation</Text>
             </View>
             <Switch
               value={autoRotate}
               onValueChange={setAutoRotate}
-              trackColor={{ false: isLight ? '#cbd5e1' : '#334155', true: '#0284c7' }}
-              thumbColor={autoRotate ? '#38bdf8' : (isLight ? '#f8fafc' : '#cbd5e1')}
+              trackColor={{ false: t.isDark ? '#334155' : '#cbd5e1', true: t.accent }}
+              thumbColor={autoRotate ? '#ffffff' : (t.isDark ? '#94a3b8' : '#f8fafc')}
+            />
+          </View>
+
+          <View style={[styles.settingRow, styles.rowBorderTop, { borderTopColor: t.border }]}>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.rowLabel, { color: t.text }]}>X-Ray Transparency Mode</Text>
+              <Text style={[styles.rowDesc, { color: t.textMuted }]}>Semi-transparent body surface for internal view</Text>
+            </View>
+            <Switch
+              value={xrayMode}
+              onValueChange={setXrayMode}
+              trackColor={{ false: t.isDark ? '#334155' : '#cbd5e1', true: t.accent }}
+              thumbColor={xrayMode ? '#ffffff' : (t.isDark ? '#94a3b8' : '#f8fafc')}
             />
           </View>
         </View>
 
         {/* CARD 3: PHYSIOLOGY SIMULATION */}
-        <View style={[styles.card, isLight && styles.cardLight]}>
+        <View style={[styles.card, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>💓</Text>
             <View>
-              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>Physiology Simulation</Text>
-              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Dynamic cardiac and respiratory rates</Text>
+              <Text style={[styles.cardHeading, { color: t.text }]}>Physiology Simulation</Text>
+              <Text style={[styles.cardSub, { color: t.textMuted }]}>Dynamic cardiac and respiratory rates</Text>
             </View>
           </View>
 
           {/* BPM Stepper */}
           <View style={styles.stepperRow}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Heart Rate</Text>
-              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Cardiac cycle speed in real time</Text>
+              <Text style={[styles.rowLabel, { color: t.text }]}>Heart Rate</Text>
+              <Text style={[styles.rowDesc, { color: t.textMuted }]}>Cardiac cycle speed in real time</Text>
             </View>
-            <View style={[styles.stepperControls, isLight && styles.stepperControlsLight]}>
+            <View style={[styles.stepperControls, { backgroundColor: t.surfaceSecondary }]}>
               <TouchableOpacity
-                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
+                style={[styles.stepBtn, { backgroundColor: t.cardBorder }]}
                 onPress={() => setBpm((prev) => Math.max(40, prev - 5))}
               >
-                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>−</Text>
+                <Text style={[styles.stepBtnText, { color: t.text }]}>−</Text>
               </TouchableOpacity>
-              <Text style={[styles.stepValue, isLight && styles.stepValueLight]}>
-                {bpm} <Text style={[styles.stepUnit, isLight && styles.stepUnitLight]}>BPM</Text>
+              <Text style={[styles.stepValue, { color: t.accent }]}>
+                {bpm} <Text style={[styles.stepUnit, { color: t.textMuted }]}>BPM</Text>
               </Text>
               <TouchableOpacity
-                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
+                style={[styles.stepBtn, { backgroundColor: t.cardBorder }]}
                 onPress={() => setBpm((prev) => Math.min(180, prev + 5))}
               >
-                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>+</Text>
+                <Text style={[styles.stepBtnText, { color: t.text }]}>+</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Respiration Stepper */}
-          <View style={[styles.stepperRow, styles.rowBorderTop, isLight && styles.rowBorderTopLight]}>
+          <View style={[styles.stepperRow, styles.rowBorderTop, { borderTopColor: t.border }]}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Respiration Rate</Text>
-              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Pulmonary ventilation cycle speed</Text>
+              <Text style={[styles.rowLabel, { color: t.text }]}>Respiration Rate</Text>
+              <Text style={[styles.rowDesc, { color: t.textMuted }]}>Pulmonary ventilation cycle speed</Text>
             </View>
-            <View style={[styles.stepperControls, isLight && styles.stepperControlsLight]}>
+            <View style={[styles.stepperControls, { backgroundColor: t.surfaceSecondary }]}>
               <TouchableOpacity
-                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
+                style={[styles.stepBtn, { backgroundColor: t.cardBorder }]}
                 onPress={() => setRespRate((prev) => Math.max(8, prev - 2))}
               >
-                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>−</Text>
+                <Text style={[styles.stepBtnText, { color: t.text }]}>−</Text>
               </TouchableOpacity>
-              <Text style={[styles.stepValue, isLight && styles.stepValueLight]}>
-                {respRate} <Text style={[styles.stepUnit, isLight && styles.stepUnitLight]}>RPM</Text>
+              <Text style={[styles.stepValue, { color: t.accent }]}>
+                {respRate} <Text style={[styles.stepUnit, { color: t.textMuted }]}>RPM</Text>
               </Text>
               <TouchableOpacity
-                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
+                style={[styles.stepBtn, { backgroundColor: t.cardBorder }]}
                 onPress={() => setRespRate((prev) => Math.min(40, prev + 2))}
               >
-                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>+</Text>
+                <Text style={[styles.stepBtnText, { color: t.text }]}>+</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
         {/* CARD 4: DISSECTION & EXPLODED VIEW */}
-        <View style={[styles.card, isLight && styles.cardLight]}>
+        <View style={[styles.card, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>🔬</Text>
             <View>
-              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>Dissection & Exploded View</Text>
-              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Separate anatomical layers along normal vectors</Text>
+              <Text style={[styles.cardHeading, { color: t.text }]}>Dissection & Exploded View</Text>
+              <Text style={[styles.cardSub, { color: t.textMuted }]}>Separate anatomical layers along normal vectors</Text>
             </View>
           </View>
 
           <View style={styles.stepperRow}>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Explosion Level</Text>
-              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Distance separating organ groups</Text>
+              <Text style={[styles.rowLabel, { color: t.text }]}>Explosion Level</Text>
+              <Text style={[styles.rowDesc, { color: t.textMuted }]}>Distance separating organ groups</Text>
             </View>
-            <View style={[styles.stepperControls, isLight && styles.stepperControlsLight]}>
+            <View style={[styles.stepperControls, { backgroundColor: t.surfaceSecondary }]}>
               <TouchableOpacity
-                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
+                style={[styles.stepBtn, { backgroundColor: t.cardBorder }]}
                 onPress={() => setExplodeVal((prev) => Math.max(0, +(prev - 0.2).toFixed(1)))}
               >
-                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>−</Text>
+                <Text style={[styles.stepBtnText, { color: t.text }]}>−</Text>
               </TouchableOpacity>
-              <Text style={[styles.stepValue, isLight && styles.stepValueLight]}>{Math.round(explodeVal * 100)}%</Text>
+              <Text style={[styles.stepValue, { color: t.accent }]}>{Math.round(explodeVal * 100)}%</Text>
               <TouchableOpacity
-                style={[styles.stepBtn, isLight && styles.stepBtnLight]}
+                style={[styles.stepBtn, { backgroundColor: t.cardBorder }]}
                 onPress={() => setExplodeVal((prev) => Math.min(1, +(prev + 0.2).toFixed(1)))}
               >
-                <Text style={[styles.stepBtnText, isLight && styles.stepBtnTextLight]}>+</Text>
+                <Text style={[styles.stepBtnText, { color: t.text }]}>+</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
         {/* CARD 5: DEVELOPER & SYSTEM CREDITS */}
-        <View style={[styles.card, isLight && styles.cardLight]}>
+        <View style={[styles.card, { backgroundColor: t.card, borderColor: t.cardBorder }]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>👨‍💻</Text>
             <View>
-              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>Developer Details</Text>
-              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Created & Developed by Salman Anik</Text>
+              <Text style={[styles.cardHeading, { color: t.text }]}>Developer Details</Text>
+              <Text style={[styles.cardSub, { color: t.textMuted }]}>Created & Developed by Salman Anik</Text>
             </View>
           </View>
 
-          <View style={[styles.devBadgeRow, isLight && styles.devBadgeRowLight]}>
-            <View style={styles.devAvatar}>
+          <View style={[styles.devBadgeRow, { backgroundColor: t.surfaceSecondary }]}>
+            <View style={[styles.devAvatar, { backgroundColor: t.accent, borderColor: t.accentLight }]}>
               <Text style={styles.devAvatarText}>SA</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.devName, isLight && styles.devNameLight]}>Salman Anik</Text>
-              <Text style={styles.devHandle}>@salmananik</Text>
-              <Text style={[styles.devRole, isLight && styles.devRoleLight]}>
+              <Text style={[styles.devName, { color: t.text }]}>Salman Anik</Text>
+              <Text style={[styles.devHandle, { color: t.accent }]}>@salmananik</Text>
+              <Text style={[styles.devRole, { color: t.textMuted }]}>
                 Lead Developer & Medical Informatics
               </Text>
             </View>
           </View>
 
-          <View style={[styles.devInfoList, isLight && styles.devInfoListLight]}>
-            <View style={styles.devInfoRow}>
-              <Text style={styles.devInfoLabel}>Author</Text>
-              <Text style={[styles.devInfoValue, { color: '#0284c7', fontWeight: '700' }]}>
+          <View style={[styles.devInfoList, { backgroundColor: t.surface, borderColor: t.border }]}>
+            <View style={[styles.devInfoRow, { borderBottomColor: t.border }]}>
+              <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>Author</Text>
+              <Text style={[styles.devInfoValue, { color: t.accent, fontWeight: '700' }]}>
                 salmananik
               </Text>
             </View>
-            <View style={styles.devInfoRow}>
-              <Text style={styles.devInfoLabel}>GitHub</Text>
-              <Text style={[styles.devInfoValue, styles.devLinkText]} numberOfLines={1}>
+            <View style={[styles.devInfoRow, { borderBottomColor: t.border }]}>
+              <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>GitHub</Text>
+              <Text style={[styles.devInfoValue, { color: t.accent }]} numberOfLines={1}>
                 github.com/salman-anik/AnaPharm
               </Text>
             </View>
-            <View style={styles.devInfoRow}>
-              <Text style={styles.devInfoLabel}>Clinical DB</Text>
-              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]} numberOfLines={1}>
-                2,594 Generics (33k+ Brands)
+            <View style={[styles.devInfoRow, { borderBottomColor: t.border }]}>
+              <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>Clinical DB</Text>
+              <Text style={[styles.devInfoValue, { color: t.text }]} numberOfLines={1}>
+                25 Diseases + 2,594 Generics (33k+ Brands)
               </Text>
             </View>
             <View style={[styles.devInfoRow, { borderBottomWidth: 0 }]}>
-              <Text style={styles.devInfoLabel}>App Version</Text>
-              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]}>
-                1.0.0 (AnaPharm Mobile)
+              <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>App Version</Text>
+              <Text style={[styles.devInfoValue, { color: t.text }]}>
+                1.0.0 (Release Verified)
               </Text>
             </View>
           </View>
         </View>
 
         {/* CARD 6: MEDICAL ADVISORY DISCLAIMER */}
-        <View style={[styles.card, styles.disclaimerCard, isLight && styles.disclaimerCardLight]}>
-          <Text style={[styles.disclaimerTitle, isLight && styles.disclaimerTitleLight]}>
+        <View style={[styles.card, styles.disclaimerCard, { backgroundColor: t.isDark ? '#261a06' : '#fffbeb', borderColor: '#f59e0b' }]}>
+          <Text style={[styles.disclaimerTitle, { color: '#f59e0b' }]}>
             ⚠️ Educational & Clinical Reference Notice
           </Text>
-          <Text style={[styles.disclaimerBody, isLight && styles.disclaimerBodyLight]}>
-            The anatomical illustrations, diseases, solutions, and pharmaceutical classes provided are strictly for educational and scientific reference. Always consult a board-certified medical specialist for personal diagnoses and prescriptions.
+          <Text style={[styles.disclaimerBody, { color: t.isDark ? '#fed7aa' : '#78350f' }]}>
+            AnaPharm provides interactive 3D human anatomy, disease etiologies, symptoms, and pharmacological references for educational and clinical guidance only. It does not substitute professional medical consultation, diagnosis, or prescription. Always consult a registered physician for acute symptoms.
           </Text>
         </View>
       </ScrollView>
@@ -260,302 +293,183 @@ export default function SettingsScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
   },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 14,
-    paddingBottom: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
   },
   title: {
-    color: '#ffffff',
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: '800',
+    letterSpacing: -0.3,
   },
   subtitle: {
-    color: '#94a3b8',
     fontSize: 13,
     marginTop: 2,
+    fontWeight: '500',
   },
   scrollList: {
     padding: 16,
-    gap: 14,
+    paddingBottom: 40,
   },
   card: {
-    backgroundColor: '#0f172a',
     borderRadius: 16,
-    padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    padding: 16,
+    marginBottom: 16,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
     marginBottom: 14,
   },
   cardIcon: {
-    fontSize: 22,
+    fontSize: 24,
+    marginRight: 12,
   },
   cardHeading: {
-    color: '#ffffff',
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 16,
+    fontWeight: '800',
   },
   cardSub: {
-    color: '#64748b',
     fontSize: 12,
-    marginTop: 1,
+    marginTop: 2,
   },
-  themeOptionsRow: {
+  themeGrid: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 10,
+    marginTop: 4,
   },
-  themeChip: {
-    flex: 1,
-    paddingVertical: 10,
+  themeOptionCard: {
+    width: '48%',
     borderRadius: 12,
-    backgroundColor: '#1e293b',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    padding: 12,
+  },
+  themeOptionTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     alignItems: 'center',
+    marginBottom: 6,
   },
-  themeChipActive: {
-    backgroundColor: 'rgba(14, 165, 233, 0.2)',
-    borderColor: '#38bdf8',
+  themeOptionIcon: {
+    fontSize: 22,
   },
-  themeChipText: {
-    color: '#94a3b8',
-    fontSize: 13,
-    fontWeight: '600',
+  activeCheckBadge: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  themeChipTextActive: {
-    color: '#38bdf8',
+  activeCheckText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '800',
+  },
+  themeOptionLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+    marginBottom: 2,
+  },
+  themeOptionSub: {
+    fontSize: 10,
+    lineHeight: 14,
   },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 8,
+    paddingVertical: 10,
+  },
+  rowLabel: {
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  rowDesc: {
+    fontSize: 12,
+    marginTop: 2,
   },
   rowBorderTop: {
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.05)',
+    marginTop: 6,
     paddingTop: 12,
-    marginTop: 4,
-  },
-  rowLabel: {
-    color: '#e2e8f0',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  rowDesc: {
-    color: '#64748b',
-    fontSize: 12,
-    marginTop: 2,
   },
   stepperRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: 10,
   },
   stepperControls: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
+    borderRadius: 10,
     padding: 4,
-    gap: 8,
   },
   stepBtn: {
     width: 32,
     height: 32,
     borderRadius: 8,
-    backgroundColor: '#334155',
     alignItems: 'center',
     justifyContent: 'center',
   },
   stepBtnText: {
-    color: '#ffffff',
     fontSize: 18,
-    fontWeight: '700',
+    fontWeight: '800',
     lineHeight: 20,
   },
   stepValue: {
-    color: '#38bdf8',
-    fontWeight: '700',
     fontSize: 14,
-    minWidth: 54,
+    fontWeight: '800',
+    paddingHorizontal: 12,
     textAlign: 'center',
+    minWidth: 70,
   },
   stepUnit: {
-    color: '#64748b',
     fontSize: 10,
     fontWeight: '600',
-  },
-  disclaimerCard: {
-    backgroundColor: 'rgba(245, 158, 11, 0.08)',
-    borderColor: 'rgba(245, 158, 11, 0.25)',
-  },
-  disclaimerTitle: {
-    color: '#fbbf24',
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 6,
-  },
-  disclaimerBody: {
-    color: '#cbd5e1',
-    fontSize: 12,
-    lineHeight: 18,
-  },
-  // Light Theme Styles
-  containerLight: {
-    backgroundColor: '#f8fafc',
-  },
-  headerLight: {
-    backgroundColor: '#ffffff',
-    borderBottomColor: '#e2e8f0',
-  },
-  titleLight: {
-    color: '#0f172a',
-  },
-  subtitleLight: {
-    color: '#64748b',
-  },
-  cardLight: {
-    backgroundColor: '#ffffff',
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  cardHeadingLight: {
-    color: '#0f172a',
-  },
-  cardSubLight: {
-    color: '#64748b',
-  },
-  themeChipLight: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#e2e8f0',
-  },
-  themeChipActiveLight: {
-    backgroundColor: 'rgba(2, 132, 199, 0.12)',
-    borderColor: '#0284c7',
-  },
-  themeChipTextLight: {
-    color: '#64748b',
-  },
-  themeChipTextActiveLight: {
-    color: '#0284c7',
-  },
-  rowLabelLight: {
-    color: '#0f172a',
-  },
-  rowDescLight: {
-    color: '#64748b',
-  },
-  rowBorderTopLight: {
-    borderTopColor: '#f1f5f9',
-  },
-  stepperControlsLight: {
-    backgroundColor: '#f1f5f9',
-  },
-  stepBtnLight: {
-    backgroundColor: '#e2e8f0',
-  },
-  stepBtnTextLight: {
-    color: '#0f172a',
-  },
-  stepValueLight: {
-    color: '#0284c7',
-  },
-  stepUnitLight: {
-    color: '#64748b',
-  },
-  disclaimerCardLight: {
-    backgroundColor: 'rgba(245, 158, 11, 0.1)',
-    borderColor: 'rgba(245, 158, 11, 0.3)',
-  },
-  disclaimerTitleLight: {
-    color: '#b45309',
-  },
-  disclaimerBodyLight: {
-    color: '#475569',
-  },
-  // Developer Section Styles
-  developerCard: {
-    backgroundColor: 'rgba(14, 165, 233, 0.08)',
-    borderColor: 'rgba(14, 165, 233, 0.28)',
-  },
-  developerCardLight: {
-    backgroundColor: '#ffffff',
-    borderColor: '#e2e8f0',
   },
   devBadgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
-    backgroundColor: '#1e293b',
-    borderRadius: 14,
+    borderRadius: 12,
     padding: 12,
     marginBottom: 12,
   },
-  devBadgeRowLight: {
-    backgroundColor: '#f1f5f9',
-  },
   devAvatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: '#0284c7',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#38bdf8',
+    borderWidth: 1.5,
+    marginRight: 12,
   },
   devAvatarText: {
     color: '#ffffff',
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: '800',
   },
   devName: {
-    color: '#ffffff',
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '700',
   },
-  devNameLight: {
-    color: '#0f172a',
-  },
   devHandle: {
-    color: '#38bdf8',
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '600',
     marginTop: 1,
   },
   devRole: {
-    color: '#94a3b8',
     fontSize: 11,
-    marginTop: 3,
-  },
-  devRoleLight: {
-    color: '#64748b',
+    marginTop: 2,
   },
   devInfoList: {
-    backgroundColor: '#0b132b',
     borderRadius: 12,
+    borderWidth: 1,
     paddingHorizontal: 12,
     paddingVertical: 4,
-  },
-  devInfoListLight: {
-    backgroundColor: '#f8fafc',
-    borderWidth: 1,
-    borderColor: '#e2e8f0',
   },
   devInfoRow: {
     flexDirection: 'row',
@@ -563,26 +477,30 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-    gap: 12,
   },
   devInfoLabel: {
-    color: '#64748b',
     fontSize: 12,
     fontWeight: '600',
-    minWidth: 75,
+    minWidth: 80,
   },
   devInfoValue: {
-    color: '#f8fafc',
     fontSize: 12,
     fontWeight: '600',
     flex: 1,
     textAlign: 'right',
   },
-  devInfoValueLight: {
-    color: '#0f172a',
+  disclaimerCard: {
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 16,
   },
-  devLinkText: {
-    color: '#0284c7',
+  disclaimerTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    marginBottom: 6,
+  },
+  disclaimerBody: {
+    fontSize: 12,
+    lineHeight: 18,
   },
 });

@@ -15,6 +15,22 @@ export default function Model3DView({
 }) {
   const webViewRef = useRef(null);
 
+  const getBgCssForTheme = (t) => {
+    if (t === 'light') return '#e2e8f0';
+    if (t === 'blue_dark') return '#020617';
+    if (t === 'purple_dark') return '#090414';
+    if (t === 'emerald_dark') return '#02120b';
+    return '#000000'; // Pure Dark (Not blue!)
+  };
+
+  const getBgHexForTheme = (t) => {
+    if (t === 'light') return '0xe2e8f0';
+    if (t === 'blue_dark') return '0x020617';
+    if (t === 'purple_dark') return '0x090414';
+    if (t === 'emerald_dark') return '0x02120b';
+    return '0x000000'; // Pure Dark (Not blue!)
+  };
+
   // Send state updates into WebView Three.js scene via both postMessage and injectJavaScript
   useEffect(() => {
     if (!webViewRef.current) return;
@@ -58,7 +74,7 @@ export default function Model3DView({
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
       width:100%; height:100%; overflow:hidden;
-      background-color: ${theme === 'light' ? '#e2e8f0' : '#020617'}; touch-action:none;
+      background-color: ${getBgCssForTheme(theme)}; touch-action:none;
       user-select:none; -webkit-user-select:none;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
@@ -181,7 +197,7 @@ export default function Model3DView({
     function initScene() {
       const canvas = document.getElementById('canvas3d');
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(${theme === 'light' ? '0xe2e8f0' : '0x020617'});
+      scene.background = new THREE.Color(${getBgHexForTheme(theme)});
 
       const w = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0, 320);
       const h = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0, 480);
@@ -508,12 +524,21 @@ export default function Model3DView({
       scene.add(bloodPoints);
     }
 
+    function getThemeHex(mode) {
+      if (mode === 'light') return 0xe2e8f0;
+      if (mode === 'blue_dark') return 0x020617;
+      if (mode === 'purple_dark') return 0x090414;
+      if (mode === 'emerald_dark') return 0x02120b;
+      return 0x000000;
+    }
+
     function applyTheme(themeMode) {
       config.theme = themeMode;
       const isLight = (themeMode === 'light');
+      const bgHex = getThemeHex(themeMode);
 
       if (scene && !config.xrayMode) {
-        scene.background.setHex(isLight ? 0xe2e8f0 : 0x020617);
+        scene.background.setHex(bgHex);
       }
 
       if (grid) {
@@ -589,7 +614,7 @@ export default function Model3DView({
         }
       });
       if (scene) {
-        scene.background.setHex(enable ? 0x000814 : (config.theme === 'light' ? 0xe2e8f0 : 0x020617));
+        scene.background.setHex(enable ? 0x000814 : getThemeHex(config.theme));
       }
     }
 

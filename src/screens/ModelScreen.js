@@ -11,6 +11,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Model3DView from '../components/Model3DView';
 import OrganDetailsSheet from '../components/OrganDetailsSheet';
 import { ANATOMY_DATA, SYSTEMS } from '../data/anatomyData';
+import { getTheme } from '../theme/theme';
 
 export default function ModelScreen({
   bpm,
@@ -26,7 +27,8 @@ export default function ModelScreen({
   const [sheetVisible, setSheetVisible] = useState(false);
   const [focusRegion, setFocusRegion] = useState('all');
 
-  const isLight = theme === 'light';
+  const t = getTheme(theme);
+  const isLight = !t.isDark;
   const selectedData = selectedOrganKey ? ANATOMY_DATA[selectedOrganKey] : null;
 
   const handleSelectOrgan = (organName) => {
@@ -54,11 +56,11 @@ export default function ModelScreen({
       edges={['top']}
       style={[
         styles.container,
-        { backgroundColor: isLight ? '#ffffff' : '#0b132b' },
+        { backgroundColor: t.bg },
       ]}
     >
       {/* Top Bar */}
-      <View style={[styles.topBar, isLight && styles.topBarLight]}>
+      <View style={[styles.topBar, { backgroundColor: t.headerBg, borderBottomColor: t.border }]}>
         <View style={styles.brandRow}>
           <View style={[styles.logoBadge, isLight && styles.logoBadgeLight]}>
             <Image
