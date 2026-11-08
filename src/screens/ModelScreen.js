@@ -5,6 +5,7 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Model3DView from '../components/Model3DView';
@@ -60,7 +61,11 @@ export default function ModelScreen({
       <View style={[styles.topBar, isLight && styles.topBarLight]}>
         <View style={styles.brandRow}>
           <View style={[styles.logoBadge, isLight && styles.logoBadgeLight]}>
-            <Text style={styles.brandLogo}>🧬</Text>
+            <Image
+              source={require('../../assets/icon.png')}
+              style={{ width: 34, height: 34, borderRadius: 17 }}
+              resizeMode="cover"
+            />
           </View>
           <View>
             <Text style={[styles.brandText, isLight && styles.brandTextLight]}>AnaPharm</Text>

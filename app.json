@@ -4,19 +4,27 @@
     "slug": "anapharm",
     "version": "1.0.0",
     "orientation": "portrait",
+    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
     "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
       "backgroundColor": "#020617"
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anapharm.app"
+      "bundleIdentifier": "com.anapharm.app",
+      "icon": "./assets/icon.png"
     },
     "android": {
       "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#020617"
       },
       "package": "com.anapharm.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
     }
   }
 }

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   FlatList,
+  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MEDICINE_DATABASE, MEDICINE_CATEGORIES } from '../data/medicineData';
@@ -211,7 +212,11 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
         <View style={styles.titleRow}>
           <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <View style={[styles.logoBadge, isLight && styles.logoBadgeLight]}>
-              <Text style={styles.logoText}>💊</Text>
+              <Image
+                source={require('../../assets/icon.png')}
+                style={{ width: 34, height: 34, borderRadius: 17 }}
+                resizeMode="cover"
+              />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.screenTitle, isLight && styles.screenTitleLight]}>AnaPharm</Text>
