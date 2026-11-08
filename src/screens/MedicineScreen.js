@@ -138,6 +138,30 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
                 </Text>
               </View>
             ) : null}
+
+            {/* Strengths & Forms */}
+            {item.strengths && item.strengths.length > 0 ? (
+              <View style={[styles.detailBlock, { borderBottomWidth: 0, marginTop: 6 }]}>
+                <Text style={[styles.detailTitle, { color: isLight ? '#059669' : '#10b981' }]}>
+                  📏 উপলব্ধ মাত্রা ও ফরম (Available Strengths & Forms):
+                </Text>
+                <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
+                  {item.strengths.join(', ')} {item.dosage_forms && item.dosage_forms.length > 0 ? `• [${item.dosage_forms.slice(0, 4).join(', ')}]` : ''}
+                </Text>
+              </View>
+            ) : null}
+
+            {/* Pregnancy Category */}
+            {item.pregnancy_category ? (
+              <View style={[styles.detailBlock, { borderBottomWidth: 0, marginTop: 6 }]}>
+                <Text style={[styles.detailTitle, { color: isLight ? '#7c3aed' : '#a855f7' }]}>
+                  🤰 গর্ভকালীন নিরাপত্তা (FDA Pregnancy Category):
+                </Text>
+                <Text style={[styles.detailText, isLight && styles.detailTextLight, { fontWeight: '700' }]}>
+                  Category {item.pregnancy_category}
+                </Text>
+              </View>
+            ) : null}
           </View>
         ) : null}
       </View>
