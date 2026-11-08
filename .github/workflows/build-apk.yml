@@ -26,9 +26,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Install Dependencies
         run: npm install
 
@@ -37,10 +34,10 @@ jobs:
 
       - name: Build Standalone APK
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon || ./gradlew assembleDebug --no-daemon
+        run: ./gradlew assembleDebug --no-daemon
 
       - name: Upload Standalone APK for Sharing
         uses: actions/upload-artifact@v4
         with:
           name: AnaPharm-Android-APK
-          path: android/app/build/outputs/apk/*/*.apk
+          path: android/app/build/outputs/apk/debug/*.apk
