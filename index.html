@@ -807,36 +807,49 @@ canvas { display: block; width: 100%; height: 100%; }
 
 /* Mobile Slide-Up Drawers (App Sheets) */
 .mobile-app-sheet {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
   background: var(--bg-panel);
   backdrop-filter: var(--blur);
   -webkit-backdrop-filter: var(--blur);
   border-top: 1px solid var(--border-focus);
-  border-radius: 22px 22px 0 0;
-  box-shadow: 0 -12px 35px rgba(0, 0, 0, 0.7);
-  display: flex;
-  flex-direction: column;
-  z-index: 45;
+  border-radius: 24px 24px 0 0;
+  box-shadow: 0 -12px 35px rgba(0, 0, 0, 0.75);
+  display: flex !important;
+  flex-direction: column !important;
+  z-index: 55;
   transform: translateY(105%);
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  max-height: 82vh;
-  padding-bottom: calc(65px + var(--safe-bottom));
+  height: 82vh !important;
+  max-height: 85vh !important;
+  overflow: hidden !important;
+  touch-action: pan-y !important;
+  box-sizing: border-box;
+  pointer-events: auto;
 }
 .mobile-app-sheet.open {
-  transform: translateY(0);
+  transform: translateY(0) !important;
+}
+.sheet-drag-handle {
+  width: 44px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.35);
+  border-radius: 3px;
+  margin: 10px auto 4px;
+  flex-shrink: 0;
 }
 .sheet-header {
-  padding: 12px 18px 10px;
+  padding: 10px 18px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0 !important;
 }
 .sheet-header-title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-main);
   display: flex;
@@ -844,8 +857,8 @@ canvas { display: block; width: 100%; height: 100%; }
   gap: 8px;
 }
 .sheet-close-btn {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--radius-full);
   background: var(--bg-chip);
   border: 1px solid var(--border);
@@ -853,17 +866,127 @@ canvas { display: block; width: 100%; height: 100%; }
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
+  flex-shrink: 0;
 }
 .sheet-body {
-  flex: 1;
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
-  padding: 14px 18px;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  overflow-y: scroll !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  overscroll-behavior: contain;
+  padding: 14px 16px calc(90px + var(--safe-bottom)) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 12px !important;
+  box-sizing: border-box !important;
+}
+.sheet-body .detail-card {
+  flex-shrink: 0;
+  overflow: visible !important;
+}
+
+/* Card-based Mobile Settings */
+.setting-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  position: relative;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+.setting-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, var(--accent), var(--purple));
+}
+.setting-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding-bottom: 8px;
+}
+.setting-card-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.setting-card-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: rgba(14, 165, 233, 0.15);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+}
+.setting-card-heading {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.2;
+}
+.setting-card-sub {
+  font-size: 10.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+.setting-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.setting-row-info {
+  flex: 1;
+}
+.setting-row-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+.setting-row-desc {
+  font-size: 10.5px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+.setting-toggle-btn {
+  padding: 5px 12px;
+  font-size: 11.5px;
+  border-radius: var(--radius-full);
+  min-width: 65px;
+  text-align: center;
+}
+.setting-range-slider {
+  width: 100%;
+  accent-color: var(--accent);
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-surface);
+  cursor: pointer;
+  margin-top: 4px;
 }
 
 /* Native Mobile Bottom Base Navbar (Instagram/Apple Health Style) */
@@ -1011,14 +1134,14 @@ canvas { display: block; width: 100%; height: 100%; }
         <span style="font-size:13px;">🎯</span>
         <span style="font-size:11px;font-weight:600;color:var(--text-dim);">Focus:</span>
         <select id="dt-camera-select" class="clean-select" aria-label="Select Body Region">
-          <option value="full">🧍 Full Body (পুরো শরীর)</option>
-          <option value="head">🧠 Head & Brain (মাথা ও মস্তিষ্ক)</option>
-          <option value="thorax">🫁 Thorax & Heart (বক্ষ ও হৃৎপিণ্ড)</option>
-          <option value="abdomen">🫄 Abdomen (উদর ও যকৃত)</option>
-          <option value="pelvis">🦴 Pelvis (শ্রোণিদেশ)</option>
-          <option value="arms">💪 Upper Limbs (হাত)</option>
-          <option value="legs">🦵 Lower Limbs (পা ও উরু)</option>
-          <option value="spine">🧬 Spine (মেরুদণ্ড)</option>
+          <option value="full">🧍 Full Body</option>
+          <option value="head">🧠 Head & Brain</option>
+          <option value="thorax">🫁 Thorax & Heart</option>
+          <option value="abdomen">🫄 Abdomen</option>
+          <option value="pelvis">🦴 Pelvis</option>
+          <option value="arms">💪 Upper Limbs</option>
+          <option value="legs">🦵 Lower Limbs</option>
+          <option value="spine">🧬 Spine & Back</option>
         </select>
       </div>
 
@@ -1031,7 +1154,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <button class="btn" id="dt-btn-labels" title="Toggle 3D Pins">🏷️ Pins</button>
         <button class="btn" id="dt-btn-theme" title="Cycle Theme">🎨</button>
         <button class="btn btn-icon" id="dt-btn-audio" title="Toggle Stethoscope Heart Audio">🔊</button>
-        <button class="btn" id="dt-btn-lang" title="Toggle Language">🌐 <span id="dt-lbl-lang">বাংলা বিবরণ</span></button>
+        <button class="btn" id="dt-btn-lang" title="Toggle Description Language">🌐 <span id="dt-lbl-lang">Bangla Details</span></button>
         <button class="btn btn-icon" id="dt-btn-snapshot" title="Take HD Screenshot">📸</button>
       </div>
     </header>
@@ -1082,8 +1205,8 @@ canvas { display: block; width: 100%; height: 100%; }
 
       <!-- Action Buttons -->
       <div class="mobile-top-actions">
-        <button class="mobile-btn" id="mb-btn-lang" title="Toggle Language (বাং / EN)">
-          <span>🌐</span> <strong id="mb-lbl-lang">বাং</strong>
+        <button class="mobile-btn" id="mb-btn-lang" title="Toggle Description Language">
+          <span>🌐</span> <strong id="mb-lbl-lang">BN</strong>
         </button>
         <button class="mobile-btn btn-icon" id="mb-btn-audio" title="Heart Sound"><span>🔊</span></button>
         <button class="mobile-btn btn-icon" id="mb-btn-theme" title="Theme"><span>🎨</span></button>
@@ -1101,7 +1224,7 @@ canvas { display: block; width: 100%; height: 100%; }
       </div>
       <div class="peek-btn-group">
         <button class="btn" id="mb-btn-peek-focus" style="padding:5px 8px;font-size:11px;">🔍 Zoom</button>
-        <button class="btn active" id="mb-btn-peek-details" style="padding:5px 10px;font-size:11px;">📋 বিস্তারিত</button>
+        <button class="btn active" id="mb-btn-peek-details" style="padding:5px 10px;font-size:11px;">📋 Details</button>
       </div>
     </div>
 
@@ -1125,10 +1248,10 @@ canvas { display: block; width: 100%; height: 100%; }
     <button class="sidebar-toggle" id="sidebar-toggle" title="Toggle Sidebar">◀</button>
     
     <nav class="sidebar-tabs">
-      <button class="tab-btn active" data-tab="info">Inspect (বিশ্লেষণ)</button>
-      <button class="tab-btn" data-tab="systems">Systems (অঙ্গতন্ত্র)</button>
-      <button class="tab-btn" data-tab="tools">Tools (টুলস)</button>
-      <button class="tab-btn" data-tab="directory">Directory (তালিকা)</button>
+      <button class="tab-btn active" data-tab="info">Inspect</button>
+      <button class="tab-btn" data-tab="systems">Systems</button>
+      <button class="tab-btn" data-tab="tools">Tools</button>
+      <button class="tab-btn" data-tab="directory">Directory</button>
     </nav>
 
     <div class="sidebar-content">
@@ -1138,34 +1261,34 @@ canvas { display: block; width: 100%; height: 100%; }
           <div class="detail-header">
             <div>
               <h2 class="detail-title" id="dt-det-title">Heart</h2>
-              <div class="detail-sub-name" id="dt-det-bn-name">হৃৎপিণ্ড</div>
+              <div class="detail-sub-name" id="dt-det-bn-name"></div>
               <div class="detail-latin" id="dt-det-latin">Cor</div>
             </div>
             <span class="detail-badge" id="dt-det-badge">Cardiovascular</span>
           </div>
 
           <div class="detail-actions">
-            <button class="detail-btn" id="dt-btn-isolate">🎯 Isolate (আলাদা)</button>
-            <button class="detail-btn" id="dt-btn-focus">🔍 Focus (জুম)</button>
+            <button class="detail-btn" id="dt-btn-isolate">🎯 Isolate</button>
+            <button class="detail-btn" id="dt-btn-focus">🔍 Focus</button>
             <button class="detail-btn" id="dt-btn-sound">🔊 Stethoscope</button>
           </div>
 
           <div>
-            <div class="detail-section-title" id="dt-lbl-desc">অঙ্গসংস্থান ও ভূমিকা (Anatomy & Overview)</div>
+            <div class="detail-section-title" id="dt-lbl-desc">Anatomy & Overview</div>
             <p class="detail-desc" id="dt-det-desc"></p>
           </div>
 
           <div>
-            <div class="detail-section-title" id="dt-lbl-funcs">প্রধান শারীরবৃত্তীয় কাজ (Primary Functions)</div>
+            <div class="detail-section-title" id="dt-lbl-funcs">Primary Functions</div>
             <ul class="detail-bullets" id="dt-det-functions"></ul>
           </div>
 
           <div class="fact-box">
-            <strong>আশ্চর্য তথ্য (Clinical Fact):</strong> <span id="dt-det-fact"></span>
+            <strong>Clinical Fact:</strong> <span id="dt-det-fact"></span>
           </div>
 
           <div>
-            <div class="detail-section-title" id="dt-lbl-patho">সাধারণ রোগ ও জটিলতা (Pathologies)</div>
+            <div class="detail-section-title" id="dt-lbl-patho">Clinical Pathologies</div>
             <p class="detail-desc" style="font-size:12px;color:var(--text-muted);" id="dt-det-pathologies"></p>
           </div>
         </div>
@@ -1174,10 +1297,10 @@ canvas { display: block; width: 100%; height: 100%; }
       <!-- TAB 2: SYSTEMS & LAYERS -->
       <section id="tab-systems" class="tab-page" style="display:none;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <span style="font-size:12px;font-weight:700;color:var(--text-dim)">অঙ্গতন্ত্র ও স্তর নিয়ন্ত্রণ</span>
+          <span style="font-size:12px;font-weight:700;color:var(--text-dim)">Systems & Layer Controls</span>
           <div style="display:flex;gap:4px;">
-            <button class="btn" style="padding:3px 8px;font-size:11px;" id="dt-btn-show-all">সব দেখান</button>
-            <button class="btn" style="padding:3px 8px;font-size:11px;" id="dt-btn-hide-all">লুকান</button>
+            <button class="btn" style="padding:3px 8px;font-size:11px;" id="dt-btn-show-all">Show All</button>
+            <button class="btn" style="padding:3px 8px;font-size:11px;" id="dt-btn-hide-all">Hide All</button>
           </div>
         </div>
         <div class="systems-grid" id="dt-systems-container"></div>
@@ -1186,21 +1309,21 @@ canvas { display: block; width: 100%; height: 100%; }
       <!-- TAB 3: TOOLS & CROSS-SECTION -->
       <section id="tab-tools" class="tab-page" style="display:none;">
         <div class="detail-card">
-          <div class="detail-section-title">Focus Anatomical Region (শরীরের নির্দিষ্ট অংশ ফোকাস)</div>
+          <div class="detail-section-title">Focus Anatomical Region</div>
           <div class="region-grid">
-            <button class="region-chip active" data-view="full">🧍 Full Body (পুরো শরীর)</button>
-            <button class="region-chip" data-view="head">🧠 Head & Brain (মাথা ও মস্তিষ্ক)</button>
-            <button class="region-chip" data-view="thorax">🫁 Thorax & Heart (বক্ষ ও হৃৎপিণ্ড)</button>
-            <button class="region-chip" data-view="abdomen">🫄 Abdomen (উদর ও পেট)</button>
-            <button class="region-chip" data-view="pelvis">🦴 Pelvis (শ্রোণিদেশ)</button>
-            <button class="region-chip" data-view="arms">💪 Upper Limbs (হাত)</button>
-            <button class="region-chip" data-view="legs">🦵 Lower Limbs (পা ও উরু)</button>
-            <button class="region-chip" data-view="spine">🧬 Spine & Back (মেরুদণ্ড)</button>
+            <button class="region-chip active" data-view="full">🧍 Full Body</button>
+            <button class="region-chip" data-view="head">🧠 Head & Brain</button>
+            <button class="region-chip" data-view="thorax">🫁 Thorax & Heart</button>
+            <button class="region-chip" data-view="abdomen">🫄 Abdomen</button>
+            <button class="region-chip" data-view="pelvis">🦴 Pelvis</button>
+            <button class="region-chip" data-view="arms">💪 Upper Limbs</button>
+            <button class="region-chip" data-view="legs">🦵 Lower Limbs</button>
+            <button class="region-chip" data-view="spine">🧬 Spine & Back</button>
           </div>
         </div>
 
         <div class="detail-card">
-          <div class="detail-section-title">Exploded Anatomy View (বিস্ফোরিত ভিউ)</div>
+          <div class="detail-section-title">Exploded Anatomy View</div>
           <div class="slider-row">
             <span>Separation</span>
             <input type="range" id="dt-slider-explode" min="0" max="1" step="0.01" value="0">
@@ -1209,7 +1332,7 @@ canvas { display: block; width: 100%; height: 100%; }
         </div>
 
         <div class="detail-card">
-          <div class="detail-section-title">Cross-Section Slicing Plane (ব্যবচ্ছেদ স্লাইস)</div>
+          <div class="detail-section-title">Cross-Section Slicing Plane</div>
           <div style="display:flex;gap:4px;margin-bottom:6px;">
             <button class="detail-btn active" id="dt-clip-off">Normal</button>
             <button class="detail-btn" id="dt-clip-axial">Axial (Z)</button>
@@ -1223,7 +1346,7 @@ canvas { display: block; width: 100%; height: 100%; }
         </div>
 
         <div class="detail-card">
-          <div class="detail-section-title">Physiology Simulation (শারীরবৃত্তীয় সিমুলেটর)</div>
+          <div class="detail-section-title">Physiology Simulation</div>
           <div class="slider-row">
             <span>Heart Rate (BPM)</span>
             <input type="range" id="dt-slider-bpm" min="40" max="180" step="1" value="72">
@@ -1268,28 +1391,28 @@ canvas { display: block; width: 100%; height: 100%; }
         <div style="display:flex;justify-content:space-between;align-items:flex-start;">
           <div>
             <h2 style="font-size:20px;font-weight:700;" id="mb-det-title">Heart</h2>
-            <div style="font-size:13px;color:var(--text-muted);font-weight:600;" id="mb-det-bn-name">হৃৎপিণ্ড</div>
+            <div style="font-size:13px;color:var(--text-muted);font-weight:600;" id="mb-det-bn-name"></div>
             <div style="font-family:'Playfair Display',serif;font-style:italic;color:var(--accent);font-size:12px;" id="mb-det-latin">Cor</div>
           </div>
           <span class="detail-badge" id="mb-det-badge">Cardiovascular</span>
         </div>
 
         <div style="display:flex;gap:6px;margin:4px 0;">
-          <button class="detail-btn" id="mb-btn-isolate">🎯 Isolate (আলাদা)</button>
+          <button class="detail-btn" id="mb-btn-isolate">🎯 Isolate</button>
           <button class="detail-btn" id="mb-btn-sound">🔊 Stethoscope</button>
         </div>
 
-        <div class="detail-section-title">অঙ্গসংস্থান ও ভূমিকা (Overview)</div>
+        <div class="detail-section-title">Anatomy & Overview</div>
         <p class="detail-desc" id="mb-det-desc"></p>
 
-        <div class="detail-section-title">প্রধান শারীরবৃত্তীয় কাজ (Functions)</div>
+        <div class="detail-section-title">Primary Functions</div>
         <ul class="detail-bullets" id="mb-det-functions"></ul>
 
         <div class="fact-box">
-          <strong>আশ্চর্য তথ্য (Fact):</strong> <span id="mb-det-fact"></span>
+          <strong>Clinical Fact:</strong> <span id="mb-det-fact"></span>
         </div>
 
-        <div class="detail-section-title">সাধারণ রোগ ও জটিলতা (Pathologies)</div>
+        <div class="detail-section-title">Clinical Pathologies</div>
         <p class="detail-desc" style="font-size:12px;color:var(--text-muted);" id="mb-det-pathologies"></p>
       </div>
     </div>
@@ -1301,7 +1424,7 @@ canvas { display: block; width: 100%; height: 100%; }
     <div class="sheet-header">
       <div class="sheet-header-title">
         <span>🧬</span>
-        <span>Systems (অঙ্গতন্ত্র)</span>
+        <span>Systems</span>
       </div>
       <div style="display:flex;gap:6px;align-items:center;">
         <button class="btn" id="mb-btn-show-all-sys" style="padding:3px 8px;font-size:11px;">Show All</button>
@@ -1345,7 +1468,7 @@ canvas { display: block; width: 100%; height: 100%; }
     <div class="sheet-body">
       <div class="detail-card">
         <div style="font-size:15px;font-weight:600;line-height:1.4;" id="mb-quiz-prompt">
-          Locate and tap the <strong>Heart (হৃৎপিণ্ড)</strong> on the 3D model.
+          Locate and tap the <strong>Heart</strong> on the 3D model.
         </div>
         <div id="mb-quiz-feedback" style="display:none;padding:8px 10px;border-radius:6px;font-size:12px;font-weight:600;"></div>
         <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-muted);margin-top:4px;">
@@ -1363,7 +1486,7 @@ canvas { display: block; width: 100%; height: 100%; }
     <div class="sheet-header">
       <div class="sheet-header-title">
         <span>⚙️</span>
-        <span>Settings & Tools (টুলস ও সেটিংস)</span>
+        <span>Settings & Tools</span>
       </div>
       <button class="sheet-close-btn" data-close="mb-sheet-tools">✕</button>
     </div>
@@ -1376,19 +1499,19 @@ canvas { display: block; width: 100%; height: 100%; }
             <span class="setting-card-icon">🎯</span>
             <div>
               <div class="setting-card-heading">Anatomical Focus Region</div>
-              <div class="setting-card-sub">শরীরের নির্দিষ্ট অংশ জুম ও ফোকাস করুন</div>
+              <div class="setting-card-sub">Select a region to zoom and inspect</div>
             </div>
           </div>
         </div>
         <div class="region-grid">
-          <button class="region-chip active" data-view="full">🧍 Full Body (পুরো শরীর)</button>
-          <button class="region-chip" data-view="head">🧠 Head & Brain (মাথা)</button>
-          <button class="region-chip" data-view="thorax">🫁 Thorax (বক্ষ ও বুক)</button>
-          <button class="region-chip" data-view="abdomen">🫄 Abdomen (উদর ও পেট)</button>
-          <button class="region-chip" data-view="pelvis">🦴 Pelvis (শ্রোণিদেশ)</button>
-          <button class="region-chip" data-view="arms">💪 Limbs (হাত)</button>
-          <button class="region-chip" data-view="legs">🦵 Legs (পা ও উরু)</button>
-          <button class="region-chip" data-view="spine">🧬 Spine (মেরুদণ্ড)</button>
+          <button class="region-chip active" data-view="full">🧍 Full Body</button>
+          <button class="region-chip" data-view="head">🧠 Head & Brain</button>
+          <button class="region-chip" data-view="thorax">🫁 Thorax & Heart</button>
+          <button class="region-chip" data-view="abdomen">🫄 Abdomen</button>
+          <button class="region-chip" data-view="pelvis">🦴 Pelvis</button>
+          <button class="region-chip" data-view="arms">💪 Upper Limbs</button>
+          <button class="region-chip" data-view="legs">🦵 Lower Limbs</button>
+          <button class="region-chip" data-view="spine">🧬 Spine & Back</button>
         </div>
       </div>
 
@@ -1399,7 +1522,7 @@ canvas { display: block; width: 100%; height: 100%; }
             <span class="setting-card-icon">👁️</span>
             <div>
               <div class="setting-card-heading">Display & View Modes</div>
-              <div class="setting-card-sub">ভিজ্যুয়াল প্রদর্শন ও গ্রাফিক্স নিয়ন্ত্রণ</div>
+              <div class="setting-card-sub">Control visual modes and overlays</div>
             </div>
           </div>
         </div>
@@ -1407,7 +1530,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="setting-row">
           <div class="setting-row-info">
             <div class="setting-row-label">🔄 360° Auto-Rotation</div>
-            <div class="setting-row-desc">মডেলটি স্বয়ংক্রিয়ভাবে চারদিকে ঘুরবে</div>
+            <div class="setting-row-desc">Continuously rotate the 3D model</div>
           </div>
           <button class="btn setting-toggle-btn" id="mb-btn-spin">Turn On</button>
         </div>
@@ -1415,7 +1538,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="setting-row">
           <div class="setting-row-info">
             <div class="setting-row-label">🩻 Holographic X-Ray</div>
-            <div class="setting-row-desc">স্বচ্ছ হলোগ্রাফিক অভ্যন্তরীণ ভিউ</div>
+            <div class="setting-row-desc">Semi-transparent holographic internal view</div>
           </div>
           <button class="btn setting-toggle-btn" id="mb-btn-xray">Turn On</button>
         </div>
@@ -1423,7 +1546,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="setting-row">
           <div class="setting-row-info">
             <div class="setting-row-label">🏷️ 3D Anatomy Pins</div>
-            <div class="setting-row-desc">অঙ্গের উপর সরাসরি ৩ডি মার্কার পিন</div>
+            <div class="setting-row-desc">Floating 3D marker pins on organs</div>
           </div>
           <button class="btn setting-toggle-btn" id="mb-btn-pins">Turn On</button>
         </div>
@@ -1431,7 +1554,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
           <div class="setting-row-info">
             <div class="setting-row-label">🎨 Interface Color Theme</div>
-            <div class="setting-row-desc">ডার্ক, লাইট অথবা সাইবার এক্স-রে থিম বেছে নিন</div>
+            <div class="setting-row-desc">Select Dark, Light, or Cyber X-Ray theme</div>
           </div>
           <div style="display:flex;gap:6px;width:100%;">
             <button class="btn detail-btn active" id="mb-theme-dark" style="flex:1;">Dark</button>
@@ -1448,21 +1571,21 @@ canvas { display: block; width: 100%; height: 100%; }
             <span class="setting-card-icon">🔪</span>
             <div>
               <div class="setting-card-heading">Dissection & Slicing</div>
-              <div class="setting-card-sub">স্তর ব্যবচ্ছেদ ও ক্রস-সেকশন স্লাইস</div>
+              <div class="setting-card-sub">Layer separation and clipping planes</div>
             </div>
           </div>
         </div>
 
         <div style="margin-bottom:8px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span class="setting-row-label">Exploded Anatomy (স্তর বিস্ফোরণ)</span>
+            <span class="setting-row-label">Exploded Anatomy View</span>
             <span id="mb-val-explode" style="font-family:'JetBrains Mono';font-size:12px;color:var(--accent);font-weight:700;">0%</span>
           </div>
           <input type="range" class="setting-range-slider" id="mb-slider-explode" min="0" max="1" step="0.01" value="0">
         </div>
 
         <div>
-          <div class="setting-row-label" style="margin-bottom:6px;">Cross-Section Slicing Plane (কাটিং স্লাইস)</div>
+          <div class="setting-row-label" style="margin-bottom:6px;">Cross-Section Slicing Plane</div>
           <div style="display:flex;gap:4px;">
             <button class="detail-btn active" id="mb-clip-off" style="flex:1;">Normal</button>
             <button class="detail-btn" id="mb-clip-axial" style="flex:1;">Axial</button>
@@ -1479,14 +1602,14 @@ canvas { display: block; width: 100%; height: 100%; }
             <span class="setting-card-icon">💓</span>
             <div>
               <div class="setting-card-heading">Physiology Simulation</div>
-              <div class="setting-card-sub">লাইভ কার্ডিয়াক ও পালমোনারি ভাইটালস</div>
+              <div class="setting-card-sub">Live cardiac and respiratory rates</div>
             </div>
           </div>
         </div>
 
         <div style="margin-bottom:10px;">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span class="setting-row-label">Heart Rate (হৃদস্পন্দন)</span>
+            <span class="setting-row-label">Heart Rate</span>
             <span style="font-family:'JetBrains Mono';font-size:12px;color:var(--accent);font-weight:700;"><span id="mb-val-bpm">72</span> BPM</span>
           </div>
           <input type="range" class="setting-range-slider" id="mb-slider-bpm" min="40" max="180" step="1" value="72">
@@ -1494,7 +1617,7 @@ canvas { display: block; width: 100%; height: 100%; }
 
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-            <span class="setting-row-label">Respiration (শ্বাস-প্রশ্বাস)</span>
+            <span class="setting-row-label">Respiration Rate</span>
             <span style="font-family:'JetBrains Mono';font-size:12px;color:var(--accent);font-weight:700;"><span id="mb-val-resp">16</span> RPM</span>
           </div>
           <input type="range" class="setting-range-slider" id="mb-slider-resp" min="8" max="40" step="1" value="16">
@@ -1508,7 +1631,7 @@ canvas { display: block; width: 100%; height: 100%; }
             <span class="setting-card-icon">⚡</span>
             <div>
               <div class="setting-card-heading">Actions & Export</div>
-              <div class="setting-card-sub">ছবি ডাউনলোড ও মডেল রিসেট</div>
+              <div class="setting-card-sub">Screenshot and camera reset</div>
             </div>
           </div>
         </div>
@@ -1516,7 +1639,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="setting-row">
           <div class="setting-row-info">
             <div class="setting-row-label">📸 HD Screenshot</div>
-            <div class="setting-row-desc">উচ্চ রেজোলিউশনে ছবি ডাউনলোড করুন</div>
+            <div class="setting-row-desc">Download high-resolution 3D snapshot</div>
           </div>
           <button class="btn active" id="mb-btn-snap" style="padding:6px 14px;font-size:12px;">Download</button>
         </div>
@@ -1524,7 +1647,7 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="setting-row">
           <div class="setting-row-info">
             <div class="setting-row-label">🔄 Reset Model View</div>
-            <div class="setting-row-desc">ক্যামেরা ও ভিউ ডিফল্ট অবস্থানে নিন</div>
+            <div class="setting-row-desc">Reset camera to initial full-body position</div>
           </div>
           <button class="btn" id="mb-btn-reset-view" style="padding:6px 14px;font-size:12px;">Reset</button>
         </div>
@@ -2385,7 +2508,7 @@ function selectPartByKey(key, shouldFocus = false) {
   // 1. UPDATE DESKTOP SIDEBAR
   // Name in English!
   $('dt-det-title').textContent = data.name;
-  $('dt-det-bn-name').textContent = data.name_bn;
+  $('dt-det-bn-name').textContent = '';
   $('dt-det-latin').textContent = data.latin || '';
   $('dt-det-badge').textContent = SYSTEMS[data.system].name;
 
@@ -2407,11 +2530,11 @@ function selectPartByKey(key, shouldFocus = false) {
   // 2. UPDATE MOBILE PEEK CARD & MOBILE SHEET
   $('mb-peek-title').textContent = data.name;
   $('mb-peek-system').textContent = `${SYSTEMS[data.system].icon} ${SYSTEMS[data.system].name}`;
-  $('mb-peek-latin').textContent = `${data.name_bn} • ${data.latin}`;
+  $('mb-peek-latin').textContent = data.latin || '';
   organPeekCard.classList.remove('hidden');
 
   $('mb-det-title').textContent = data.name;
-  $('mb-det-bn-name').textContent = data.name_bn;
+  $('mb-det-bn-name').textContent = '';
   $('mb-det-latin').textContent = data.latin || '';
   $('mb-det-badge').textContent = SYSTEMS[data.system].name;
   $('mb-det-desc').textContent = detailsLang === 'bn' ? data.desc_bn : data.desc_en;
@@ -2598,7 +2721,7 @@ function renderSystemsContainers() {
           <label class="system-label">
             <input type="checkbox" id="chk-${containerId}-${sysKey}" ${state.systemVisibility[sysKey] ? 'checked' : ''}>
             <span class="system-color-dot" style="background:${sys.color}"></span>
-            <span>${sys.icon} ${sys.name} <small style="color:var(--text-muted);font-weight:400">(${sys.name_bn})</small></span>
+            <span>${sys.icon} ${sys.name}</span>
           </label>
           <button class="btn btn-solo" data-sys="${sysKey}" style="padding:2px 7px;font-size:10px;">Solo</button>
         </div>
@@ -3052,14 +3175,14 @@ function setCameraView(viewKey) {
   });
 
   const names = {
-    full: 'Full Body (পুরো শরীর)',
-    head: 'Head & Brain (মাথা ও মস্তিষ্ক)',
-    thorax: 'Thorax & Heart (বক্ষ ও হৃৎপিণ্ড)',
-    abdomen: 'Abdomen (উদর ও পেট)',
-    pelvis: 'Pelvis (শ্রোণিদেশ)',
-    arms: 'Upper Limbs (হাত)',
-    legs: 'Lower Limbs (পা)',
-    spine: 'Spine (মেরুদণ্ড)'
+    full: 'Full Body',
+    head: 'Head & Brain',
+    thorax: 'Thorax & Heart',
+    abdomen: 'Abdomen',
+    pelvis: 'Pelvis',
+    arms: 'Upper Limbs',
+    legs: 'Lower Limbs',
+    spine: 'Spine & Back'
   };
   showToast(`View: ${names[viewKey] || viewKey}`);
 }
@@ -3135,8 +3258,8 @@ if ($('mb-theme-dark')) {
 // Details Language toggle (Bangla details vs English details)
 function toggleDetailsLang() {
   detailsLang = detailsLang === 'bn' ? 'en' : 'bn';
-  const dtLabel = detailsLang === 'bn' ? 'বাংলা বিবরণ' : 'English Details';
-  const mbLabel = detailsLang === 'bn' ? 'বাং' : 'EN';
+  const dtLabel = detailsLang === 'bn' ? 'Bangla Details' : 'English Details';
+  const mbLabel = detailsLang === 'bn' ? 'BN' : 'EN';
   $('dt-lbl-lang').textContent = dtLabel;
   if ($('mb-lbl-lang')) $('mb-lbl-lang').textContent = mbLabel;
 
