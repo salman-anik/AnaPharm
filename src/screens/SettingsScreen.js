@@ -4,10 +4,10 @@ import {
   View,
   Text,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
   Switch,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function SettingsScreen({
   theme,
@@ -26,7 +26,13 @@ export default function SettingsScreen({
   const isLight = theme === 'light';
 
   return (
-    <SafeAreaView style={[styles.container, isLight && styles.containerLight]}>
+    <SafeAreaView
+      edges={['top']}
+      style={[
+        styles.container,
+        { backgroundColor: isLight ? '#ffffff' : '#0b132b' },
+      ]}
+    >
       <View style={[styles.header, isLight && styles.headerLight]}>
         <Text style={[styles.title, isLight && styles.titleLight]}>Settings & Preferences</Text>
         <Text style={[styles.subtitle, isLight && styles.subtitleLight]}>Configure 3D graphics, physiology, and display</Text>
@@ -44,7 +50,7 @@ export default function SettingsScreen({
           </View>
 
           <View style={styles.themeOptionsRow}>
-            {['dark', 'light', 'xray'].map((mode) => (
+            {['dark', 'light'].map((mode) => (
               <TouchableOpacity
                 key={mode}
                 style={[
@@ -61,7 +67,7 @@ export default function SettingsScreen({
                     theme === mode && (isLight ? styles.themeChipTextActiveLight : styles.themeChipTextActive),
                   ]}
                 >
-                  {mode === 'dark' ? '🌙 Dark' : mode === 'light' ? '☀️ Light' : '⚡ X-Ray'}
+                  {mode === 'dark' ? '🌙 Dark Mode' : '☀️ Light Mode'}
                 </Text>
               </TouchableOpacity>
             ))}
@@ -88,19 +94,6 @@ export default function SettingsScreen({
               onValueChange={setAutoRotate}
               trackColor={{ false: isLight ? '#cbd5e1' : '#334155', true: '#0284c7' }}
               thumbColor={autoRotate ? '#38bdf8' : (isLight ? '#f8fafc' : '#cbd5e1')}
-            />
-          </View>
-
-          <View style={[styles.settingRow, styles.rowBorderTop, isLight && styles.rowBorderTopLight]}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.rowLabel, isLight && styles.rowLabelLight]}>Holographic X-Ray</Text>
-              <Text style={[styles.rowDesc, isLight && styles.rowDescLight]}>Semiconductive transparent skeleton view</Text>
-            </View>
-            <Switch
-              value={xrayMode}
-              onValueChange={setXrayMode}
-              trackColor={{ false: isLight ? '#cbd5e1' : '#334155', true: '#0284c7' }}
-              thumbColor={xrayMode ? '#38bdf8' : (isLight ? '#f8fafc' : '#cbd5e1')}
             />
           </View>
         </View>
@@ -199,7 +192,54 @@ export default function SettingsScreen({
           </View>
         </View>
 
-        {/* CARD 5: MEDICAL ADVISORY DISCLAIMER */}
+        {/* CARD 5: DEVELOPER & SYSTEM CREDITS */}
+        <View style={[styles.card, styles.developerCard, isLight && styles.developerCardLight]}>
+          <View style={styles.cardHeader}>
+            <Text style={styles.cardIcon}>👨‍💻</Text>
+            <View>
+              <Text style={[styles.cardHeading, isLight && styles.cardHeadingLight]}>Developer Details</Text>
+              <Text style={[styles.cardSub, isLight && styles.cardSubLight]}>Created & Developed by Salman Anik</Text>
+            </View>
+          </View>
+
+          <View style={[styles.devBadgeRow, isLight && styles.devBadgeRowLight]}>
+            <View style={styles.devAvatar}>
+              <Text style={styles.devAvatarText}>SA</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.devName, isLight && styles.devNameLight]}>Salman Anik</Text>
+              <Text style={styles.devHandle}>@salmananik</Text>
+              <Text style={[styles.devRole, isLight && styles.devRoleLight]}>
+                Lead Developer & Medical Systems Informatics
+              </Text>
+            </View>
+          </View>
+
+          <View style={[styles.devInfoList, isLight && styles.devInfoListLight]}>
+            <View style={styles.devInfoRow}>
+              <Text style={styles.devInfoLabel}>Application</Text>
+              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]}>AnaPharm Mobile</Text>
+            </View>
+            <View style={styles.devInfoRow}>
+              <Text style={styles.devInfoLabel}>Author / Lead</Text>
+              <Text style={[styles.devInfoValue, { color: '#0284c7', fontWeight: '700' }]}>salmananik</Text>
+            </View>
+            <View style={styles.devInfoRow}>
+              <Text style={styles.devInfoLabel}>GitHub Repository</Text>
+              <Text style={[styles.devInfoValue, { color: '#0284c7' }]}>salman-anik/AnaPharm</Text>
+            </View>
+            <View style={styles.devInfoRow}>
+              <Text style={styles.devInfoLabel}>3D Viewport</Text>
+              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]}>Three.js WebGL Interactive Anatomy</Text>
+            </View>
+            <View style={[styles.devInfoRow, { borderBottomWidth: 0 }]}>
+              <Text style={styles.devInfoLabel}>Clinical Database</Text>
+              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]}>2,594 Generics (Bangladesh Pharmacopoeia)</Text>
+            </View>
+          </View>
+        </View>
+
+        {/* CARD 6: MEDICAL ADVISORY DISCLAIMER */}
         <View style={[styles.card, styles.disclaimerCard, isLight && styles.disclaimerCardLight]}>
           <Text style={[styles.disclaimerTitle, isLight && styles.disclaimerTitleLight]}>
             ⚠️ Educational & Clinical Reference Notice
@@ -443,5 +483,95 @@ const styles = StyleSheet.create({
   },
   disclaimerBodyLight: {
     color: '#475569',
+  },
+  // Developer Section Styles
+  developerCard: {
+    backgroundColor: 'rgba(14, 165, 233, 0.08)',
+    borderColor: 'rgba(14, 165, 233, 0.28)',
+  },
+  developerCardLight: {
+    backgroundColor: '#ffffff',
+    borderColor: '#e2e8f0',
+  },
+  devBadgeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    backgroundColor: '#1e293b',
+    borderRadius: 14,
+    padding: 12,
+    marginBottom: 12,
+  },
+  devBadgeRowLight: {
+    backgroundColor: '#f1f5f9',
+  },
+  devAvatar: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#0284c7',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#38bdf8',
+  },
+  devAvatarText: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: '800',
+  },
+  devName: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  devNameLight: {
+    color: '#0f172a',
+  },
+  devHandle: {
+    color: '#38bdf8',
+    fontSize: 13,
+    fontWeight: '600',
+    marginTop: 1,
+  },
+  devRole: {
+    color: '#94a3b8',
+    fontSize: 11,
+    marginTop: 3,
+  },
+  devRoleLight: {
+    color: '#64748b',
+  },
+  devInfoList: {
+    backgroundColor: '#0b132b',
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+  },
+  devInfoListLight: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  devInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  devInfoLabel: {
+    color: '#64748b',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  devInfoValue: {
+    color: '#f8fafc',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  devInfoValueLight: {
+    color: '#0f172a',
   },
 });

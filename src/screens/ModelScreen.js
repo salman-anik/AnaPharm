@@ -49,7 +49,13 @@ export default function ModelScreen({
   const organKeys = Object.keys(ANATOMY_DATA).filter(k => k !== 'Body Surface (Skin)');
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.container, isLight && styles.containerLight]}>
+    <SafeAreaView
+      edges={['top']}
+      style={[
+        styles.container,
+        { backgroundColor: isLight ? '#ffffff' : '#0b132b' },
+      ]}
+    >
       {/* Top Bar */}
       <View style={[styles.topBar, isLight && styles.topBarLight]}>
         <View style={styles.brandRow}>
@@ -59,7 +65,7 @@ export default function ModelScreen({
           <View>
             <Text style={[styles.brandText, isLight && styles.brandTextLight]}>AnaPharm</Text>
             <Text style={[styles.subBrandText, isLight && styles.subBrandTextLight]}>
-              3D Anatomy & Clinical Pharmacopoeia (অ্যানাফার্ম)
+              3D Anatomy & Clinical Pharmacopoeia
             </Text>
           </View>
         </View>
@@ -175,7 +181,7 @@ export default function ModelScreen({
         {/* Bottom Quick Organ Picker Bar */}
         <View style={[styles.organPickerContainer, isLight && styles.organPickerContainerLight]}>
           <Text style={[styles.pickerTitle, isLight && styles.pickerTitleLight]}>
-            SELECT ORGAN (অঙ্গ নির্বাচন করুন):
+            SELECT ORGAN:
           </Text>
           <ScrollView
             horizontal
@@ -197,12 +203,9 @@ export default function ModelScreen({
                   activeOpacity={0.7}
                 >
                   <Text style={styles.organPillIcon}>{sys.icon}</Text>
-                  <View>
-                    <Text style={[styles.organPillName, isLight && styles.organPillNameLight]}>
-                      {organ.name}
-                    </Text>
-                    <Text style={styles.organPillBn}>{organ.name_bn}</Text>
-                  </View>
+                  <Text style={[styles.organPillName, isLight && styles.organPillNameLight]}>
+                    {organ.name}
+                  </Text>
                 </TouchableOpacity>
               );
             })}

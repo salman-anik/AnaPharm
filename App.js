@@ -77,16 +77,20 @@ export default function App() {
     }
   };
 
+  const headerBg = isLight ? '#ffffff' : '#0b132b';
+
   return (
     <SafeAreaProvider>
       <View style={[styles.appContainer, isLight && styles.appContainerLight]}>
         <StatusBar
           barStyle={isLight ? 'dark-content' : 'light-content'}
-          backgroundColor={isLight ? '#f8fafc' : '#020617'}
+          backgroundColor={headerBg}
         />
         
         {/* Screen View */}
-        <View style={styles.screenArea}>{renderActiveScreen()}</View>
+        <View style={[styles.screenArea, isLight && styles.screenAreaLight]}>
+          {renderActiveScreen()}
+        </View>
 
         {/* Bottom Tab Bar */}
         <SafeAreaView
@@ -125,6 +129,9 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  safeAreaContainer: {
+    flex: 1,
+  },
   appContainer: {
     flex: 1,
     backgroundColor: '#020617',
@@ -134,6 +141,10 @@ const styles = StyleSheet.create({
   },
   screenArea: {
     flex: 1,
+    backgroundColor: '#020617',
+  },
+  screenAreaLight: {
+    backgroundColor: '#f8fafc',
   },
   bottomTabBar: {
     flexDirection: 'row',

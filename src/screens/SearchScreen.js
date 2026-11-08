@@ -5,9 +5,9 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { ANATOMY_DATA, SYSTEMS } from '../data/anatomyData';
 import OrganDetailsSheet from '../components/OrganDetailsSheet';
 
@@ -54,7 +54,13 @@ export default function SearchScreen({ theme = 'dark' }) {
   ];
 
   return (
-    <SafeAreaView style={[styles.container, isLight && styles.containerLight]}>
+    <SafeAreaView
+      edges={['top']}
+      style={[
+        styles.container,
+        { backgroundColor: isLight ? '#ffffff' : '#0b132b' },
+      ]}
+    >
       {/* Header & Search Input */}
       <View style={[styles.header, isLight && styles.headerLight]}>
         <Text style={[styles.title, isLight && styles.titleLight]}>Search Anatomy</Text>
@@ -130,7 +136,7 @@ export default function SearchScreen({ theme = 'dark' }) {
               <View style={styles.cardTop}>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.cardTitle, isLight && styles.cardTitleLight]}>
-                    {item.name} {item.name_bn ? <Text style={[styles.cardTitleBn, isLight && styles.cardTitleBnLight]}>({item.name_bn})</Text> : null}
+                    {item.name}
                   </Text>
                   {item.latin ? (
                     <Text style={[styles.cardLatin, isLight && styles.cardLatinLight]}>{item.latin}</Text>

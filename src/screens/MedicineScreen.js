@@ -33,13 +33,15 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
       const workBn = (med.work_bn || '').toLowerCase();
       const catBn = (med.category_bn || '').toLowerCase();
       const organ = (med.target_organ || '').toLowerCase();
+      const brands = (med.brands || '').toLowerCase();
 
       return (
         nameEn.includes(q) ||
         generic.includes(q) ||
         workBn.includes(q) ||
         catBn.includes(q) ||
-        organ.includes(q)
+        organ.includes(q) ||
+        brands.includes(q)
       );
     });
   }, [searchQuery, selectedCategory]);
@@ -118,12 +120,24 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
             </View>
 
             {/* Precautions */}
-            <View style={[styles.detailBlock, { borderBottomWidth: 0 }]}>
+            <View style={styles.detailBlock}>
               <Text style={[styles.detailTitle, { color: isLight ? '#e11d48' : '#f43f5e' }]}>
                 🛑 সতর্কতা ও নিষেধাজ্ঞা (Precautions):
               </Text>
               <Text style={[styles.detailText, isLight && styles.detailTextLight]}>{item.precautions_bn}</Text>
             </View>
+
+            {/* Top Bangladesh Brands */}
+            {item.brands ? (
+              <View style={[styles.detailBlock, { borderBottomWidth: 0 }]}>
+                <Text style={[styles.detailTitle, { color: isLight ? '#0284c7' : '#38bdf8' }]}>
+                  🏷️ বাংলাদেশে প্রচলিত ব্র্যান্ড (Top BD Brands):
+                </Text>
+                <Text style={[styles.detailText, isLight && styles.detailTextLight, { fontWeight: '600' }]}>
+                  {item.brands}
+                </Text>
+              </View>
+            ) : null}
           </View>
         ) : null}
       </View>
@@ -131,7 +145,13 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
   };
 
   return (
-    <SafeAreaView edges={['top']} style={[styles.container, isLight && styles.containerLight]}>
+    <SafeAreaView
+      edges={['top']}
+      style={[
+        styles.container,
+        { backgroundColor: isLight ? '#ffffff' : '#0f172a' },
+      ]}
+    >
       {/* Top Header */}
       <View style={[styles.topHeader, isLight && styles.topHeaderLight]}>
         <View style={styles.titleRow}>
@@ -139,8 +159,10 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
             <Text style={styles.logoText}>💊</Text>
           </View>
           <View>
-            <Text style={[styles.screenTitle, isLight && styles.screenTitleLight]}>AnaPharm Medicine Database</Text>
-            <Text style={[styles.screenSubTitle, isLight && styles.screenSubTitleLight]}>ওষুধের কাজ, মাত্রা ও বিস্তারিত বিবরণ</Text>
+            <Text style={[styles.screenTitle, isLight && styles.screenTitleLight]}>AnaPharm</Text>
+            <Text style={[styles.screenSubTitle, isLight && styles.screenSubTitleLight]}>
+              বাংলাদেশের পূর্ণাঙ্গ ঔষধ নির্দেশিকা ({filteredMedicines.length} Generics)
+            </Text>
           </View>
         </View>
 
@@ -149,7 +171,7 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={[styles.searchInput, isLight && styles.searchInputLight]}
-            placeholder="Search medicine, disease (যেমন: Paracetamol, গ্যাস্ট্রিক)..."
+            placeholder="Search 2,500+ generics, brands (Napa, Seclo, প্যারাসিটামল)..."
             placeholderTextColor={isLight ? '#94a3b8' : '#64748b'}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -203,6 +225,10 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
         keyExtractor={(item) => item.id}
         renderItem={renderMedicineCard}
         contentContainerStyle={styles.listContent}
+        initialNumToRender={12}
+        maxToRenderPerBatch={15}
+        windowSize={7}
+        removeClippedSubviews={true}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyIcon}>🔍</Text>

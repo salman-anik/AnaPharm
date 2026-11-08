@@ -4,9 +4,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  SafeAreaView,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { SYSTEMS, ANATOMY_DATA } from '../data/anatomyData';
 import OrganDetailsSheet from '../components/OrganDetailsSheet';
 
@@ -29,7 +29,13 @@ export default function SystemsScreen({ theme = 'dark' }) {
   };
 
   return (
-    <SafeAreaView style={[styles.container, isLight && styles.containerLight]}>
+    <SafeAreaView
+      edges={['top']}
+      style={[
+        styles.container,
+        { backgroundColor: isLight ? '#ffffff' : '#0b132b' },
+      ]}
+    >
       {/* Screen Header */}
       <View style={[styles.header, isLight && styles.headerLight]}>
         <Text style={[styles.title, isLight && styles.titleLight]}>Anatomical Systems</Text>
@@ -54,7 +60,7 @@ export default function SystemsScreen({ theme = 'dark' }) {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={[styles.sysName, isLight && styles.sysNameLight]}>
-                    {sys.name} <Text style={[styles.sysNameBn, isLight && styles.sysNameBnLight]}>({sys.name_bn})</Text>
+                    {sys.name}
                   </Text>
                   <Text style={[styles.organCount, isLight && styles.organCountLight]}>
                     {organs.length} {organs.length === 1 ? 'organ mapped' : 'organs mapped'}
@@ -74,7 +80,7 @@ export default function SystemsScreen({ theme = 'dark' }) {
                     >
                       <View style={{ flex: 1 }}>
                         <Text style={[styles.organName, isLight && styles.organNameLight]}>
-                          {organ.name} <Text style={[styles.organNameBn, isLight && styles.organNameBnLight]}>({organ.name_bn})</Text>
+                          {organ.name}
                         </Text>
                         {organ.latin ? (
                           <Text style={[styles.organLatin, isLight && styles.organLatinLight]}>{organ.latin}</Text>

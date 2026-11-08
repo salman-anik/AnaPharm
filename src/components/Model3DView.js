@@ -58,7 +58,7 @@ export default function Model3DView({
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
       width:100%; height:100%; overflow:hidden;
-      background-color: ${theme === 'light' ? '#f8fafc' : '#020617'}; touch-action:none;
+      background-color: ${theme === 'light' ? '#e2e8f0' : '#020617'}; touch-action:none;
       user-select:none; -webkit-user-select:none;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     }
@@ -122,6 +122,10 @@ export default function Model3DView({
 
     let scene, camera, renderer, controls;
     let grid = null;
+    let ambLight = null;
+    let hemiLight = null;
+    let dirLight = null;
+    let rimLight = null;
     let organMeshes = [];
     let organMap = {};
     let heartMesh = null;
@@ -177,7 +181,7 @@ export default function Model3DView({
     function initScene() {
       const canvas = document.getElementById('canvas3d');
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(${theme === 'light' ? '0xf8fafc' : '0x020617'});
+      scene.background = new THREE.Color(${theme === 'light' ? '0xe2e8f0' : '0x020617'});
 
       const w = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0, 320);
       const h = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0, 480);
@@ -213,17 +217,17 @@ export default function Model3DView({
       });
 
       // Studio Medical Lighting
-      const ambLight = new THREE.AmbientLight(0xffffff, 0.95);
+      ambLight = new THREE.AmbientLight(0xffffff, ${theme === 'light' ? 0.75 : 0.95});
       scene.add(ambLight);
 
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 0.9);
+      hemiLight = new THREE.HemisphereLight(0xffffff, ${theme === 'light' ? '0x94a3b8' : '0x1e293b'}, ${theme === 'light' ? 0.55 : 0.9});
       scene.add(hemiLight);
 
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
+      dirLight = new THREE.DirectionalLight(0xffffff, ${theme === 'light' ? 0.95 : 1.1});
       dirLight.position.set(12, 24, 20);
       scene.add(dirLight);
 
-      const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.7);
+      rimLight = new THREE.DirectionalLight(${theme === 'light' ? '0x0284c7' : '0x38bdf8'}, ${theme === 'light' ? 0.5 : 0.7});
       rimLight.position.set(-12, 10, -18);
       scene.add(rimLight);
 
@@ -256,12 +260,26 @@ export default function Model3DView({
 
     function registerOrgan(system, nameKey, geo, colorHex, x, y, z, opts = {}) {
       const isSkin = (nameKey === 'Body Surface (Skin)');
+      const isLight = config.theme === 'light';
+
+      let matColor = colorHex;
+      let matOpacity = opts.opacity || 1.0;
+      let matRoughness = system === 'skeletal' ? 0.35 : (system === 'cardio' ? 0.22 : 0.48);
+
+      if (isSkin) {
+        matColor = isLight ? 0x0284c7 : 0x38bdf8;
+        matOpacity = isLight ? 0.34 : 0.20;
+        matRoughness = isLight ? 0.65 : 0.45;
+      } else if (system === 'skeletal' && isLight) {
+        matColor = 0xd9cebc;
+      }
+
       const mat = new THREE.MeshStandardMaterial({
-        color: colorHex,
-        roughness: system === 'skeletal' ? 0.35 : (system === 'cardio' ? 0.22 : 0.48),
-        metalness: system === 'cardio' ? 0.22 : 0.05,
+        color: matColor,
+        roughness: matRoughness,
+        metalness: isSkin ? 0.05 : (system === 'cardio' ? 0.22 : 0.05),
         transparent: isSkin || Boolean(opts.opacity && opts.opacity < 1),
-        opacity: isSkin ? 0.18 : (opts.opacity || 1.0),
+        opacity: matOpacity,
         depthWrite: !isSkin,
         side: THREE.DoubleSide
       });
@@ -275,7 +293,7 @@ export default function Model3DView({
         nameKey: nameKey,
         system: system,
         origColor: colorHex,
-        origOpacity: isSkin ? 0.18 : (opts.opacity || 1.0),
+        origOpacity: isSkin ? (isLight ? 0.34 : 0.20) : (opts.opacity || 1.0),
         origPos: mesh.position.clone(),
         origScale: mesh.scale.clone(),
         explodeDir: new THREE.Vector3(x, y - 9.5, z).normalize()
@@ -490,19 +508,64 @@ export default function Model3DView({
       scene.add(bloodPoints);
     }
 
+    function applyTheme(themeMode) {
+      config.theme = themeMode;
+      const isLight = (themeMode === 'light');
+
+      if (scene && !config.xrayMode) {
+        scene.background.setHex(isLight ? 0xe2e8f0 : 0x020617);
+      }
+
+      if (grid) {
+        grid.material.opacity = isLight ? 0.32 : 0.22;
+      }
+
+      if (ambLight) ambLight.intensity = isLight ? 0.75 : 0.95;
+      if (hemiLight) {
+        hemiLight.intensity = isLight ? 0.55 : 0.9;
+        hemiLight.groundColor.setHex(isLight ? 0x94a3b8 : 0x1e293b);
+      }
+      if (dirLight) dirLight.intensity = isLight ? 0.95 : 1.1;
+      if (rimLight) {
+        rimLight.color.setHex(isLight ? 0x0284c7 : 0x38bdf8);
+        rimLight.intensity = isLight ? 0.5 : 0.7;
+      }
+
+      if (!config.xrayMode) {
+        organMeshes.forEach(m => {
+          if (!m.material) return;
+          const isSkin = (m.userData.nameKey === 'Body Surface (Skin)');
+          if (isSkin) {
+            m.material.color.setHex(isLight ? 0x0284c7 : 0x38bdf8);
+            m.material.opacity = isLight ? 0.34 : 0.20;
+            m.material.roughness = isLight ? 0.65 : 0.45;
+            m.userData.origOpacity = isLight ? 0.34 : 0.20;
+            m.material.needsUpdate = true;
+          } else if (m.userData.system === 'skeletal') {
+            m.material.color.setHex(isLight ? 0xd9cebc : m.userData.origColor);
+            m.material.needsUpdate = true;
+          } else {
+            m.material.color.setHex(m.userData.origColor);
+            m.material.opacity = m.userData.origOpacity;
+            m.material.needsUpdate = true;
+          }
+        });
+      }
+    }
+
     function applyXrayMode(enable) {
       config.xrayMode = enable;
       organMeshes.forEach(m => {
         if (!m.material) return;
         if (m.userData.nameKey === 'Body Surface (Skin)') {
           m.material.transparent = true;
-          m.material.opacity = enable ? 0.04 : 0.18;
-          m.material.color.setHex(enable ? 0x38bdf8 : m.userData.origColor);
+          m.material.opacity = enable ? 0.04 : (config.theme === 'light' ? 0.34 : 0.20);
+          m.material.color.setHex(enable ? 0x38bdf8 : (config.theme === 'light' ? 0x0284c7 : 0x38bdf8));
           m.material.needsUpdate = true;
         } else if (m.userData.system === 'skeletal') {
           m.material.transparent = enable;
           m.material.opacity = enable ? 0.95 : 1.0;
-          m.material.color.setHex(enable ? 0xe0f2fe : m.userData.origColor);
+          m.material.color.setHex(enable ? 0xe0f2fe : (config.theme === 'light' ? 0xd9cebc : m.userData.origColor));
           if (enable) {
             m.material.emissive = new THREE.Color(0x0284c7);
             m.material.emissiveIntensity = 0.35;
@@ -526,7 +589,7 @@ export default function Model3DView({
         }
       });
       if (scene) {
-        scene.background.setHex(enable ? 0x000814 : (config.theme === 'light' ? 0xf1f5f9 : 0x020617));
+        scene.background.setHex(enable ? 0x000814 : (config.theme === 'light' ? 0xe2e8f0 : 0x020617));
       }
     }
 
@@ -688,9 +751,8 @@ export default function Model3DView({
         setCameraView(msg.focusRegion);
       }
 
-      if (msg.theme && !config.xrayMode && scene) {
-        config.theme = msg.theme;
-        scene.background.setHex(msg.theme === 'light' ? 0xf1f5f9 : 0x020617);
+      if (msg.theme) {
+        applyTheme(msg.theme);
       }
     }
 
