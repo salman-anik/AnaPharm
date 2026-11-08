@@ -1255,6 +1255,7 @@ canvas { display: block; width: 100%; height: 100%; }
 
   <!-- MOBILE SHEET 1: DETAILS DOSSIER -->
   <section class="mobile-app-sheet" id="mb-sheet-details">
+    <div class="sheet-drag-handle"></div>
     <div class="sheet-header">
       <div class="sheet-header-title">
         <span>🧬</span>
@@ -1296,6 +1297,7 @@ canvas { display: block; width: 100%; height: 100%; }
 
   <!-- MOBILE SHEET 2: SYSTEMS -->
   <section class="mobile-app-sheet" id="mb-sheet-systems">
+    <div class="sheet-drag-handle"></div>
     <div class="sheet-header">
       <div class="sheet-header-title">
         <span>🧬</span>
@@ -1313,6 +1315,7 @@ canvas { display: block; width: 100%; height: 100%; }
 
   <!-- MOBILE SHEET 3: SEARCH DIRECTORY -->
   <section class="mobile-app-sheet" id="mb-sheet-search">
+    <div class="sheet-drag-handle"></div>
     <div class="sheet-header">
       <div class="sheet-header-title">
         <span>🔍</span>
@@ -1331,6 +1334,7 @@ canvas { display: block; width: 100%; height: 100%; }
 
   <!-- MOBILE SHEET 4: ANATOMY QUIZ -->
   <section class="mobile-app-sheet" id="mb-sheet-quiz">
+    <div class="sheet-drag-handle"></div>
     <div class="sheet-header">
       <div class="sheet-header-title">
         <span>🎯</span>
@@ -1355,80 +1359,177 @@ canvas { display: block; width: 100%; height: 100%; }
 
   <!-- MOBILE SHEET 5: TOOLS & VITALS -->
   <section class="mobile-app-sheet" id="mb-sheet-tools">
+    <div class="sheet-drag-handle"></div>
     <div class="sheet-header">
       <div class="sheet-header-title">
         <span>⚙️</span>
-        <span>Tools & Vitals</span>
+        <span>Settings & Tools (টুলস ও সেটিংস)</span>
       </div>
       <button class="sheet-close-btn" data-close="mb-sheet-tools">✕</button>
     </div>
     <div class="sheet-body">
-      <div class="detail-card">
-        <div class="detail-section-title">Focus Anatomical Region (শরীরের নির্দিষ্ট অংশ ফোকাস)</div>
+
+      <!-- SETTING CARD 1: CAMERA & BODY FOCUS -->
+      <div class="setting-card">
+        <div class="setting-card-header">
+          <div class="setting-card-title">
+            <span class="setting-card-icon">🎯</span>
+            <div>
+              <div class="setting-card-heading">Anatomical Focus Region</div>
+              <div class="setting-card-sub">শরীরের নির্দিষ্ট অংশ জুম ও ফোকাস করুন</div>
+            </div>
+          </div>
+        </div>
         <div class="region-grid">
           <button class="region-chip active" data-view="full">🧍 Full Body (পুরো শরীর)</button>
-          <button class="region-chip" data-view="head">🧠 Head & Brain (মাথা ও মস্তিষ্ক)</button>
-          <button class="region-chip" data-view="thorax">🫁 Thorax & Heart (বক্ষ ও হৃৎপিণ্ড)</button>
+          <button class="region-chip" data-view="head">🧠 Head & Brain (মাথা)</button>
+          <button class="region-chip" data-view="thorax">🫁 Thorax (বক্ষ ও বুক)</button>
           <button class="region-chip" data-view="abdomen">🫄 Abdomen (উদর ও পেট)</button>
           <button class="region-chip" data-view="pelvis">🦴 Pelvis (শ্রোণিদেশ)</button>
-          <button class="region-chip" data-view="arms">💪 Upper Limbs (হাত)</button>
-          <button class="region-chip" data-view="legs">🦵 Lower Limbs (পা)</button>
-          <button class="region-chip" data-view="spine">🧬 Spine & Back (মেরুদণ্ড)</button>
+          <button class="region-chip" data-view="arms">💪 Limbs (হাত)</button>
+          <button class="region-chip" data-view="legs">🦵 Legs (পা ও উরু)</button>
+          <button class="region-chip" data-view="spine">🧬 Spine (মেরুদণ্ড)</button>
         </div>
       </div>
 
-      <div class="detail-card">
-        <div class="detail-section-title">Exploded Anatomy View</div>
-        <div class="slider-row">
-          <span>Separate</span>
-          <input type="range" id="mb-slider-explode" min="0" max="1" step="0.01" value="0">
-          <span id="mb-val-explode" style="font-family:'JetBrains Mono';width:30px;">0%</span>
+      <!-- SETTING CARD 2: VISUAL DISPLAY MODES -->
+      <div class="setting-card">
+        <div class="setting-card-header">
+          <div class="setting-card-title">
+            <span class="setting-card-icon">👁️</span>
+            <div>
+              <div class="setting-card-heading">Display & View Modes</div>
+              <div class="setting-card-sub">ভিজ্যুয়াল প্রদর্শন ও গ্রাফিক্স নিয়ন্ত্রণ</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-row-info">
+            <div class="setting-row-label">🔄 360° Auto-Rotation</div>
+            <div class="setting-row-desc">মডেলটি স্বয়ংক্রিয়ভাবে চারদিকে ঘুরবে</div>
+          </div>
+          <button class="btn setting-toggle-btn" id="mb-btn-spin">Turn On</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-row-info">
+            <div class="setting-row-label">🩻 Holographic X-Ray</div>
+            <div class="setting-row-desc">স্বচ্ছ হলোগ্রাফিক অভ্যন্তরীণ ভিউ</div>
+          </div>
+          <button class="btn setting-toggle-btn" id="mb-btn-xray">Turn On</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-row-info">
+            <div class="setting-row-label">🏷️ 3D Anatomy Pins</div>
+            <div class="setting-row-desc">অঙ্গের উপর সরাসরি ৩ডি মার্কার পিন</div>
+          </div>
+          <button class="btn setting-toggle-btn" id="mb-btn-pins">Turn On</button>
+        </div>
+
+        <div class="setting-row" style="flex-direction:column;align-items:flex-start;gap:8px;">
+          <div class="setting-row-info">
+            <div class="setting-row-label">🎨 Interface Color Theme</div>
+            <div class="setting-row-desc">ডার্ক, লাইট অথবা সাইবার এক্স-রে থিম বেছে নিন</div>
+          </div>
+          <div style="display:flex;gap:6px;width:100%;">
+            <button class="btn detail-btn active" id="mb-theme-dark" style="flex:1;">Dark</button>
+            <button class="btn detail-btn" id="mb-theme-light" style="flex:1;">Light</button>
+            <button class="btn detail-btn" id="mb-theme-xray" style="flex:1;">X-Ray</button>
+          </div>
         </div>
       </div>
 
-      <div class="detail-card">
-        <div class="detail-section-title">Cross-Section Slicing</div>
-        <div style="display:flex;gap:4px;margin-bottom:6px;">
-          <button class="detail-btn active" id="mb-clip-off">Off</button>
-          <button class="detail-btn" id="mb-clip-axial">Axial</button>
-          <button class="detail-btn" id="mb-clip-coronal">Coronal</button>
-          <button class="detail-btn" id="mb-clip-sagittal">Sagittal</button>
+      <!-- SETTING CARD 3: ANATOMICAL DISSECTION -->
+      <div class="setting-card">
+        <div class="setting-card-header">
+          <div class="setting-card-title">
+            <span class="setting-card-icon">🔪</span>
+            <div>
+              <div class="setting-card-heading">Dissection & Slicing</div>
+              <div class="setting-card-sub">স্তর ব্যবচ্ছেদ ও ক্রস-সেকশন স্লাইস</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:8px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span class="setting-row-label">Exploded Anatomy (স্তর বিস্ফোরণ)</span>
+            <span id="mb-val-explode" style="font-family:'JetBrains Mono';font-size:12px;color:var(--accent);font-weight:700;">0%</span>
+          </div>
+          <input type="range" class="setting-range-slider" id="mb-slider-explode" min="0" max="1" step="0.01" value="0">
+        </div>
+
+        <div>
+          <div class="setting-row-label" style="margin-bottom:6px;">Cross-Section Slicing Plane (কাটিং স্লাইস)</div>
+          <div style="display:flex;gap:4px;">
+            <button class="detail-btn active" id="mb-clip-off" style="flex:1;">Normal</button>
+            <button class="detail-btn" id="mb-clip-axial" style="flex:1;">Axial</button>
+            <button class="detail-btn" id="mb-clip-coronal" style="flex:1;">Coronal</button>
+            <button class="detail-btn" id="mb-clip-sagittal" style="flex:1;">Sagittal</button>
+          </div>
         </div>
       </div>
 
-      <div class="detail-card">
-        <div class="detail-section-title">Physiology Simulation</div>
-        <div class="slider-row">
-          <span>Heart Rate (BPM)</span>
-          <input type="range" id="mb-slider-bpm" min="40" max="180" step="1" value="72">
-          <span id="mb-val-bpm" style="font-family:'JetBrains Mono';width:30px;">72</span>
+      <!-- SETTING CARD 4: PHYSIOLOGY SIMULATION -->
+      <div class="setting-card">
+        <div class="setting-card-header">
+          <div class="setting-card-title">
+            <span class="setting-card-icon">💓</span>
+            <div>
+              <div class="setting-card-heading">Physiology Simulation</div>
+              <div class="setting-card-sub">লাইভ কার্ডিয়াক ও পালমোনারি ভাইটালস</div>
+            </div>
+          </div>
         </div>
-        <div class="slider-row">
-          <span>Respiration (RPM)</span>
-          <input type="range" id="mb-slider-resp" min="8" max="40" step="1" value="16">
-          <span id="mb-val-resp" style="font-family:'JetBrains Mono';width:30px;">16</span>
+
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span class="setting-row-label">Heart Rate (হৃদস্পন্দন)</span>
+            <span style="font-family:'JetBrains Mono';font-size:12px;color:var(--accent);font-weight:700;"><span id="mb-val-bpm">72</span> BPM</span>
+          </div>
+          <input type="range" class="setting-range-slider" id="mb-slider-bpm" min="40" max="180" step="1" value="72">
+        </div>
+
+        <div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+            <span class="setting-row-label">Respiration (শ্বাস-প্রশ্বাস)</span>
+            <span style="font-family:'JetBrains Mono';font-size:12px;color:var(--accent);font-weight:700;"><span id="mb-val-resp">16</span> RPM</span>
+          </div>
+          <input type="range" class="setting-range-slider" id="mb-slider-resp" min="8" max="40" step="1" value="16">
         </div>
       </div>
 
-      <div class="detail-card" style="flex-direction:row;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;font-weight:600;">Auto-Rotation (ঘূর্ণন)</span>
-        <button class="btn" id="mb-btn-spin">🔄 Toggle</button>
+      <!-- SETTING CARD 5: ACTIONS & EXPORTS -->
+      <div class="setting-card">
+        <div class="setting-card-header">
+          <div class="setting-card-title">
+            <span class="setting-card-icon">⚡</span>
+            <div>
+              <div class="setting-card-heading">Actions & Export</div>
+              <div class="setting-card-sub">ছবি ডাউনলোড ও মডেল রিসেট</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-row-info">
+            <div class="setting-row-label">📸 HD Screenshot</div>
+            <div class="setting-row-desc">উচ্চ রেজোলিউশনে ছবি ডাউনলোড করুন</div>
+          </div>
+          <button class="btn active" id="mb-btn-snap" style="padding:6px 14px;font-size:12px;">Download</button>
+        </div>
+
+        <div class="setting-row">
+          <div class="setting-row-info">
+            <div class="setting-row-label">🔄 Reset Model View</div>
+            <div class="setting-row-desc">ক্যামেরা ও ভিউ ডিফল্ট অবস্থানে নিন</div>
+          </div>
+          <button class="btn" id="mb-btn-reset-view" style="padding:6px 14px;font-size:12px;">Reset</button>
+        </div>
       </div>
 
-      <div class="detail-card" style="flex-direction:row;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;font-weight:600;">Holographic X-Ray</span>
-        <button class="btn" id="mb-btn-xray">🩻 Toggle</button>
-      </div>
-
-      <div class="detail-card" style="flex-direction:row;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;font-weight:600;">3D Pin Labels (ট্যাগ)</span>
-        <button class="btn" id="mb-btn-pins">🏷️ Toggle</button>
-      </div>
-
-      <div class="detail-card" style="flex-direction:row;justify-content:space-between;align-items:center;">
-        <span style="font-size:13px;font-weight:600;">HD Screenshot (ছবি)</span>
-        <button class="btn active" id="mb-btn-snap">📸 Download</button>
-      </div>
     </div>
   </section>
 
@@ -2839,6 +2940,7 @@ function toggleRotate() {
   controls.autoRotate = state.autoRotate;
   $('dt-btn-rotate').classList.toggle('active', state.autoRotate);
   $('mb-btn-spin').classList.toggle('active', state.autoRotate);
+  $('mb-btn-spin').textContent = state.autoRotate ? 'ON' : 'OFF';
 }
 $('dt-btn-rotate').onclick = toggleRotate;
 $('mb-btn-spin').onclick = toggleRotate;
@@ -2848,6 +2950,7 @@ function toggleXray() {
   state.xray = !state.xray;
   $('dt-btn-xray').classList.toggle('active', state.xray);
   $('mb-btn-xray').classList.toggle('active', state.xray);
+  $('mb-btn-xray').textContent = state.xray ? 'ON' : 'OFF';
 
   if (state.xray) {
     document.body.setAttribute('data-theme', 'xray');
@@ -2880,6 +2983,7 @@ function togglePins() {
   worldLabelsEl.style.display = state.showPins ? 'block' : 'none';
   $('dt-btn-labels').classList.toggle('active', state.showPins);
   $('mb-btn-pins').classList.toggle('active', state.showPins);
+  $('mb-btn-pins').textContent = state.showPins ? 'ON' : 'OFF';
   showToast(state.showPins ? '3D Pins Shown' : '3D Pins Hidden');
 }
 $('dt-btn-labels').onclick = togglePins;
@@ -2997,6 +3101,36 @@ function resetCamera() {
 }
 $('dt-brand-home').onclick = resetCamera;
 $('mb-brand-home').onclick = resetCamera;
+if ($('mb-btn-reset-view')) {
+  $('mb-btn-reset-view').onclick = () => {
+    resetCamera();
+    closeAllMobileSheets();
+  };
+}
+
+// Touch event isolation on mobile sheets so swiping inside sheets never conflicts with 3D canvas
+document.querySelectorAll('.mobile-app-sheet').forEach(sheet => {
+  sheet.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+  sheet.addEventListener('touchmove', (e) => e.stopPropagation(), { passive: true });
+  sheet.addEventListener('touchend', (e) => e.stopPropagation(), { passive: true });
+  sheet.addEventListener('wheel', (e) => e.stopPropagation(), { passive: true });
+});
+
+// Card theme selectors
+function applyAppTheme(th) {
+  state.theme = th;
+  document.body.setAttribute('data-theme', th);
+  showToast(`Theme: ${th.toUpperCase()}`);
+  ['dark', 'light', 'xray'].forEach(t => {
+    const el = $(`mb-theme-${t}`);
+    if (el) el.classList.toggle('active', t === th);
+  });
+}
+if ($('mb-theme-dark')) {
+  $('mb-theme-dark').onclick = () => applyAppTheme('dark');
+  $('mb-theme-light').onclick = () => applyAppTheme('light');
+  $('mb-theme-xray').onclick = () => applyAppTheme('xray');
+}
 
 // Details Language toggle (Bangla details vs English details)
 function toggleDetailsLang() {
