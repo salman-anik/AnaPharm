@@ -669,53 +669,92 @@ canvas { display: block; width: 100%; height: 100%; }
 #mobile-top-bar {
   position: absolute;
   top: max(8px, var(--safe-top));
-  left: 10px;
-  right: 10px;
+  left: max(8px, var(--safe-left));
+  right: max(8px, var(--safe-right));
   display: none;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   pointer-events: none;
   z-index: 30;
+  box-sizing: border-box;
+  flex-wrap: nowrap;
 }
 .mobile-pill {
   pointer-events: auto;
   background: var(--bg-panel);
   backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
   display: flex;
   align-items: center;
+  height: 32px;
+  box-sizing: border-box;
 }
 .mobile-brand-pill {
-  padding: 5px 12px 5px 6px;
-  gap: 8px;
+  padding: 0 8px 0 5px;
+  gap: 5px;
   cursor: pointer;
+  flex-shrink: 0;
+}
+.mobile-focus-pill {
+  flex: 1 1 auto;
+  max-width: 125px;
+  min-width: 75px;
+  padding: 0 6px;
+  gap: 4px;
+  overflow: hidden;
+}
+.mobile-focus-pill select {
+  width: 100%;
+  max-width: 100%;
+  padding: 2px 0;
+  font-size: 11px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 .mobile-top-actions {
   display: flex;
-  gap: 6px;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 .mobile-btn {
   pointer-events: auto;
   background: var(--bg-panel);
   backdrop-filter: var(--blur);
+  -webkit-backdrop-filter: var(--blur);
   border: 1px solid var(--border);
   border-radius: var(--radius-full);
-  height: 36px;
-  padding: 0 10px;
+  height: 32px;
+  padding: 0 8px;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: var(--text-main);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 3px;
   cursor: pointer;
+  flex-shrink: 0;
+  box-sizing: border-box;
 }
-.mobile-btn.btn-icon { width: 36px; padding: 0; }
+.mobile-btn.btn-icon {
+  width: 32px;
+  padding: 0;
+}
+
+@media (max-width: 360px) {
+  .mobile-brand-title { display: none; }
+  .mobile-focus-pill { max-width: 95px; }
+  #mb-lbl-lang { display: none; }
+  #mobile-top-bar { gap: 4px; }
+}
 
 /* Mobile Floating Peek Card (Above Navbar) */
 #organ-peek-card {
@@ -1020,33 +1059,33 @@ canvas { display: block; width: 100%; height: 100%; }
          2. MOBILE INTERFACE (Shown on Mobile < 900px)
          ===================================================================== -->
     <header id="mobile-top-bar">
+      <!-- Brand & View Reset -->
       <div class="mobile-pill mobile-brand-pill" id="mb-brand-home" title="Reset View">
-        <div class="brand-icon" style="width:26px;height:26px;font-size:13px;">🧬</div>
-        <div>
-          <div style="font-size:12px;font-weight:700;line-height:1.1;">Anatomy 3D</div>
-        </div>
+        <div class="brand-icon" style="width:22px;height:22px;font-size:12px;">🧬</div>
+        <span class="mobile-brand-title" style="font-size:11.5px;font-weight:700;">Anatomy</span>
       </div>
 
       <!-- Compact Focus Region Select on Mobile (Takes zero space over model) -->
-      <div class="mobile-pill" style="padding: 3px 8px;" title="Focus Body Region">
-        <span style="font-size:12px;">🎯</span>
-        <select id="mb-camera-select" class="clean-select" style="max-width: 115px; font-size: 11px;" aria-label="Focus Body Region">
-          <option value="full">🧍 Full Body (পুরো শরীর)</option>
-          <option value="head">🧠 Head (মাথা ও মস্তিষ্ক)</option>
-          <option value="thorax">🫁 Thorax (বক্ষ ও বুক)</option>
-          <option value="abdomen">🫄 Abdomen (উদর ও পেট)</option>
-          <option value="pelvis">🦴 Pelvis (শ্রোণিদেশ)</option>
-          <option value="arms">💪 Limbs (হাত)</option>
-          <option value="legs">🦵 Legs (পা ও উরু)</option>
-          <option value="spine">🧬 Spine (মেরুদণ্ড)</option>
+      <div class="mobile-pill mobile-focus-pill" title="Focus Body Region">
+        <span style="font-size:11px;flex-shrink:0;">🎯</span>
+        <select id="mb-camera-select" class="clean-select" aria-label="Focus Body Region">
+          <option value="full">Full Body</option>
+          <option value="head">Head & Brain</option>
+          <option value="thorax">Thorax</option>
+          <option value="abdomen">Abdomen</option>
+          <option value="pelvis">Pelvis</option>
+          <option value="arms">Limbs</option>
+          <option value="legs">Legs</option>
+          <option value="spine">Spine</option>
         </select>
       </div>
 
+      <!-- Action Buttons -->
       <div class="mobile-top-actions">
-        <button class="mobile-btn" id="mb-btn-lang" title="Toggle Details Language">
+        <button class="mobile-btn" id="mb-btn-lang" title="Toggle Language (বাং / EN)">
           <span>🌐</span> <strong id="mb-lbl-lang">বাং</strong>
         </button>
-        <button class="mobile-btn btn-icon" id="mb-btn-audio" title="Audio"><span>🔊</span></button>
+        <button class="mobile-btn btn-icon" id="mb-btn-audio" title="Heart Sound"><span>🔊</span></button>
         <button class="mobile-btn btn-icon" id="mb-btn-theme" title="Theme"><span>🎨</span></button>
       </div>
     </header>
@@ -2962,9 +3001,10 @@ $('mb-brand-home').onclick = resetCamera;
 // Details Language toggle (Bangla details vs English details)
 function toggleDetailsLang() {
   detailsLang = detailsLang === 'bn' ? 'en' : 'bn';
-  const label = detailsLang === 'bn' ? 'বাংলা বিবরণ' : 'English Details';
-  $('dt-lbl-lang').textContent = label;
-  $('mb-lbl-lang').textContent = label;
+  const dtLabel = detailsLang === 'bn' ? 'বাংলা বিবরণ' : 'English Details';
+  const mbLabel = detailsLang === 'bn' ? 'বাং' : 'EN';
+  $('dt-lbl-lang').textContent = dtLabel;
+  if ($('mb-lbl-lang')) $('mb-lbl-lang').textContent = mbLabel;
 
   $('dt-lbl-desc').textContent = detailsLang === 'bn' ? 'অঙ্গসংস্থান ও ভূমিকা (Anatomy & Overview)' : 'Anatomy & Overview';
   $('dt-lbl-funcs').textContent = detailsLang === 'bn' ? 'প্রধান শারীরবৃত্তীয় কাজ (Primary Functions)' : 'Primary Functions';
