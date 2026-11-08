@@ -51,7 +51,9 @@ export default function SystemsScreen() {
                   <Text style={styles.sysIcon}>{sys.icon}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.sysName}>{sys.name}</Text>
+                  <Text style={styles.sysName}>
+                    {sys.name} <Text style={styles.sysNameBn}>({sys.name_bn})</Text>
+                  </Text>
                   <Text style={styles.organCount}>
                     {organs.length} {organs.length === 1 ? 'organ mapped' : 'organs mapped'}
                   </Text>
@@ -69,7 +71,9 @@ export default function SystemsScreen() {
                       onPress={() => handleOpenOrgan(organ)}
                     >
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.organName}>{organ.name}</Text>
+                        <Text style={styles.organName}>
+                          {organ.name} <Text style={styles.organNameBn}>({organ.name_bn})</Text>
+                        </Text>
                         {organ.latin ? (
                           <Text style={styles.organLatin}>{organ.latin}</Text>
                         ) : null}
@@ -150,6 +154,16 @@ const styles = StyleSheet.create({
     color: '#f8fafc',
     fontSize: 16,
     fontWeight: '600',
+  },
+  sysNameBn: {
+    color: '#38bdf8',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  organNameBn: {
+    color: '#38bdf8',
+    fontSize: 12,
+    fontWeight: '500',
   },
   organCount: {
     color: '#64748b',

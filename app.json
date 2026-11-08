@@ -4,7 +4,6 @@
     "slug": "human-autonomy-3d",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "splash": {
       "backgroundColor": "#020617"
@@ -18,9 +17,6 @@
         "backgroundColor": "#020617"
       },
       "package": "com.humanautonomy.anatomy3d"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
     }
   }
 }

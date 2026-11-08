@@ -4,10 +4,9 @@ import {
   View,
   Text,
   TouchableOpacity,
-  SafeAreaView,
   StatusBar,
 } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import ModelScreen from './src/screens/ModelScreen';
 import SystemsScreen from './src/screens/SystemsScreen';
 import SearchScreen from './src/screens/SearchScreen';
@@ -41,7 +40,9 @@ export default function App() {
             bpm={bpm}
             respRate={respRate}
             autoRotate={autoRotate}
+            setAutoRotate={setAutoRotate}
             xrayMode={xrayMode}
+            setXrayMode={setXrayMode}
             explodeVal={explodeVal}
             theme={theme}
           />

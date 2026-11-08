@@ -125,7 +125,9 @@ export default function SearchScreen() {
             >
               <View style={styles.cardTop}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.cardTitle}>{item.name}</Text>
+                  <Text style={styles.cardTitle}>
+                    {item.name} {item.name_bn ? <Text style={styles.cardTitleBn}>({item.name_bn})</Text> : null}
+                  </Text>
                   {item.latin ? (
                     <Text style={styles.cardLatin}>{item.latin}</Text>
                   ) : null}
@@ -268,6 +270,11 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '700',
+  },
+  cardTitleBn: {
+    color: '#38bdf8',
+    fontSize: 13,
+    fontWeight: '500',
   },
   cardLatin: {
     color: '#38bdf8',

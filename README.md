@@ -1,160 +1,43 @@
-# 🧬 3D Human Anatomy Explorer
+# 3D Human Anatomy Explorer (React Native / Expo)
 
-### An Interactive 3D Human Anatomy & Biosystems Learning Platform
+A cross-platform mobile application built with **React Native** and **Expo** that brings interactive 3D human anatomy exploration, physiological simulation, clinical pathologies, solutions, fitness advice, and medications to iOS and Android.
 
-Explore the human body through an interactive, high-detail 3D anatomy experience. This browser-based application allows users to visualize anatomical structures, explore organ systems, understand physiological processes, and learn human anatomy in both **Bangla and English**.
+## 🚀 Features
 
-The project is designed for students, educators, and anyone interested in understanding the complexity of the human body through interactive visualization.
+- **Interactive 3D Viewport**: High-performance WebGL / Three.js 3D anatomy rendering with touch orbit, zoom, pan, and raycast tap selection.
+- **Bilingual Experience**:
+  - **All UI buttons, tabs, headers, and controls** are in **English**.
+  - **All medical details** (overview, functions, clinical facts, diseases, medical solutions, fitness tips, and medications) are provided in comprehensive **Bangla (বাংলা)**.
+- **Full Clinical Dossier**:
+  - ⚠️ **Diseases & Conditions** (specific pathologies for each organ)
+  - 🩺 **Solutions & Medical Treatments** (clinical procedures, tests, interventions)
+  - 🌿 **How to Keep Fit & Healthy** (dietary guidelines, preventative habits)
+  - 💊 **Common Medications & Clinical Care** (first-line drug classes and disclaimer)
+- **5 Native Tab Screens**:
+  1. **3D Model**: Interactive viewport with vitals HUD (BPM/RPM) and focus region chips.
+  2. **Systems**: Hierarchical breakdown of all anatomical systems and their organs.
+  3. **Search**: Real-time multi-field search across English names, Bangla names, and Latin terms.
+  4. **Quiz**: Interactive clinical anatomy challenge with score tracking and explanations.
+  5. **Settings**: Apple Health-style cards for Themes, Auto-rotate, X-Ray, Physiology sliders, and Exploded view.
 
----
+## 📦 How to Run
 
-## ✨ Key Features
-
-### 🫀 Interactive 3D Anatomy
-- Explore detailed 3D anatomical structures.
-- Rotate, zoom, and navigate around the human body.
-- Select individual organs and anatomical structures.
-- Focus on specific body parts.
-- Display interactive labels directly on the 3D model.
-
-### 🧠 Seven Anatomical Systems
-
-Explore different systems of the human body:
-
-| System | Description |
-|---|---|
-| Skeletal System | Bones and skeletal structures |
-| Muscular System | Muscles and movement |
-| Cardiovascular System | Heart, blood vessels, and circulation |
-| Nervous System | Brain, spinal cord, and nerves |
-| Respiratory System | Lungs and breathing structures |
-| Digestive System | Digestive organs and processes |
-| Urinary System | Kidneys and urinary structures |
-
-### 🔬 Advanced Visualization Tools
-- **X-Ray Mode:** Explore anatomical structures using a translucent visualization.
-- **Isolation Mode:** Focus on individual anatomical systems.
-- **Layer Slicing:** Explore internal structures using axial, coronal, and sagittal planes.
-- **Exploded View:** Separate anatomical components for easier exploration.
-- **Opacity Controls:** Adjust the visibility of anatomical systems.
-- **Camera Presets:** Quickly navigate between different body regions.
-
-### 🌍 Bilingual Learning Experience
-- Anatomical names in English with Bengali translations.
-- Medical descriptions and explanations in Bangla.
-- Switch between Bangla and English descriptions.
-- Explore anatomical functions and clinical information.
-
-### ❤️ Physiological Animations
-- Animated cardiac cycle.
-- Simulated lung expansion and contraction.
-- Animated blood circulation particles.
-- Interactive heart rate and respiratory rate controls.
-- ECG-style Lead II visualization.
-
-### 📚 Anatomy Learning & Quiz
-- Search anatomical structures by name.
-- Browse the anatomical directory.
-- Identify anatomical structures through interactive selection.
-- Test your knowledge with an anatomy quiz.
-- Track quiz scores and consecutive correct answers.
-
-### 📱 Responsive Interface
-- Dedicated desktop medical workstation interface.
-- Mobile-friendly application-style navigation.
-- Floating organ information cards.
-- Slide-up navigation panels.
-- Optimized controls for touchscreens.
-
-### 🎨 Additional Features
-- Dark, Light, and X-Ray themes.
-- Screenshot capture and PNG download.
-- Interactive camera controls.
-- Optional sound effects and heartbeat audio.
-- Responsive anatomical information panels.
-
----
-
-## 🚀 Getting Started
-
-No installation or build process is required.
-
-### Run Locally
-
-1. Clone the repository:
-
+1. Open terminal inside the project folder:
    ```bash
-   git clone https://github.com/salman-anik/human-autonomy.git
+   cd react-native-anatomy
    ```
 
-2. Navigate to the project directory:
-
+2. Install dependencies:
    ```bash
-   cd human-autonomy
+   npm install
    ```
 
-3. Open `index.html` in your browser.
+3. Start the Expo development server:
+   ```bash
+   npx expo start
+   ```
 
-Alternatively, use the VS Code Live Server extension to run the application locally.
-
-### Browser Compatibility
-
-Compatible with modern browsers:
-
-- Google Chrome
-- Microsoft Edge
-- Mozilla Firefox
-- Safari
-
-A WebGL-compatible browser and graphics hardware are recommended for the best 3D experience.
-
----
-
-## 🛠️ Technology Stack
-
-- **HTML5** – Application structure
-- **CSS3** – Responsive interface and visual styling
-- **JavaScript** – Application logic and interactivity
-- **Three.js** – 3D graphics and anatomical visualization
-- **WebGL** – Hardware-accelerated 3D rendering
-- **Google Fonts** – Typography and multilingual presentation
-
----
-
-## 🎯 Project Goals
-
-The goal of this project is to make human anatomy more accessible through interactive 3D visualization.
-
-Traditional anatomy learning often relies on static diagrams and illustrations. This project introduces a more engaging approach by combining 3D exploration, interactive controls, physiological animations, and bilingual educational content.
-
----
-
-## ⚠️ Educational Disclaimer
-
-This project is intended for educational and visualization purposes only.
-
-The anatomical models, physiological animations, and clinical information should not be considered a substitute for professional medical education, diagnostic tools, or medical advice.
-
----
-
-## 👨‍💻 Developer
-
-**Salman Anik**
-
-B.Sc. in Computer Science & Engineering  
-East West University, Bangladesh
-
-- GitHub: [@salman-anik](https://github.com/salman-anik)
-- Portfolio: [salmananik.vercel.app](https://salmananik.vercel.app/)
-
----
-
-## 📄 License
-
-This project is open-source under the [MIT License](LICENSE).
-
----
-
-⭐ If you find this project interesting or useful, consider giving the repository a star!
-
-**Explore the human body. Understand its systems. Learn through 3D visualization.**
+4. Press:
+   - `a` to open on an Android emulator or scan QR code in Expo Go app.
+   - `i` to open on an iOS simulator.
+   - `w` to open web preview in browser.
