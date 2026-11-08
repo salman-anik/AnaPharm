@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "3D Human Anatomy Explorer",
+    "slug": "human-autonomy-3d",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "backgroundColor": "#020617"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.humanautonomy.anatomy3d"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#020617"
+      },
+      "package": "com.humanautonomy.anatomy3d"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}
