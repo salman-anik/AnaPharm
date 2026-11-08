@@ -257,38 +257,58 @@ canvas { display: block; width: 100%; height: 100%; }
   justify-content: center;
 }
 
-/* Desktop Floating Camera Navigator */
-#desktop-camera-nav {
-  position: absolute;
-  left: 14px;
-  bottom: 24px;
-  display: flex;
-  flex-direction: column;
+/* Clean Select & Region Grid Controls */
+.clean-select {
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 11.5px;
+  font-weight: 600;
+  outline: none;
+  cursor: pointer;
+  padding: 3px 4px;
+}
+.clean-select option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+[data-theme="light"] .clean-select option {
+  background: #ffffff;
+  color: #0f172a;
+}
+.region-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 6px;
-  z-index: 15;
+  margin-top: 6px;
 }
-.camera-pill-group {
-  display: flex;
-  flex-wrap: wrap;
-  max-width: 280px;
-  gap: 4px;
-  padding: 6px;
-}
-.camera-pill {
+.region-chip {
   font-family: inherit;
   font-size: 11px;
   font-weight: 600;
-  padding: 4px 9px;
-  border-radius: var(--radius-full);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
   background: var(--bg-card);
   border: 1px solid var(--border);
   color: var(--text-muted);
   cursor: pointer;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
 }
-.camera-pill:hover, .camera-pill.active {
-  background: var(--accent);
-  color: #fff;
+.region-chip:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: var(--border-focus);
+}
+.region-chip.active {
+  background: rgba(14, 165, 233, 0.16);
   border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 700;
 }
 
 /* Desktop Vitals & ECG Monitor */
@@ -900,7 +920,6 @@ canvas { display: block; width: 100%; height: 100%; }
   #sidebar { display: none !important; }
   #desktop-top-bar { display: none !important; }
   #desktop-vitals-hud { display: none !important; }
-  #desktop-camera-nav { display: none !important; }
   
   #mobile-top-bar { display: flex !important; }
   #mobile-bottom-navbar { display: flex !important; }
@@ -916,7 +935,6 @@ canvas { display: block; width: 100%; height: 100%; }
   #sidebar { display: flex !important; }
   #desktop-top-bar { display: flex !important; }
   #desktop-vitals-hud { display: flex !important; }
-  #desktop-camera-nav { display: flex !important; }
 }
 </style>
 </head>
@@ -949,6 +967,22 @@ canvas { display: block; width: 100%; height: 100%; }
         <div class="desktop-search-dropdown" id="dt-search-results"></div>
       </div>
 
+      <!-- Focus Region Selector (Replaces intrusive screen-blocking camera pills) -->
+      <div class="hud-card" style="display:flex;align-items:center;gap:6px;padding:4px 10px;" title="Focus Body Region">
+        <span style="font-size:13px;">🎯</span>
+        <span style="font-size:11px;font-weight:600;color:var(--text-dim);">Focus:</span>
+        <select id="dt-camera-select" class="clean-select" aria-label="Select Body Region">
+          <option value="full">🧍 Full Body (পুরো শরীর)</option>
+          <option value="head">🧠 Head & Brain (মাথা ও মস্তিষ্ক)</option>
+          <option value="thorax">🫁 Thorax & Heart (বক্ষ ও হৃৎপিণ্ড)</option>
+          <option value="abdomen">🫄 Abdomen (উদর ও যকৃত)</option>
+          <option value="pelvis">🦴 Pelvis (শ্রোণিদেশ)</option>
+          <option value="arms">💪 Upper Limbs (হাত)</option>
+          <option value="legs">🦵 Lower Limbs (পা ও উরু)</option>
+          <option value="spine">🧬 Spine (মেরুদণ্ড)</option>
+        </select>
+      </div>
+
       <!-- Action Tools -->
       <div class="hud-card tool-group">
         <button class="btn btn-icon" id="dt-btn-zin" title="Zoom in (+)">+</button>
@@ -962,20 +996,6 @@ canvas { display: block; width: 100%; height: 100%; }
         <button class="btn btn-icon" id="dt-btn-snapshot" title="Take HD Screenshot">📸</button>
       </div>
     </header>
-
-    <!-- Desktop Floating Camera Nav -->
-    <nav id="desktop-camera-nav" aria-label="Camera Presets">
-      <div class="hud-card camera-pill-group">
-        <button class="camera-pill active" data-view="full">Full Body</button>
-        <button class="camera-pill" data-view="head">Head & Brain</button>
-        <button class="camera-pill" data-view="thorax">Thorax & Heart</button>
-        <button class="camera-pill" data-view="abdomen">Abdomen</button>
-        <button class="camera-pill" data-view="pelvis">Pelvis</button>
-        <button class="camera-pill" data-view="arms">Upper Limbs</button>
-        <button class="camera-pill" data-view="legs">Lower Limbs</button>
-        <button class="camera-pill" data-view="spine">Spine (Back)</button>
-      </div>
-    </nav>
 
     <!-- Desktop Vitals & Live Lead II ECG Monitor -->
     <div id="desktop-vitals-hud" class="hud-card">
@@ -1000,20 +1020,34 @@ canvas { display: block; width: 100%; height: 100%; }
          2. MOBILE INTERFACE (Shown on Mobile < 900px)
          ===================================================================== -->
     <header id="mobile-top-bar">
-      <div class="mobile-pill mobile-brand-pill" id="mb-brand-home">
-        <div class="brand-icon" style="width:28px;height:28px;font-size:14px;">🧬</div>
+      <div class="mobile-pill mobile-brand-pill" id="mb-brand-home" title="Reset View">
+        <div class="brand-icon" style="width:26px;height:26px;font-size:13px;">🧬</div>
         <div>
-          <div style="font-size:13px;font-weight:700;line-height:1.1;">Human Anatomy</div>
-          <div style="font-size:9px;color:var(--accent);font-weight:700;">3D ATLAS PRO</div>
+          <div style="font-size:12px;font-weight:700;line-height:1.1;">Anatomy 3D</div>
         </div>
       </div>
 
+      <!-- Compact Focus Region Select on Mobile (Takes zero space over model) -->
+      <div class="mobile-pill" style="padding: 3px 8px;" title="Focus Body Region">
+        <span style="font-size:12px;">🎯</span>
+        <select id="mb-camera-select" class="clean-select" style="max-width: 115px; font-size: 11px;" aria-label="Focus Body Region">
+          <option value="full">🧍 Full Body (পুরো শরীর)</option>
+          <option value="head">🧠 Head (মাথা ও মস্তিষ্ক)</option>
+          <option value="thorax">🫁 Thorax (বক্ষ ও বুক)</option>
+          <option value="abdomen">🫄 Abdomen (উদর ও পেট)</option>
+          <option value="pelvis">🦴 Pelvis (শ্রোণিদেশ)</option>
+          <option value="arms">💪 Limbs (হাত)</option>
+          <option value="legs">🦵 Legs (পা ও উরু)</option>
+          <option value="spine">🧬 Spine (মেরুদণ্ড)</option>
+        </select>
+      </div>
+
       <div class="mobile-top-actions">
-        <button class="mobile-btn" id="mb-btn-lang">
-          <span>🌐</span> <strong id="mb-lbl-lang">বাংলা বিবরণ</strong>
+        <button class="mobile-btn" id="mb-btn-lang" title="Toggle Details Language">
+          <span>🌐</span> <strong id="mb-lbl-lang">বাং</strong>
         </button>
-        <button class="mobile-btn btn-icon" id="mb-btn-audio"><span>🔊</span></button>
-        <button class="mobile-btn btn-icon" id="mb-btn-theme"><span>🎨</span></button>
+        <button class="mobile-btn btn-icon" id="mb-btn-audio" title="Audio"><span>🔊</span></button>
+        <button class="mobile-btn btn-icon" id="mb-btn-theme" title="Theme"><span>🎨</span></button>
       </div>
     </header>
 
@@ -1112,6 +1146,20 @@ canvas { display: block; width: 100%; height: 100%; }
 
       <!-- TAB 3: TOOLS & CROSS-SECTION -->
       <section id="tab-tools" class="tab-page" style="display:none;">
+        <div class="detail-card">
+          <div class="detail-section-title">Focus Anatomical Region (শরীরের নির্দিষ্ট অংশ ফোকাস)</div>
+          <div class="region-grid">
+            <button class="region-chip active" data-view="full">🧍 Full Body (পুরো শরীর)</button>
+            <button class="region-chip" data-view="head">🧠 Head & Brain (মাথা ও মস্তিষ্ক)</button>
+            <button class="region-chip" data-view="thorax">🫁 Thorax & Heart (বক্ষ ও হৃৎপিণ্ড)</button>
+            <button class="region-chip" data-view="abdomen">🫄 Abdomen (উদর ও পেট)</button>
+            <button class="region-chip" data-view="pelvis">🦴 Pelvis (শ্রোণিদেশ)</button>
+            <button class="region-chip" data-view="arms">💪 Upper Limbs (হাত)</button>
+            <button class="region-chip" data-view="legs">🦵 Lower Limbs (পা ও উরু)</button>
+            <button class="region-chip" data-view="spine">🧬 Spine & Back (মেরুদণ্ড)</button>
+          </div>
+        </div>
+
         <div class="detail-card">
           <div class="detail-section-title">Exploded Anatomy View (বিস্ফোরিত ভিউ)</div>
           <div class="slider-row">
@@ -1276,6 +1324,20 @@ canvas { display: block; width: 100%; height: 100%; }
       <button class="sheet-close-btn" data-close="mb-sheet-tools">✕</button>
     </div>
     <div class="sheet-body">
+      <div class="detail-card">
+        <div class="detail-section-title">Focus Anatomical Region (শরীরের নির্দিষ্ট অংশ ফোকাস)</div>
+        <div class="region-grid">
+          <button class="region-chip active" data-view="full">🧍 Full Body (পুরো শরীর)</button>
+          <button class="region-chip" data-view="head">🧠 Head & Brain (মাথা ও মস্তিষ্ক)</button>
+          <button class="region-chip" data-view="thorax">🫁 Thorax & Heart (বক্ষ ও হৃৎপিণ্ড)</button>
+          <button class="region-chip" data-view="abdomen">🫄 Abdomen (উদর ও পেট)</button>
+          <button class="region-chip" data-view="pelvis">🦴 Pelvis (শ্রোণিদেশ)</button>
+          <button class="region-chip" data-view="arms">💪 Upper Limbs (হাত)</button>
+          <button class="region-chip" data-view="legs">🦵 Lower Limbs (পা)</button>
+          <button class="region-chip" data-view="spine">🧬 Spine & Back (মেরুদণ্ড)</button>
+        </div>
+      </div>
+
       <div class="detail-card">
         <div class="detail-section-title">Exploded Anatomy View</div>
         <div class="slider-row">
@@ -2827,15 +2889,51 @@ function takeSnapshot() {
 $('dt-btn-snapshot').onclick = takeSnapshot;
 $('mb-btn-snap').onclick = takeSnapshot;
 
-// Camera pills
-document.querySelectorAll('.camera-pill').forEach(btn => {
-  btn.onclick = () => {
-    document.querySelectorAll('.camera-pill').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const v = CAM_VIEWS[btn.dataset.view];
-    if (v) {
-      cameraTargetGoal = { target: v.t.clone(), dist: v.p.distanceTo(v.t) };
-      showToast(`View: ${btn.textContent}`);
+// Unified Camera & Body Region View Setter
+function setCameraView(viewKey) {
+  const v = CAM_VIEWS[viewKey];
+  if (!v) return;
+  cameraTargetGoal = { target: v.t.clone(), dist: v.p.distanceTo(v.t) };
+
+  // Sync desktop select
+  const dtSel = $('dt-camera-select');
+  if (dtSel && dtSel.value !== viewKey) dtSel.value = viewKey;
+
+  // Sync mobile select
+  const mbSel = $('mb-camera-select');
+  if (mbSel && mbSel.value !== viewKey) mbSel.value = viewKey;
+
+  // Sync region chips
+  document.querySelectorAll('.region-chip').forEach(chip => {
+    chip.classList.toggle('active', chip.dataset.view === viewKey);
+  });
+
+  const names = {
+    full: 'Full Body (পুরো শরীর)',
+    head: 'Head & Brain (মাথা ও মস্তিষ্ক)',
+    thorax: 'Thorax & Heart (বক্ষ ও হৃৎপিণ্ড)',
+    abdomen: 'Abdomen (উদর ও পেট)',
+    pelvis: 'Pelvis (শ্রোণিদেশ)',
+    arms: 'Upper Limbs (হাত)',
+    legs: 'Lower Limbs (পা)',
+    spine: 'Spine (মেরুদণ্ড)'
+  };
+  showToast(`View: ${names[viewKey] || viewKey}`);
+}
+
+if ($('dt-camera-select')) {
+  $('dt-camera-select').onchange = (e) => setCameraView(e.target.value);
+}
+if ($('mb-camera-select')) {
+  $('mb-camera-select').onchange = (e) => setCameraView(e.target.value);
+}
+document.querySelectorAll('.region-chip').forEach(chip => {
+  chip.onclick = () => {
+    setCameraView(chip.dataset.view);
+    // If mobile sheet is open, close it so user sees the 3D model immediately
+    const sheetTools = $('mb-sheet-tools');
+    if (sheetTools && sheetTools.classList.contains('open')) {
+      sheetTools.classList.remove('open');
     }
   };
 });
@@ -2856,8 +2954,7 @@ $('dt-btn-zout').onclick = () => {
 
 // Reset buttons
 function resetCamera() {
-  cameraTargetGoal = { target: CAM_VIEWS.full.t.clone(), dist: CAM_VIEWS.full.p.distanceTo(CAM_VIEWS.full.t) };
-  showToast('View Reset');
+  setCameraView('full');
 }
 $('dt-brand-home').onclick = resetCamera;
 $('mb-brand-home').onclick = resetCamera;
