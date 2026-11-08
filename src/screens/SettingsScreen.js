@@ -193,7 +193,7 @@ export default function SettingsScreen({
         </View>
 
         {/* CARD 5: DEVELOPER & SYSTEM CREDITS */}
-        <View style={[styles.card, styles.developerCard, isLight && styles.developerCardLight]}>
+        <View style={[styles.card, isLight && styles.cardLight]}>
           <View style={styles.cardHeader}>
             <Text style={styles.cardIcon}>👨‍💻</Text>
             <View>
@@ -210,31 +210,35 @@ export default function SettingsScreen({
               <Text style={[styles.devName, isLight && styles.devNameLight]}>Salman Anik</Text>
               <Text style={styles.devHandle}>@salmananik</Text>
               <Text style={[styles.devRole, isLight && styles.devRoleLight]}>
-                Lead Developer & Medical Systems Informatics
+                Lead Developer & Medical Informatics
               </Text>
             </View>
           </View>
 
           <View style={[styles.devInfoList, isLight && styles.devInfoListLight]}>
             <View style={styles.devInfoRow}>
-              <Text style={styles.devInfoLabel}>Application</Text>
-              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]}>AnaPharm Mobile</Text>
+              <Text style={styles.devInfoLabel}>Author</Text>
+              <Text style={[styles.devInfoValue, { color: '#0284c7', fontWeight: '700' }]}>
+                salmananik
+              </Text>
             </View>
             <View style={styles.devInfoRow}>
-              <Text style={styles.devInfoLabel}>Author / Lead</Text>
-              <Text style={[styles.devInfoValue, { color: '#0284c7', fontWeight: '700' }]}>salmananik</Text>
+              <Text style={styles.devInfoLabel}>GitHub</Text>
+              <Text style={[styles.devInfoValue, styles.devLinkText]} numberOfLines={1}>
+                github.com/salman-anik/AnaPharm
+              </Text>
             </View>
             <View style={styles.devInfoRow}>
-              <Text style={styles.devInfoLabel}>GitHub Repository</Text>
-              <Text style={[styles.devInfoValue, { color: '#0284c7' }]}>salman-anik/AnaPharm</Text>
-            </View>
-            <View style={styles.devInfoRow}>
-              <Text style={styles.devInfoLabel}>3D Viewport</Text>
-              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]}>Three.js WebGL Interactive Anatomy</Text>
+              <Text style={styles.devInfoLabel}>Clinical DB</Text>
+              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]} numberOfLines={1}>
+                2,594 Generics (33k+ Brands)
+              </Text>
             </View>
             <View style={[styles.devInfoRow, { borderBottomWidth: 0 }]}>
-              <Text style={styles.devInfoLabel}>Clinical Database</Text>
-              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]}>2,594 Generics (Bangladesh Pharmacopoeia)</Text>
+              <Text style={styles.devInfoLabel}>App Version</Text>
+              <Text style={[styles.devInfoValue, isLight && styles.devInfoValueLight]}>
+                1.0.0 (AnaPharm Mobile)
+              </Text>
             </View>
           </View>
         </View>
@@ -560,18 +564,25 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.05)',
+    gap: 12,
   },
   devInfoLabel: {
     color: '#64748b',
     fontSize: 12,
     fontWeight: '600',
+    minWidth: 75,
   },
   devInfoValue: {
     color: '#f8fafc',
     fontSize: 12,
     fontWeight: '600',
+    flex: 1,
+    textAlign: 'right',
   },
   devInfoValueLight: {
     color: '#0f172a',
+  },
+  devLinkText: {
+    color: '#0284c7',
   },
 });
