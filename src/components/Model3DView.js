@@ -2,7 +2,6 @@ import React, { useRef, useEffect, useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { THREE_B64, CONTROLS_B64 } from '../assets/threeBase64';
-import { OBJ_LOADER_B64, BP3D_MODELS_B64 } from '../assets/bp3dBundle';
 
 export default function Model3DView({
   onSelectOrgan,
@@ -29,9 +28,7 @@ export default function Model3DView({
       focusRegion,
       theme,
     });
-    // 1. PostMessage
     webViewRef.current.postMessage(msg);
-    // 2. Direct JavaScript injection fallback (bulletproof on Android)
     webViewRef.current.injectJavaScript(`
       if (window.onConfigUpdate) {
         window.onConfigUpdate(${msg});
@@ -51,7 +48,6 @@ export default function Model3DView({
     }
   };
 
-  // Memoize htmlContent so WebView doesn't reload on every render!
   const htmlContent = useMemo(() => `
 <!DOCTYPE html>
 <html>
@@ -101,12 +97,12 @@ export default function Model3DView({
   <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 </head>
 <body>
-  <div id="loader"><div class="spinner"></div><span>Loading Authentic 3D Medical Models...</span></div>
+  <div id="loader"><div class="spinner"></div><span>Rendering 3D Human Anatomy...</span></div>
   <div id="tooltip"></div>
   <canvas id="canvas3d"></canvas>
 
   <script>
-    // Bulletproof Three.js loader
+    // Bulletproof Three.js decoders
     if (typeof THREE === 'undefined') {
       try {
         const rawThree = atob("${THREE_B64}");
@@ -123,17 +119,6 @@ export default function Model3DView({
         console.error('OrbitControls fallback decode error:', err);
       }
     }
-    if (typeof THREE !== 'undefined' && !THREE.OBJLoader) {
-      try {
-        const rawLoader = atob("${OBJ_LOADER_B64}");
-        (1, eval)(rawLoader);
-      } catch (err) {
-        console.error('OBJLoader fallback decode error:', err);
-      }
-    }
-
-    const BP3D_DATA = ${JSON.stringify(BP3D_MODELS_B64)};
-    let objLoader = null;
 
     let scene, camera, renderer, controls;
     let organMeshes = [];
@@ -143,7 +128,7 @@ export default function Model3DView({
     let leftLungMesh = null;
     let bloodPoints = null;
     let bloodSpeeds = [];
-    let bloodCount = 130;
+    let bloodCount = 100;
 
     let config = {
       bpm: 72,
@@ -156,11 +141,11 @@ export default function Model3DView({
     };
 
     const CAM_VIEWS = {
-      all:     { p: new THREE.Vector3(0, 10.5, 20), t: new THREE.Vector3(0, 10.0, 0) },
-      head:    { p: new THREE.Vector3(0, 15.6, 5.5), t: new THREE.Vector3(0, 15.3, 0) },
-      thorax:  { p: new THREE.Vector3(0, 12.5, 6.5), t: new THREE.Vector3(0, 12.4, 0) },
-      abdomen: { p: new THREE.Vector3(0, 10.6, 5.8), t: new THREE.Vector3(0, 10.5, 0) },
-      pelvis:  { p: new THREE.Vector3(0, 7.2, 7.5), t: new THREE.Vector3(0, 7.0, 0) }
+      all:     { p: new THREE.Vector3(0, 10.0, 22), t: new THREE.Vector3(0, 9.5, 0) },
+      head:    { p: new THREE.Vector3(0, 16.5, 6.0), t: new THREE.Vector3(0, 16.2, 0) },
+      thorax:  { p: new THREE.Vector3(0, 12.8, 7.5), t: new THREE.Vector3(0, 12.6, 0) },
+      abdomen: { p: new THREE.Vector3(0, 10.5, 7.0), t: new THREE.Vector3(0, 10.3, 0) },
+      pelvis:  { p: new THREE.Vector3(0, 6.8, 8.5), t: new THREE.Vector3(0, 6.5, 0) }
     };
 
     let targetCamPos = CAM_VIEWS.all.p.clone();
@@ -175,11 +160,10 @@ export default function Model3DView({
     }
 
     function startApp() {
-      if (typeof THREE === 'undefined' || !THREE.OrbitControls || !THREE.OBJLoader) {
+      if (typeof THREE === 'undefined' || !THREE.OrbitControls) {
         setTimeout(startApp, 50);
         return;
       }
-      objLoader = new THREE.OBJLoader();
       initScene();
     }
 
@@ -213,38 +197,38 @@ export default function Model3DView({
       controls.enableDamping = true;
       controls.dampingFactor = 0.08;
       controls.minDistance = 3;
-      controls.maxDistance = 55;
+      controls.maxDistance = 50;
       controls.target.copy(CAM_VIEWS.all.t);
       controls.autoRotate = false;
       controls.autoRotateSpeed = 1.6;
 
-      // Lighting
-      const ambLight = new THREE.AmbientLight(0xffffff, 0.9);
+      // Studio Medical Lighting
+      const ambLight = new THREE.AmbientLight(0xffffff, 0.95);
       scene.add(ambLight);
 
-      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x182438, 0.85);
+      const hemiLight = new THREE.HemisphereLight(0xffffff, 0x1e293b, 0.9);
       scene.add(hemiLight);
 
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1.05);
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1.1);
       dirLight.position.set(12, 24, 20);
       scene.add(dirLight);
 
-      const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.6);
+      const rimLight = new THREE.DirectionalLight(0x38bdf8, 0.7);
       rimLight.position.set(-12, 10, -18);
       scene.add(rimLight);
 
-      // Subtle Ground Grid
+      // Anatomical Ground Grid
       const grid = new THREE.GridHelper(26, 26, 0x0ea5e9, 0x1e293b);
       grid.material.transparent = true;
       grid.material.opacity = 0.22;
       grid.position.y = -0.05;
       scene.add(grid);
 
-      // Build Authentic Medical Anatomy & Dynamic Blood Particles
-      buildFullAnatomy();
+      // Build the Complete Human Anatomy System
+      buildFullHumanAnatomy();
       buildBloodParticles();
 
-      // Touch Raycast
+      // Touch Raycast setup
       setupTouchRaycaster();
 
       // Hide Loader
@@ -254,118 +238,209 @@ export default function Model3DView({
       animate();
     }
 
-    // Loader for BodyParts3D authentic medical meshes
-    function loadBP3DOrgan(key, nameKey, system, colorHex, opts = {}) {
-      if (!BP3D_DATA || !BP3D_DATA[key] || !objLoader) return null;
-      try {
-        const rawObj = atob(BP3D_DATA[key]);
-        const group = objLoader.parse(rawObj);
+    // High-performance geometry generators
+    const S = (r, ws = 28, hs = 20) => new THREE.SphereGeometry(r, ws, hs);
+    const C = (rt, rb, h, rs = 22) => new THREE.CylinderGeometry(rt, rb, h, rs);
+    const T = (r, t, rs = 16, cs = 28) => new THREE.TorusGeometry(r, t, rs, cs);
+    const B = (w, h, d) => new THREE.BoxGeometry(w, h, d);
 
-        const mat = new THREE.MeshStandardMaterial({
-          color: colorHex,
-          roughness: system === 'skeletal' ? 0.38 : (system === 'cardio' ? 0.28 : 0.52),
-          metalness: system === 'cardio' ? 0.25 : 0.08,
-          transparent: Boolean(opts.opacity && opts.opacity < 1),
-          opacity: opts.opacity || 1.0,
-          side: THREE.DoubleSide
-        });
+    function registerOrgan(system, nameKey, geo, colorHex, x, y, z, opts = {}) {
+      const isSkin = (nameKey === 'Body Surface (Skin)');
+      const mat = new THREE.MeshStandardMaterial({
+        color: colorHex,
+        roughness: system === 'skeletal' ? 0.35 : (system === 'cardio' ? 0.22 : 0.48),
+        metalness: system === 'cardio' ? 0.22 : 0.05,
+        transparent: isSkin || Boolean(opts.opacity && opts.opacity < 1),
+        opacity: isSkin ? 0.18 : (opts.opacity || 1.0),
+        depthWrite: !isSkin,
+        side: THREE.DoubleSide
+      });
 
-        const created = [];
-        group.traverse(child => {
-          if (child.isMesh && child.geometry) {
-            child.material = mat.clone();
+      const mesh = new THREE.Mesh(geo, mat);
+      mesh.position.set(x, y, z);
+      if (opts.s) mesh.scale.set(opts.s[0], opts.s[1], opts.s[2]);
+      if (opts.r) mesh.rotation.set(opts.r[0], opts.r[1], opts.r[2]);
 
-            // Transform BodyParts3D millimeter coordinates into Three.js meter units
-            const pos = child.geometry.attributes.position;
-            for (let i = 0; i < pos.count; i++) {
-              const rx = pos.getX(i);
-              const ry = pos.getY(i);
-              const rz = pos.getZ(i);
+      mesh.userData = {
+        nameKey: nameKey,
+        system: system,
+        origColor: colorHex,
+        origOpacity: isSkin ? 0.18 : (opts.opacity || 1.0),
+        origPos: mesh.position.clone(),
+        origScale: mesh.scale.clone(),
+        explodeDir: new THREE.Vector3(x, y - 9.5, z).normalize()
+      };
 
-              // X lateral, Z cranial/caudal, Y anterior/posterior
-              const x = rx * 0.01;
-              const y = rz * 0.01;
-              const z = -(ry + 115) * 0.01;
-              pos.setXYZ(i, x, y, z);
-            }
-            pos.needsUpdate = true;
-            child.geometry.computeVertexNormals();
-            child.geometry.computeBoundingBox();
-
-            // Compute organ centroid for local scaling & outward anatomical explosion
-            const center = new THREE.Vector3();
-            child.geometry.boundingBox.getCenter(center);
-            child.geometry.center();
-            child.position.copy(center);
-
-            child.userData = {
-              nameKey: nameKey,
-              system: system,
-              origColor: colorHex,
-              origOpacity: opts.opacity || 1.0,
-              origPos: child.position.clone(),
-              origScale: child.scale.clone(),
-              explodeDir: new THREE.Vector3(center.x, center.y - 10.0, center.z).normalize()
-            };
-
-            scene.add(child);
-            organMeshes.push(child);
-            if (!organMap[nameKey]) organMap[nameKey] = [];
-            organMap[nameKey].push(child);
-            created.push(child);
-          }
-        });
-
-        return created.length === 1 ? created[0] : (created.length > 0 ? created[0] : null);
-      } catch (err) {
-        console.error('Error loading BP3D organ ' + key + ':', err);
-        return null;
-      }
+      scene.add(mesh);
+      organMeshes.push(mesh);
+      if (!organMap[nameKey]) organMap[nameKey] = [];
+      organMap[nameKey].push(mesh);
+      return mesh;
     }
 
-    function buildFullAnatomy() {
-      const SK = 0xf5eedb; // Clean ivory bone
-      const CA = 0xe11d48; // Heart crimson
-      const AO = 0xef4444; // Arterial scarlet
-      const NE = 0xfacc15; // Brain amber gold
-      const RE = 0xf472b6; // Lung soft rose
-      const TR = 0xcbd5e1; // Trachea silver
-      const DI_STOMACH = 0xf97316; // Stomach coral
-      const DI_LIVER = 0xb45309;   // Hepatic amber brown
-      const DI_GALL = 0x84cc16;    // Gallbladder lime
-      const DI_PANC = 0xeab308;    // Pancreas ochre
-      const UR_KIDNEY = 0x06b6d4;  // Kidney cyan
-      const UR_BLADDER = 0x0284c7; // Bladder sapphire
+    function registerBilateral(system, nameKey, geoFunc, colorHex, x, y, z, opts = {}) {
+      const left = registerOrgan(system, nameKey, geoFunc(), colorHex, x, y, z, opts);
+      const optsR = Object.assign({}, opts);
+      if (opts.r) optsR.r = [opts.r[0], -opts.r[1], -opts.r[2]];
+      const right = registerOrgan(system, nameKey, geoFunc(), colorHex, -x, y, z, optsR);
+      return { left, right };
+    }
 
-      // 1. SKELETAL SYSTEM (Authentic BodyParts3D Skull, Spine, Ribs & Femurs)
-      loadBP3DOrgan('skull', 'Skull (Cranium)', 'skeletal', SK);
-      loadBP3DOrgan('spine', 'Thoracic & Lumbar Spine', 'skeletal', SK);
-      loadBP3DOrgan('ribs', 'Rib Cage', 'skeletal', SK);
-      loadBP3DOrgan('femurR', 'Femur', 'skeletal', SK);
-      loadBP3DOrgan('femurL', 'Femur', 'skeletal', SK);
+    function buildFullHumanAnatomy() {
+      const SK = 0xf5eedb; // Ivory bone
+      const CA = 0xe11d48; // Heart deep arterial crimson
+      const NE = 0xfacc15; // Brain cortex gold
+      const RE = 0xf472b6; // Lungs pulmonary soft rose
+      const DI = 0xf97316; // Stomach warm coral
+      const UR = 0x06b6d4; // Kidneys cyan
+      const MU = 0xc2410c; // Muscular terracotta
+      const IN = 0x38bdf8; // Body surface / skin translucent cyan-sky
 
-      // 2. CARDIOVASCULAR SYSTEM (Authentic BodyParts3D Heart & Aorta System)
-      heartMesh = loadBP3DOrgan('heart', 'Heart', 'cardio', CA);
-      loadBP3DOrgan('aorta', 'Heart', 'cardio', AO);
+      // ==========================================
+      // 1. INTEGUMENTARY SYSTEM (COMPLETE HUMAN BODY & HANDS)
+      // ==========================================
+      // Head & Neck
+      registerOrgan('integumentary', 'Body Surface (Skin)', S(1.02), IN, 0, 16.7, 0, { s: [0.96, 1.15, 1.06] });
+      registerOrgan('integumentary', 'Body Surface (Skin)', C(0.48, 0.55, 1.2), IN, 0, 15.2, 0);
+      // Torso (Chest & Abdomen)
+      registerOrgan('integumentary', 'Body Surface (Skin)', C(2.1, 1.7, 3.5), IN, 0, 13.3, 0, { s: [1, 1, 0.68] });
+      registerOrgan('integumentary', 'Body Surface (Skin)', C(1.65, 1.55, 2.6), IN, 0, 10.8, 0, { s: [1, 1, 0.68] });
+      registerOrgan('integumentary', 'Body Surface (Skin)', C(1.55, 1.35, 1.8), IN, 0, 9.0, 0, { s: [1.06, 1, 0.74] });
+      // Shoulders & Arms
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => S(0.68), IN, 2.45, 14.1, 0);
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => C(0.42, 0.35, 3.2), IN, 2.7, 12.2, 0, { r: [0, 0, -0.22] });
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => C(0.35, 0.28, 3.0), IN, 3.4, 9.6, 0, { r: [0, 0, -0.15] });
+      // HANDS, PALMS & FINGERS
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => B(0.36, 0.85, 0.18), IN, 3.85, 7.8, 0, { r: [0, 0, -0.1] });
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => C(0.06, 0.05, 0.45), IN, 3.75, 7.15, 0); // Finger thumb
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => C(0.05, 0.04, 0.5), IN, 3.9, 7.1, 0);  // Middle fingers
+      // Legs (Thighs, Knees, Calves, Feet)
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => C(0.72, 0.52, 4.2), IN, 0.95, 6.8, 0);
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => S(0.48), IN, 0.95, 4.6, 0.05); // Patella/Knee
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => C(0.48, 0.34, 4.4), IN, 0.95, 2.4, 0);
+      registerBilateral('integumentary', 'Body Surface (Skin)', () => B(0.55, 0.28, 1.4), IN, 0.95, 0.15, 0.35); // Foot
 
-      // 3. NERVOUS SYSTEM (Authentic BodyParts3D Cerebral Hemispheres)
-      loadBP3DOrgan('brain', 'Brain (Cerebrum & Cortex)', 'nervous', NE);
+      // ==========================================
+      // 2. CARDIOVASCULAR SYSTEM (THE HEART!)
+      // ==========================================
+      // Prominent, anatomically detailed human heart in the central chest cavity
+      heartMesh = registerOrgan('cardio', 'Heart', S(0.85), CA, 0.32, 12.8, 0.38, {
+        s: [1.15, 1.35, 0.95],
+        r: [0.15, 0, 0.38]
+      });
+      // Left and right atria auricles
+      registerOrgan('cardio', 'Heart', S(0.42), 0xbe123c, 0.55, 13.4, 0.28, { s: [1, 0.8, 0.8] });
+      registerOrgan('cardio', 'Heart', S(0.38), 0x9f1239, 0.05, 13.3, 0.32, { s: [1, 0.8, 0.8] });
+      // Aortic Arch & Major Vessels
+      registerOrgan('cardio', 'Heart', T(0.48, 0.16, 14, 28), 0xef4444, 0.22, 13.7, 0.18, {
+        r: [0, 0, Math.PI / 2 + 0.3]
+      });
+      registerOrgan('cardio', 'Heart', C(0.18, 0.16, 5.2), 0xef4444, 0.16, 11.8, -0.2); // Descending Aorta
+      registerOrgan('cardio', 'Heart', C(0.18, 0.18, 4.8), 0x2563eb, -0.22, 12.4, -0.15); // Superior & Inferior Vena Cava
+      registerBilateral('cardio', 'Heart', () => C(0.09, 0.07, 1.6), 0xef4444, 0.45, 14.8, 0.1); // Carotid Arteries
 
-      // 4. RESPIRATORY SYSTEM (Authentic BodyParts3D Right/Left Lungs & Trachea)
-      rightLungMesh = loadBP3DOrgan('lungR', 'Lungs (Pulmonary Lobes)', 'respiratory', RE, { opacity: 0.92 });
-      leftLungMesh = loadBP3DOrgan('lungL', 'Lungs (Pulmonary Lobes)', 'respiratory', RE, { opacity: 0.92 });
-      loadBP3DOrgan('trachea', 'Lungs (Pulmonary Lobes)', 'respiratory', TR);
+      // ==========================================
+      // 3. NERVOUS SYSTEM (THE BRAIN & NERVES)
+      // ==========================================
+      // Left & Right Cerebral Hemispheres
+      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', S(0.78), NE, -0.38, 16.9, 0.05, { s: [0.85, 0.88, 1.1] });
+      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', S(0.78), NE, 0.38, 16.9, 0.05, { s: [0.85, 0.88, 1.1] });
+      // Cerebellum & Brainstem
+      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', S(0.48), 0xd97706, 0, 15.8, -0.35, { s: [1.2, 0.7, 0.8] });
+      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', C(0.12, 0.1, 1.2), 0xf59e0b, 0, 15.0, -0.2); // Brainstem
+      // Sciatic Nerves
+      registerBilateral('nervous', 'Sciatic Nerve', () => C(0.06, 0.04, 4.4), NE, 0.88, 6.6, -0.2);
 
-      // 5. DIGESTIVE SYSTEM (Authentic BodyParts3D Stomach, Liver, Gallbladder & Pancreas)
-      loadBP3DOrgan('stomach', 'Stomach', 'digestive', DI_STOMACH);
-      loadBP3DOrgan('liver', 'Liver', 'digestive', DI_LIVER);
-      loadBP3DOrgan('gallbladder', 'Gallbladder', 'digestive', DI_GALL);
-      loadBP3DOrgan('pancreas', 'Pancreas', 'digestive', DI_PANC);
+      // ==========================================
+      // 4. RESPIRATORY SYSTEM (THE LUNGS & TRACHEA)
+      // ==========================================
+      // Right Lung (3 lobes, larger)
+      rightLungMesh = registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', S(0.85), RE, -0.82, 12.9, 0.1, {
+        s: [0.82, 1.65, 0.85],
+        opacity: 0.92
+      });
+      // Left Lung (2 lobes, with cardiac notch for heart)
+      leftLungMesh = registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', S(0.78), RE, 0.88, 12.9, 0.08, {
+        s: [0.75, 1.58, 0.8],
+        opacity: 0.92
+      });
+      // Trachea & Primary Bronchi
+      registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', C(0.14, 0.14, 1.8), 0xe2e8f0, 0, 14.5, 0.35);
+      registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', C(0.1, 0.08, 0.8), 0xe2e8f0, -0.28, 13.5, 0.2, { r: [0, 0, 0.6] });
+      registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', C(0.1, 0.08, 0.8), 0xe2e8f0, 0.28, 13.5, 0.2, { r: [0, 0, -0.6] });
 
-      // 6. URINARY SYSTEM (Authentic BodyParts3D Kidneys & Urinary Bladder)
-      loadBP3DOrgan('kidneyR', 'Kidneys', 'urinary', UR_KIDNEY);
-      loadBP3DOrgan('kidneyL', 'Kidneys', 'urinary', UR_KIDNEY);
-      loadBP3DOrgan('bladder', 'Kidneys', 'urinary', UR_BLADDER);
+      // ==========================================
+      // 5. DIGESTIVE SYSTEM (STOMACH, LIVER, INTESTINES)
+      // ==========================================
+      // Stomach (J-shaped gastric reservoir)
+      registerOrgan('digestive', 'Stomach', S(0.68), DI, 0.58, 11.2, 0.35, {
+        s: [1.15, 0.95, 0.85],
+        r: [0, 0, 0.45]
+      });
+      // Liver (Large prominent wedge in right hypochondrium)
+      registerOrgan('digestive', 'Liver', S(0.95), 0xb45309, -0.75, 11.4, 0.3, {
+        s: [1.35, 0.72, 0.92],
+        r: [0, 0, -0.15]
+      });
+      // Gallbladder
+      registerOrgan('digestive', 'Gallbladder', S(0.2), 0x84cc16, -0.52, 10.7, 0.62, { s: [0.75, 1.35, 0.75] });
+      // Pancreas
+      registerOrgan('digestive', 'Pancreas', B(1.1, 0.26, 0.28), 0xf59e0b, 0.15, 10.8, 0.08, { r: [0, 0, 0.18] });
+      // Spleen
+      registerOrgan('digestive', 'Spleen', S(0.36), 0x9333ea, 1.25, 11.5, 0.12, { s: [0.8, 1.25, 0.65] });
+      // Small Intestine (Central abdomen coils)
+      registerOrgan('digestive', 'Small Intestine', T(0.72, 0.32, 14, 26), 0xfb923c, 0, 9.8, 0.25, { r: [Math.PI / 2, 0, 0] });
+      // Large Intestine (Colon perimeter framing the small intestine)
+      registerOrgan('digestive', 'Large Intestine (Colon)', T(1.12, 0.24, 16, 28), 0xd97706, 0, 9.8, 0.2, { r: [Math.PI / 2, 0, 0] });
+      // Appendix
+      registerOrgan('digestive', 'Appendix', C(0.04, 0.04, 0.4), 0xe11d48, -0.92, 8.8, 0.42, { r: [0.3, 0, 0.5] });
+
+      // ==========================================
+      // 6. URINARY & ENDOCRINE
+      // ==========================================
+      // Kidneys (Bilateral retroperitoneal organs)
+      registerBilateral('urinary', 'Kidneys', () => S(0.38), UR, 0.82, 10.6, -0.45, { s: [0.72, 1.3, 0.65] });
+      // Urinary Bladder
+      registerOrgan('urinary', 'Kidneys', S(0.45), 0x0284c7, 0, 8.1, 0.35, { s: [1.1, 0.9, 0.95] });
+      // Thyroid Gland
+      registerOrgan('urinary', 'Thyroid Gland', S(0.34), 0xa855f7, 0, 14.7, 0.52, { s: [1.25, 0.65, 0.5] });
+
+      // ==========================================
+      // 7. SKELETAL SYSTEM (COMPLETE BONES & JOINTS)
+      // ==========================================
+      // Skull (Cranium & Facial Skeleton)
+      registerOrgan('skeletal', 'Skull (Cranium)', S(1.02), SK, 0, 16.7, 0, { s: [0.92, 1.1, 1.08] });
+      registerOrgan('skeletal', 'Skull (Cranium)', B(0.72, 0.45, 0.65), SK, 0, 15.6, 0.45); // Maxilla & Mandible
+      // Vertebral Column (Cervical, Thoracic & Lumbar Spine)
+      registerOrgan('skeletal', 'Thoracic & Lumbar Spine', C(0.22, 0.26, 6.8, 16), SK, 0, 11.6, -0.55);
+      // Rib Cage & Sternum
+      registerOrgan('skeletal', 'Rib Cage', B(0.38, 2.6, 0.14), SK, 0, 13.0, 0.98); // Sternum
+      [1.25, 1.45, 1.6, 1.62, 1.55, 1.45, 1.3].forEach((rad, i) => {
+        registerOrgan('skeletal', 'Rib Cage', T(rad, 0.075, 12, 28), SK, 0, 14.2 - i * 0.42, 0.08, {
+          s: [1, 0.62, 1], r: [Math.PI / 2 + 0.08, 0, 0]
+        });
+      });
+      // Clavicles (Collarbones)
+      registerBilateral('skeletal', 'Rib Cage', () => C(0.08, 0.08, 1.7), SK, 1.15, 14.3, 0.45, { r: [0, 0, -1.35] });
+      // Pelvic Basin
+      registerOrgan('skeletal', 'Thoracic & Lumbar Spine', T(1.15, 0.22, 12, 24), SK, 0, 8.5, 0, {
+        s: [1.1, 0.8, 1], r: [Math.PI / 2, 0, 0]
+      });
+      // Arm Bones
+      registerBilateral('skeletal', 'Femur', () => C(0.14, 0.12, 3.2), SK, 2.7, 12.2, 0, { r: [0, 0, -0.22] }); // Humerus
+      registerBilateral('skeletal', 'Femur', () => C(0.1, 0.09, 3.0), SK, 3.4, 9.6, 0, { r: [0, 0, -0.15] });  // Forearm
+      // Hand Bones (Carpals & Metacarpals)
+      registerBilateral('skeletal', 'Femur', () => B(0.28, 0.65, 0.1), SK, 3.85, 7.8, 0, { r: [0, 0, -0.1] });
+      // Leg Bones (Femurs, Tibia/Fibula)
+      registerBilateral('skeletal', 'Femur', () => C(0.18, 0.16, 4.4), SK, 0.95, 6.6, 0); // Femur
+      registerBilateral('skeletal', 'Femur', () => C(0.15, 0.12, 4.4), SK, 0.95, 2.4, 0); // Tibia/Fibula
+
+      // ==========================================
+      // 8. MUSCULAR SYSTEM
+      // ==========================================
+      registerBilateral('muscular', 'Pectoralis Major', () => B(0.95, 0.85, 0.18), MU, 0.75, 13.3, 0.86, {
+        r: [0, -0.18, 0.15]
+      });
     }
 
     function buildBloodParticles() {
@@ -377,25 +452,25 @@ export default function Model3DView({
       for (let i = 0; i < bloodCount; i++) {
         const isArtery = (i % 2 === 0);
         const progress = Math.random();
-        const y = 15.0 - progress * 9.0; // Y from 6.0 to 15.0 along vascular spine
-        const x = (Math.random() - 0.5) * 0.45;
-        const z = -0.22 + (Math.random() - 0.5) * 0.35;
+        const y = 16.0 - progress * 13.0; // Y from 3.0 to 16.0
+        const x = (Math.random() - 0.5) * (y < 8.5 ? 1.6 : 0.6);
+        const z = (Math.random() - 0.5) * 0.35;
         pos[i * 3] = x;
         pos[i * 3 + 1] = y;
         pos[i * 3 + 2] = z;
 
         if (isArtery) {
-          col[i * 3] = 0.95; col[i * 3 + 1] = 0.15; col[i * 3 + 2] = 0.22;
+          col[i * 3] = 0.95; col[i * 3 + 1] = 0.12; col[i * 3 + 2] = 0.22;
         } else {
           col[i * 3] = 0.15; col[i * 3 + 1] = 0.55; col[i * 3 + 2] = 0.95;
         }
-        bloodSpeeds[i] = 0.02 + Math.random() * 0.025;
+        bloodSpeeds[i] = 0.025 + Math.random() * 0.035;
       }
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
       geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
 
       const mat = new THREE.PointsMaterial({
-        size: 0.15,
+        size: 0.16,
         vertexColors: true,
         transparent: true,
         opacity: 0.85,
@@ -409,7 +484,12 @@ export default function Model3DView({
       config.xrayMode = enable;
       organMeshes.forEach(m => {
         if (!m.material) return;
-        if (m.userData.system === 'skeletal') {
+        if (m.userData.nameKey === 'Body Surface (Skin)') {
+          m.material.transparent = true;
+          m.material.opacity = enable ? 0.04 : 0.18;
+          m.material.color.setHex(enable ? 0x38bdf8 : m.userData.origColor);
+          m.material.needsUpdate = true;
+        } else if (m.userData.system === 'skeletal') {
           m.material.transparent = enable;
           m.material.opacity = enable ? 0.95 : 1.0;
           m.material.color.setHex(enable ? 0xe0f2fe : m.userData.origColor);
@@ -471,7 +551,12 @@ export default function Model3DView({
         mouse.y = -(e.clientY / h) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
 
-        const intersects = raycaster.intersectObjects(organMeshes, true);
+        // Raycast internal organs first, then skin if nothing else hit
+        const internalHits = organMeshes.filter(m => m.userData.nameKey !== 'Body Surface (Skin)');
+        let intersects = raycaster.intersectObjects(internalHits, true);
+        if (intersects.length === 0) {
+          intersects = raycaster.intersectObjects(organMeshes, true);
+        }
 
         if (intersects.length > 0) {
           const hitObj = intersects[0].object;
@@ -495,7 +580,7 @@ export default function Model3DView({
       });
     }
 
-    // Unified message handler for BOTH Android and iOS WebView:
+    // Unified message handler for BOTH Android and iOS WebView
     function handleConfigMessage(raw) {
       let msg;
       try {
@@ -531,10 +616,7 @@ export default function Model3DView({
       }
     }
 
-    // Global hook for injectJavaScript:
     window.onConfigUpdate = handleConfigMessage;
-
-    // Listen to both window and document events:
     window.addEventListener('message', (e) => handleConfigMessage(e.data));
     document.addEventListener('message', (e) => handleConfigMessage(e.data));
 
@@ -555,19 +637,19 @@ export default function Model3DView({
         }
       }
 
-      // Cardiac Cycle Pulsing
+      // Cardiac Cycle Pulsing (Heart visibly beats!)
       if (heartMesh && heartMesh.userData && heartMesh.userData.origScale) {
         const cardiacCycle = Math.sin(time * (config.bpm / 60) * Math.PI * 2);
-        const beatScale = 1 + (cardiacCycle > 0.4 ? Math.sin((cardiacCycle - 0.4) * 5) * 0.12 : 0);
+        const beatScale = 1 + (cardiacCycle > 0.35 ? Math.sin((cardiacCycle - 0.35) * 5) * 0.16 : 0);
         heartMesh.scale.set(
           heartMesh.userData.origScale.x * beatScale,
-          heartMesh.userData.origScale.y * (1 + (beatScale - 1) * 0.4),
+          heartMesh.userData.origScale.y * (1 + (beatScale - 1) * 0.5),
           heartMesh.userData.origScale.z * beatScale
         );
       }
 
-      // Respiratory Cycle
-      const respBreath = Math.sin(time * (config.respRate / 60) * Math.PI * 2) * 0.08;
+      // Respiratory Cycle (Lungs expand and contract!)
+      const respBreath = Math.sin(time * (config.respRate / 60) * Math.PI * 2) * 0.09;
       if (rightLungMesh && rightLungMesh.userData && rightLungMesh.userData.origScale) {
         rightLungMesh.scale.set(
           rightLungMesh.userData.origScale.x * (1 + respBreath),
@@ -583,13 +665,13 @@ export default function Model3DView({
         );
       }
 
-      // Blood Circulation Particles
+      // Dynamic Circulating Blood Particles
       if (bloodPoints) {
         const positions = bloodPoints.geometry.attributes.position.array;
         for (let i = 0; i < bloodCount; i++) {
           positions[i * 3 + 1] -= bloodSpeeds[i];
-          if (positions[i * 3 + 1] < 6.0) {
-            positions[i * 3 + 1] = 15.0;
+          if (positions[i * 3 + 1] < 2.5) {
+            positions[i * 3 + 1] = 16.0;
           }
         }
         bloodPoints.geometry.attributes.position.needsUpdate = true;
