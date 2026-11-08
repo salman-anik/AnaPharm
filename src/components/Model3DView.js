@@ -196,11 +196,20 @@ export default function Model3DView({
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.08;
-      controls.minDistance = 3;
-      controls.maxDistance = 50;
+      controls.minDistance = 2.0;
+      controls.maxDistance = 55.0;
+      controls.rotateSpeed = 0.9;
+      controls.zoomSpeed = 1.1;
+      controls.maxPolarAngle = Math.PI - 0.05;
+      controls.minPolarAngle = 0.05;
       controls.target.copy(CAM_VIEWS.all.t);
       controls.autoRotate = false;
       controls.autoRotateSpeed = 1.6;
+
+      // Stop programmatic camera transitions when user touches controls
+      controls.addEventListener('start', () => {
+        isCamTransitioning = false;
+      });
 
       // Studio Medical Lighting
       const ambLight = new THREE.AmbientLight(0xffffff, 0.95);
@@ -544,14 +553,14 @@ export default function Model3DView({
         }, 2200);
       }
 
-      window.addEventListener('pointerdown', (e) => {
+      function processHit(clientX, clientY) {
         const w = window.innerWidth || document.documentElement.clientWidth;
         const h = window.innerHeight || document.documentElement.clientHeight;
-        mouse.x = (e.clientX / w) * 2 - 1;
-        mouse.y = -(e.clientY / h) * 2 + 1;
+        mouse.x = (clientX / w) * 2 - 1;
+        mouse.y = -(clientY / h) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
 
-        // Raycast internal organs first, then skin if nothing else hit
+        // Prioritize internal visceral organs before the transparent skin
         const internalHits = organMeshes.filter(m => m.userData.nameKey !== 'Body Surface (Skin)');
         let intersects = raycaster.intersectObjects(internalHits, true);
         if (intersects.length === 0) {
@@ -577,6 +586,74 @@ export default function Model3DView({
             }
           }
         }
+      }
+
+      // Mobile Touch Handling: Prevent click on drag-to-rotate or pinch-to-zoom
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchStartTime = 0;
+      let isPinching = false;
+
+      const dom = renderer ? renderer.domElement : window;
+
+      window.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) {
+          isPinching = true;
+          return;
+        }
+        isPinching = false;
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchStartTime = Date.now();
+      }, { passive: true });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches.length > 1) {
+          isPinching = true;
+        }
+      }, { passive: true });
+
+      window.addEventListener('touchend', (e) => {
+        if (isPinching) {
+          isPinching = false;
+          return;
+        }
+        const dt = Date.now() - touchStartTime;
+        if (dt > 320) {
+          // Dragged/held for rotation - DO NOT click
+          return;
+        }
+        const touch = e.changedTouches && e.changedTouches[0];
+        if (!touch) return;
+
+        const dx = touch.clientX - touchStartX;
+        const dy = touch.clientY - touchStartY;
+        if (Math.sqrt(dx * dx + dy * dy) > 7) {
+          // Moved more than 7px - user was rotating, DO NOT click
+          return;
+        }
+
+        // Clean stationary tap on organ
+        processHit(touch.clientX, touch.clientY);
+      }, { passive: false });
+
+      // Desktop Mouse Fallback
+      let mouseDownX = 0;
+      let mouseDownY = 0;
+      let mouseDownTime = 0;
+
+      window.addEventListener('mousedown', (e) => {
+        mouseDownX = e.clientX;
+        mouseDownY = e.clientY;
+        mouseDownTime = Date.now();
+      });
+
+      window.addEventListener('mouseup', (e) => {
+        const dt = Date.now() - mouseDownTime;
+        const dx = e.clientX - mouseDownX;
+        const dy = e.clientY - mouseDownY;
+        if (dt > 300 || Math.sqrt(dx * dx + dy * dy) > 6) return;
+        processHit(e.clientX, e.clientY);
       });
     }
 
