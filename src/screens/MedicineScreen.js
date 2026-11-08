@@ -15,6 +15,8 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
+  const [globalLang, setGlobalLang] = useState('bn'); // 'bn' | 'en'
+  const [cardLangMap, setCardLangMap] = useState({});
 
   const isLight = theme === 'light';
 
@@ -31,6 +33,7 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
       const nameEn = (med.name_en || '').toLowerCase();
       const generic = (med.generic || '').toLowerCase();
       const workBn = (med.work_bn || '').toLowerCase();
+      const workEn = (med.work_en || '').toLowerCase();
       const catBn = (med.category_bn || '').toLowerCase();
       const organ = (med.target_organ || '').toLowerCase();
       const brands = (med.brands || '').toLowerCase();
@@ -39,6 +42,7 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
         nameEn.includes(q) ||
         generic.includes(q) ||
         workBn.includes(q) ||
+        workEn.includes(q) ||
         catBn.includes(q) ||
         organ.includes(q) ||
         brands.includes(q)
@@ -50,8 +54,17 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
     setExpandedId(expandedId === id ? null : id);
   };
 
+  const toggleCardLang = (id) => {
+    setCardLangMap((prev) => {
+      const current = prev[id] || globalLang;
+      return { ...prev, [id]: current === 'bn' ? 'en' : 'bn' };
+    });
+  };
+
   const renderMedicineCard = ({ item }) => {
     const isExpanded = expandedId === item.id;
+    const cardLang = cardLangMap[item.id] || globalLang;
+    const isBn = cardLang === 'bn';
 
     return (
       <View style={[styles.card, isLight && styles.cardLight]}>
@@ -69,7 +82,7 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
               <View style={styles.badgeRow}>
                 <View style={[styles.categoryBadge, isLight && styles.categoryBadgeLight]}>
                   <Text style={[styles.categoryBadgeText, isLight && styles.categoryBadgeTextLight]}>
-                    {item.category_bn}
+                    {isBn ? item.category_bn : item.category_en}
                   </Text>
                 </View>
                 {item.target_organ ? (
@@ -83,17 +96,34 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
             </View>
           </View>
 
-          <View style={[styles.expandPill, isLight && styles.expandPillLight]}>
-            <Text style={[styles.expandPillText, isLight && styles.expandPillTextLight]}>
-              {isExpanded ? '▲' : '▼'}
-            </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <TouchableOpacity
+              onPress={() => toggleCardLang(item.id)}
+              style={[styles.cardLangPill, isLight && styles.cardLangPillLight]}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={[styles.cardLangPillText, isLight && styles.cardLangPillTextLight]}>
+                {isBn ? '🇧🇩 BN' : '🇬🇧 EN'}
+              </Text>
+            </TouchableOpacity>
+            <View style={[styles.expandPill, isLight && styles.expandPillLight]}>
+              <Text style={[styles.expandPillText, isLight && styles.expandPillTextLight]}>
+                {isExpanded ? '▲' : '▼'}
+              </Text>
+            </View>
           </View>
         </TouchableOpacity>
 
-        {/* Primary Work / Indication in Bangla */}
+        {/* Primary Work / Indication */}
         <View style={[styles.workContainer, isLight && styles.workContainerLight]}>
-          <Text style={[styles.workLabel, isLight && styles.workLabelLight]}>ওষুধের মূল কাজ (Primary Action):</Text>
-          <Text style={[styles.workText, isLight && styles.workTextLight]}>{item.work_bn}</Text>
+          <View style={styles.workHeaderRow}>
+            <Text style={[styles.workLabel, isLight && styles.workLabelLight]}>
+              {isBn ? 'ওষুধের মূল কাজ (Primary Action):' : 'Primary Action & Clinical Indication:'}
+            </Text>
+          </View>
+          <Text style={[styles.workText, isLight && styles.workTextLight]}>
+            {isBn ? item.work_bn : (item.work_en || item.primary_indication_en)}
+          </Text>
         </View>
 
         {/* Expanded Detailed Clinical Dossier */}
@@ -101,64 +131,64 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
           <View style={[styles.expandedContent, isLight && styles.expandedContentLight]}>
             {/* Mechanism of Action */}
             <View style={[styles.detailBlock, isLight && styles.detailBlockLight]}>
-              <Text style={[styles.detailTitle, isLight && styles.detailTitleLight]}>🔬 যেভাবে কাজ করে (Mechanism of Action):</Text>
-              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>{item.how_it_works_bn}</Text>
+              <Text style={[styles.detailTitle, isLight && styles.detailTitleLight]}>
+                🔬 {isBn ? 'যেভাবে কাজ করে (Mechanism of Action):' : 'Mechanism of Action & Pharmacology:'}
+              </Text>
+              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
+                {isBn ? item.how_it_works_bn : item.how_it_works_en}
+              </Text>
             </View>
 
             {/* Dosage */}
             <View style={[styles.detailBlock, isLight && styles.detailBlockLight]}>
-              <Text style={[styles.detailTitle, isLight && styles.detailTitleLight]}>💊 খাবার নিয়ম ও মাত্রা (Dosage Guidance):</Text>
-              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>{item.dosage_bn}</Text>
+              <Text style={[styles.detailTitle, isLight && styles.detailTitleLight]}>
+                💊 {isBn ? 'খাবার নিয়ম ও মাত্রা (Dosage Guidance):' : 'Dosage & Administration:'}
+              </Text>
+              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
+                {isBn ? item.dosage_bn : item.dosage_en}
+              </Text>
             </View>
 
             {/* Side Effects */}
             <View style={[styles.detailBlock, isLight && styles.detailBlockLight]}>
               <Text style={[styles.detailTitle, { color: isLight ? '#d97706' : '#f59e0b' }]}>
-                ⚠️ সম্ভাব্য পার্শ্বপ্রতিক্রিয়া (Side Effects):
+                ⚠️ {isBn ? 'সম্ভাব্য পার্শ্বপ্রতিক্রিয়া (Side Effects):' : 'Possible Adverse Effects:'}
               </Text>
-              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>{item.side_effects_bn}</Text>
+              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
+                {isBn ? item.side_effects_bn : item.side_effects_en}
+              </Text>
             </View>
 
             {/* Precautions */}
             <View style={styles.detailBlock}>
               <Text style={[styles.detailTitle, { color: isLight ? '#e11d48' : '#f43f5e' }]}>
-                🛑 সতর্কতা ও নিষেধাজ্ঞা (Precautions):
+                🛑 {isBn ? 'সতর্কতা ও নিষেধাজ্ঞা (Precautions):' : 'Precautions & Contraindications:'}
               </Text>
-              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>{item.precautions_bn}</Text>
+              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
+                {isBn ? item.precautions_bn : item.precautions_en}
+              </Text>
             </View>
 
             {/* Top Bangladesh Brands */}
             {item.brands ? (
               <View style={[styles.detailBlock, { borderBottomWidth: 0 }]}>
                 <Text style={[styles.detailTitle, { color: isLight ? '#0284c7' : '#38bdf8' }]}>
-                  🏷️ বাংলাদেশে প্রচলিত ব্র্যান্ড (Top BD Brands):
+                  🏷️ {isBn ? 'বাংলাদেশে প্রচলিত ব্র্যান্ড (Top BD Brands):' : 'Popular Bangladesh Brands:'}
                 </Text>
-                <Text style={[styles.detailText, isLight && styles.detailTextLight, { fontWeight: '600' }]}>
+                <Text style={[styles.detailText, isLight && styles.detailTextLight, { fontWeight: '700' }]}>
                   {item.brands}
                 </Text>
               </View>
             ) : null}
 
-            {/* Strengths & Forms */}
-            {item.strengths && item.strengths.length > 0 ? (
-              <View style={[styles.detailBlock, { borderBottomWidth: 0, marginTop: 6 }]}>
-                <Text style={[styles.detailTitle, { color: isLight ? '#059669' : '#10b981' }]}>
-                  📏 উপলব্ধ মাত্রা ও ফরম (Available Strengths & Forms):
+            {/* Pregnancy Category */}
+            {item.pregnancy_bn || item.pregnancy_en ? (
+              <View style={[styles.detailBlock, { borderBottomWidth: 0, marginTop: 4 }]}>
+                <Text style={[styles.detailTitle, { color: isLight ? '#7c3aed' : '#a855f7' }]}>
+                  🤰 {isBn ? 'গর্ভকালীন নিরাপত্তা (Pregnancy Safety):' : 'Pregnancy & Lactation Advice:'}
                 </Text>
                 <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
-                  {item.strengths.join(', ')} {item.dosage_forms && item.dosage_forms.length > 0 ? `• [${item.dosage_forms.slice(0, 4).join(', ')}]` : ''}
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Pregnancy Category */}
-            {item.pregnancy_category ? (
-              <View style={[styles.detailBlock, { borderBottomWidth: 0, marginTop: 6 }]}>
-                <Text style={[styles.detailTitle, { color: isLight ? '#7c3aed' : '#a855f7' }]}>
-                  🤰 গর্ভকালীন নিরাপত্তা (FDA Pregnancy Category):
-                </Text>
-                <Text style={[styles.detailText, isLight && styles.detailTextLight, { fontWeight: '700' }]}>
-                  Category {item.pregnancy_category}
+                  {isBn ? item.pregnancy_bn : item.pregnancy_en}
                 </Text>
               </View>
             ) : null}
@@ -179,14 +209,46 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
       {/* Top Header */}
       <View style={[styles.topHeader, isLight && styles.topHeaderLight]}>
         <View style={styles.titleRow}>
-          <View style={[styles.logoBadge, isLight && styles.logoBadgeLight]}>
-            <Text style={styles.logoText}>💊</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+            <View style={[styles.logoBadge, isLight && styles.logoBadgeLight]}>
+              <Text style={styles.logoText}>💊</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.screenTitle, isLight && styles.screenTitleLight]}>AnaPharm</Text>
+              <Text style={[styles.screenSubTitle, isLight && styles.screenSubTitleLight]}>
+                {globalLang === 'bn'
+                  ? `ঔষধ নির্দেশিকা (${filteredMedicines.length} Generics)`
+                  : `Clinical Directory (${filteredMedicines.length} Generics)`}
+              </Text>
+            </View>
           </View>
-          <View>
-            <Text style={[styles.screenTitle, isLight && styles.screenTitleLight]}>AnaPharm</Text>
-            <Text style={[styles.screenSubTitle, isLight && styles.screenSubTitleLight]}>
-              বাংলাদেশের পূর্ণাঙ্গ ঔষধ নির্দেশিকা ({filteredMedicines.length} Generics)
-            </Text>
+
+          {/* Global Language Toggle */}
+          <View style={[styles.langToggleWrap, isLight && styles.langToggleWrapLight]}>
+            <TouchableOpacity
+              style={[styles.langTab, globalLang === 'bn' && styles.langTabActive]}
+              onPress={() => {
+                setGlobalLang('bn');
+                setCardLangMap({});
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.langTabText, globalLang === 'bn' && styles.langTabTextActive]}>
+                🇧🇩 বাংলা
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.langTab, globalLang === 'en' && styles.langTabActive]}
+              onPress={() => {
+                setGlobalLang('en');
+                setCardLangMap({});
+              }}
+              activeOpacity={0.8}
+            >
+              <Text style={[styles.langTabText, globalLang === 'en' && styles.langTabTextActive]}>
+                🇬🇧 EN
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -195,7 +257,11 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
           <Text style={styles.searchIcon}>🔍</Text>
           <TextInput
             style={[styles.searchInput, isLight && styles.searchInputLight]}
-            placeholder="Search 2,500+ generics, brands (Napa, Seclo, প্যারাসিটামল)..."
+            placeholder={
+              globalLang === 'bn'
+                ? 'ঔষধ, ব্র্যান্ড (Napa, Seclo, প্যারাসিটামল) খুঁজুন...'
+                : 'Search 2,500+ generics, BD brands (Napa, Seclo)...'
+            }
             placeholderTextColor={isLight ? '#94a3b8' : '#64748b'}
             value={searchQuery}
             onChangeText={setSearchQuery}
@@ -235,7 +301,7 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
                     active && styles.categoryChipLabelActive,
                   ]}
                 >
-                  {cat.label_bn}
+                  {globalLang === 'bn' ? cat.label_bn : (cat.label_en || cat.label_bn)}
                 </Text>
               </TouchableOpacity>
             );
@@ -281,8 +347,62 @@ const styles = StyleSheet.create({
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    justifyContent: 'space-between',
     marginBottom: 12,
+  },
+  langToggleWrap: {
+    flexDirection: 'row',
+    backgroundColor: '#1e293b',
+    borderRadius: 10,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  langToggleWrapLight: {
+    backgroundColor: '#f1f5f9',
+    borderColor: '#e2e8f0',
+  },
+  langTab: {
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 8,
+  },
+  langTabActive: {
+    backgroundColor: '#0284c7',
+  },
+  langTabText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#94a3b8',
+  },
+  langTabTextActive: {
+    color: '#ffffff',
+  },
+  cardLangPill: {
+    backgroundColor: '#334155',
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  cardLangPillLight: {
+    backgroundColor: '#e2e8f0',
+    borderColor: '#cbd5e1',
+  },
+  cardLangPillText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: '#38bdf8',
+  },
+  cardLangPillTextLight: {
+    color: '#0284c7',
+  },
+  workHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
   },
   logoBadge: {
     width: 38,
