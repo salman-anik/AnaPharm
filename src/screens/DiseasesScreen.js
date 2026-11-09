@@ -9,6 +9,7 @@ import {
   ScrollView,
   Animated,
   Easing,
+  Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DISEASE_DATABASE, DISEASE_CATEGORIES } from '../data/diseaseData';
@@ -474,6 +475,7 @@ export default function DiseasesScreen({
               borderColor: t.glassBorder,
             },
           ]}
+          onTouchStart={() => onScrollLock?.(true)}
         >
           <HealthIcon name="magnifyingGlass" size={16} color={t.textMuted} style={{ marginRight: 8 }} />
           <TextInput
@@ -481,11 +483,28 @@ export default function DiseasesScreen({
             placeholder="Search diseases, symptoms, cures..."
             placeholderTextColor={t.textMuted}
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={(text) => {
+              setSearchQuery(text);
+              if (text.trim().length > 0) {
+                onScrollLock?.(true);
+              }
+            }}
+            onFocus={() => onScrollLock?.(true)}
+            onBlur={() => {
+              if (!searchQuery.trim()) {
+                onScrollLock?.(false);
+              }
+            }}
             autoCorrect={false}
           />
           {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
+            <TouchableOpacity
+              onPress={() => {
+                setSearchQuery('');
+                Keyboard.dismiss();
+                onScrollLock?.(false);
+              }}
+            >
               <Text style={[styles.clearBtn, { color: t.text }]}>✕</Text>
             </TouchableOpacity>
           )}

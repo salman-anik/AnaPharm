@@ -10,6 +10,7 @@ import {
   Image,
   Animated,
   Easing,
+  Keyboard,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MEDICINE_DATABASE, MEDICINE_CATEGORIES } from '../data/medicineData';
@@ -686,6 +687,7 @@ export default function MedicineScreen({
               borderColor: t.glassBorder,
             },
           ]}
+          onTouchStart={() => onScrollLock?.(true)}
         >
           <HealthIcon name="magnifyingGlass" size={16} color={t.textMuted} style={{ marginRight: 8 }} />
           <TextInput
@@ -697,11 +699,26 @@ export default function MedicineScreen({
             }
             placeholderTextColor={t.textMuted}
             value={searchQuery}
-            onChangeText={setSearchQuery}
+            onChangeText={(text) => {
+              setSearchQuery(text);
+              if (text.trim().length > 0) {
+                onScrollLock?.(true);
+              }
+            }}
+            onFocus={() => onScrollLock?.(true)}
+            onBlur={() => {
+              if (!searchQuery.trim()) {
+                onScrollLock?.(false);
+              }
+            }}
           />
           {searchQuery.length > 0 && (
             <TouchableOpacity
-              onPress={() => setSearchQuery('')}
+              onPress={() => {
+                setSearchQuery('');
+                Keyboard.dismiss();
+                onScrollLock?.(false);
+              }}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
               <Text style={[styles.clearBtnText, { color: t.textMuted }]}>✕</Text>

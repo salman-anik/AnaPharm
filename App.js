@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   StatusBar,
   ScrollView,
   useWindowDimensions,
+  Keyboard,
 } from 'react-native';
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import ModelScreen from './src/screens/ModelScreen';
@@ -35,6 +36,20 @@ export default function App() {
   const [xrayMode, setXrayMode] = useState(false);
 
   const t = getTheme(theme, fontSize);
+
+  // Lock horizontal page swapping while keyboard is open or user is typing/searching
+  useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => {
+      setScrollLocked(true);
+    });
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => {
+      setScrollLocked(false);
+    });
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   // All bottom navbar icons from healthicons.org (inlined, zero 404s)
   const tabs = [
