@@ -502,7 +502,43 @@ export default function SettingsScreen({
           ]}
         >
           <View style={styles.cardHeader}>
-            <Text style={[styles.cardHeading, { color: t.text }]}>About</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <Text style={[styles.cardHeading, { color: t.text }]}>About</Text>
+              <View
+                style={[
+                  styles.openSourcePill,
+                  {
+                    backgroundColor: t.isDark ? '#27272a' : '#e4e4e7',
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+              >
+                <Text style={[styles.openSourcePillText, { color: t.text }]}>
+                  Open Source Project
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          {/* Open Source Banner */}
+          <View
+            style={[
+              styles.openSourceBanner,
+              {
+                backgroundColor: t.surfaceSecondary,
+                borderColor: t.border,
+              },
+            ]}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <HealthIcon name="pharmacy" size={14} color={t.text} style={{ marginRight: 6 }} />
+              <Text style={[styles.openSourceTitle, { color: t.text }]}>
+                Free & Open Source Project
+              </Text>
+            </View>
+            <Text style={[styles.openSourceDesc, { color: t.textMuted }]}>
+              AnaPharm is an open source medical and pharmacological reference application built for doctors, healthcare workers, medical students, and developers. Contributions, feedback, and issue reports are openly welcomed on GitHub.
+            </Text>
           </View>
 
           <TouchableOpacity
@@ -550,7 +586,7 @@ export default function SettingsScreen({
                   backgroundColor: t.isDark ? '#ffffff' : '#000000',
                 },
               ]}
-              onPress={() => Linking.openURL('https://github.com/salman-anik')}
+              onPress={() => Linking.openURL('https://github.com/salman-anik/AnaPharm')}
               activeOpacity={0.8}
             >
               <Image
@@ -567,7 +603,7 @@ export default function SettingsScreen({
                   { color: t.isDark ? '#000000' : '#ffffff' },
                 ]}
               >
-                GitHub
+                GitHub Repo
               </Text>
             </TouchableOpacity>
 
@@ -614,6 +650,29 @@ export default function SettingsScreen({
           >
             <View style={[styles.devInfoRow, { borderBottomColor: t.border }]}>
               <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>
+                Project
+              </Text>
+              <Text style={[styles.devInfoValue, { color: t.text }]}>
+                Open Source (Public Repo)
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={[styles.devInfoRow, { borderBottomColor: t.border }]}
+              onPress={() => Linking.openURL('https://github.com/salman-anik/AnaPharm')}
+              activeOpacity={0.7}
+            >
+              <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>
+                GitHub
+              </Text>
+              <Text
+                style={[styles.devInfoValue, { color: t.text, textDecorationLine: 'underline' }]}
+                numberOfLines={1}
+              >
+                salman-anik/AnaPharm
+              </Text>
+            </TouchableOpacity>
+            <View style={[styles.devInfoRow, { borderBottomColor: t.border }]}>
+              <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>
                 Author
               </Text>
               <Text style={[styles.devInfoValue, { color: t.text }]}>
@@ -641,13 +700,13 @@ export default function SettingsScreen({
             </TouchableOpacity>
             <View style={[styles.devInfoRow, { borderBottomColor: t.border }]}>
               <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>
-                Clinical Data
+                Pharma Dataset
               </Text>
               <Text
                 style={[styles.devInfoValue, { color: t.text }]}
                 numberOfLines={1}
               >
-                25 Diseases + 2,594 Generics
+                2,594 Generics • 225 Companies
               </Text>
             </View>
             <View style={[styles.devInfoRow, { borderBottomWidth: 0 }]}>
@@ -672,12 +731,10 @@ export default function SettingsScreen({
           ]}
         >
           <Text style={[styles.disclaimerTitle, { color: t.text }]}>
-            Notice
+            Open Source Notice
           </Text>
           <Text style={[styles.disclaimerBody, { color: t.textMuted }]}>
-            AnaPharm is designed for anatomical education and pharmacology
-            reference. It does not replace professional medical advice,
-            diagnosis, or treatment.
+            AnaPharm is an open source community initiative designed for anatomical education and pharmacology reference. It does not replace professional medical advice, diagnosis, or treatment. Consult a licensed physician for medical conditions.
           </Text>
         </View>
       </ScrollView>
@@ -856,6 +913,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     textAlign: 'center',
     minWidth: 70,
+  },
+  openSourcePill: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  openSourcePillText: {
+    fontSize: 10,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  openSourceBanner: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  openSourceTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+  },
+  openSourceDesc: {
+    fontSize: 12,
+    lineHeight: 17,
   },
   devBadgeRow: {
     flexDirection: 'row',

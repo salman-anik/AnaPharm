@@ -14,6 +14,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MEDICINE_DATABASE, MEDICINE_CATEGORIES } from '../data/medicineData';
 import { MEDICINE_COMPANIES } from '../data/companyData';
+import { getSemanticMatches } from '../data/semanticSearch';
+import MedicineDetailModal from './MedicineDetailModal';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { HEALTH_ICONS, getMedicineCategoryIcon } from '../components/HealthIcon';
 
@@ -66,6 +68,10 @@ const INDEXED_MEDICINES = MEDICINE_DATABASE.map((med) => {
     genericLower + ' ' +
     (med.work_bn || '').toLowerCase() + ' ' +
     (med.work_en || '').toLowerCase() + ' ' +
+    (med.primary_indication_bn || '').toLowerCase() + ' ' +
+    (med.primary_indication_en || '').toLowerCase() + ' ' +
+    (med.indications_en || '').toLowerCase() + ' ' +
+    (med.how_it_works_bn || '').toLowerCase() + ' ' +
     (med.category_bn || '').toLowerCase() + ' ' +
     (med.target_organ || '').toLowerCase() + ' ' +
     brandsLower + ' ' +
@@ -80,39 +86,31 @@ const INDEXED_MEDICINES = MEDICINE_DATABASE.map((med) => {
   };
 });
 
-// Memoized Card Component: Prevents re-rendering untouched cards
+// Lightweight Memoized Card Component for 60fps scrolling
+// Tapping opens the dedicated full-screen Medicine Detail Page!
 const MedicineCardItem = React.memo(
   function MedicineCardItem({
     item,
-    isExpanded,
     isBn,
     t,
-    onToggleExpand,
+    onPress,
   }) {
     const detectedCompany = item._company;
 
     return (
-      <View
+      <TouchableOpacity
         style={[
           styles.card,
           {
             backgroundColor: t.card,
-            borderColor: isExpanded ? t.text : t.cardBorder,
+            borderColor: t.cardBorder,
             shadowColor: t.shadowColor,
           },
         ]}
+        onPress={() => onPress(item)}
+        activeOpacity={0.75}
       >
-        <TouchableOpacity
-          style={[
-            styles.cardHeader,
-            {
-              backgroundColor: isExpanded ? t.accentBg : 'transparent',
-              borderBottomColor: t.border,
-            },
-          ]}
-          onPress={() => onToggleExpand(item.id)}
-          activeOpacity={0.75}
-        >
+        <View style={styles.cardHeader}>
           <View style={styles.headerLeft}>
             <View
               style={[
@@ -125,13 +123,19 @@ const MedicineCardItem = React.memo(
             >
               <HealthIcon
                 source={getMedicineCategoryIcon(item.category)}
-                size={20}
+                size={22}
                 color={t.text}
               />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.medNameEn, { color: t.text, fontSize: t.fs(15) }]}>
                 {item.name_en}
+              </Text>
+              <Text
+                style={[styles.medGenericText, { color: t.textMuted, fontSize: t.fs(12) }]}
+                numberOfLines={1}
+              >
+                {item.generic}
               </Text>
 
               {/* Badges row */}
@@ -185,213 +189,38 @@ const MedicineCardItem = React.memo(
             </View>
           </View>
 
+          {/* Right Chevron / Details Button */}
           <View style={styles.headerRight}>
             <View
               style={[
-                styles.expandPill,
+                styles.detailArrowBtn,
                 {
-                  backgroundColor: isExpanded ? (t.isDark ? '#ffffff' : '#000000') : t.chipBg,
-                  borderColor: t.chipBorder,
+                  backgroundColor: t.surfaceSecondary,
+                  borderColor: t.cardBorder,
                 },
               ]}
             >
-              <Text
-                style={[
-                  styles.expandPillText,
-                  { color: isExpanded ? (t.isDark ? '#000000' : '#ffffff') : t.text },
-                ]}
-              >
-                {isExpanded ? '▲' : '▼'}
-              </Text>
+              <Text style={[styles.detailArrowText, { color: t.text }]}>→</Text>
             </View>
           </View>
-        </TouchableOpacity>
+        </View>
 
-        {/* Detailed Clinical Content when expanded */}
-        {isExpanded && (
-          <View
-            style={[
-              styles.expandedContent,
-              {
-                backgroundColor: t.card,
-                borderTopColor: t.border,
-              },
-            ]}
-          >
-            {/* Primary Action Box */}
-            <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                <HealthIcon name="medicines" size={13} color={t.text} style={{ marginRight: 6 }} />
-                <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
-                  {isBn
-                    ? 'ওষুধের কাজ (Primary Action):'
-                    : 'Primary Action:'}
-                </Text>
-              </View>
-              <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
-                {isBn ? item.work_bn : item.work_en || item.primary_indication_en}
-              </Text>
-            </View>
-
-            {/* Mechanism of Action */}
-            <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                <HealthIcon name="microscope" size={13} color={t.text} style={{ marginRight: 6 }} />
-                <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
-                  {isBn
-                    ? 'যেভাবে কাজ করে (Mechanism of Action):'
-                    : 'Mechanism of Action:'}
-                </Text>
-              </View>
-              <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
-                {isBn ? item.how_it_works_bn : item.how_it_works_en}
-              </Text>
-            </View>
-
-            {/* Dosage */}
-            <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                <HealthIcon name="pills" size={13} color={t.text} style={{ marginRight: 6 }} />
-                <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
-                  {isBn
-                    ? 'খাবার নিয়ম ও মাত্রা (Dosage Guidance):'
-                    : 'Dosage Guidance:'}
-                </Text>
-              </View>
-              <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
-                {isBn ? item.dosage_bn : item.dosage_en}
-              </Text>
-            </View>
-
-            {/* Side Effects */}
-            <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                <HealthIcon name="alert" size={13} color={t.text} style={{ marginRight: 6 }} />
-                <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
-                  {isBn
-                    ? 'সম্ভাব্য পার্শ্বপ্রতিক্রিয়া (Side Effects):'
-                    : 'Side Effects:'}
-                </Text>
-              </View>
-              <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
-                {isBn ? item.side_effects_bn : item.side_effects_en}
-              </Text>
-            </View>
-
-            {/* Precautions */}
-            <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                <HealthIcon name="alert" size={13} color={t.text} style={{ marginRight: 6 }} />
-                <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
-                  {isBn
-                    ? 'সতর্কতা ও নিষেধাজ্ঞা (Precautions):'
-                    : 'Precautions:'}
-                </Text>
-              </View>
-              <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
-                {isBn ? item.precautions_bn : item.precautions_en}
-              </Text>
-            </View>
-
-            {/* Top Bangladesh Brands */}
-            {item.brands ? (
-              <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                  <HealthIcon name="pharmacy" size={13} color={t.text} style={{ marginRight: 6 }} />
-                  <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
-                    {isBn
-                      ? 'বাংলাদেশে প্রচলিত ব্র্যান্ড (Top BD Brands):'
-                      : 'Popular Bangladesh Brands:'}
-                  </Text>
-                </View>
-                <View style={styles.brandChipsWrap}>
-                  {item.brands.split(',').map((b, bIdx) => {
-                    const bTrim = b.trim();
-                    if (!bTrim) return null;
-                    return (
-                      <View
-                        key={bIdx}
-                        style={[
-                          styles.brandTag,
-                          {
-                            backgroundColor: t.surfaceSecondary,
-                            borderColor: t.cardBorder,
-                          },
-                        ]}
-                      >
-                        <Text style={[styles.brandTagText, { color: t.text }]}>
-                          {bTrim}
-                        </Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
-            ) : null}
-
-            {/* Manufacturer Company MedEx Info */}
-            {detectedCompany ? (
-              <View
-                style={[
-                  styles.detailBlock,
-                  {
-                    borderBottomColor: t.border,
-                    backgroundColor: t.surfaceSecondary,
-                    borderRadius: 10,
-                    padding: 10,
-                    marginBottom: 8,
-                  },
-                ]}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                  <HealthIcon name="pharmacy" size={13} color={t.text} style={{ marginRight: 6 }} />
-                  <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
-                    {isBn ? 'প্রস্তুতকারক কোম্পানি (Manufacturer):' : 'Manufacturer Company:'}
-                  </Text>
-                </View>
-                <Text style={[styles.detailText, { color: t.text, fontWeight: '700', fontSize: t.fs(13) }]}>
-                  {detectedCompany.name_en}
-                </Text>
-                <Text style={[styles.detailText, { color: t.textMuted, fontSize: t.fs(12), marginTop: 2 }]}>
-                  {detectedCompany.name_bn} • MedEx: {detectedCompany.brands_count} Brands, {detectedCompany.generics_count} Generics
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Pregnancy Category */}
-            {item.pregnancy_bn || item.pregnancy_en ? (
-              <View
-                style={[
-                  styles.detailBlock,
-                  {
-                    borderBottomWidth: 0,
-                    marginTop: 4,
-                    backgroundColor: t.surfaceSecondary,
-                    borderRadius: 10,
-                    padding: 10,
-                  },
-                ]}
-              >
-                <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-                  <HealthIcon name="femaleReproductive" size={13} color={t.text} style={{ marginRight: 6 }} />
-                  <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
-                    {isBn
-                      ? 'গর্ভকালীন নিরাপত্তা (Pregnancy Safety):'
-                      : 'Pregnancy Safety:'}
-                  </Text>
-                </View>
-                <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
-                  {isBn ? item.pregnancy_bn : item.pregnancy_en}
-                </Text>
-              </View>
-            ) : null}
+        {/* Quick Brands Preview */}
+        {item.brands ? (
+          <View style={[styles.cardFooter, { borderTopColor: t.border }]}>
+            <Text
+              style={[styles.cardFooterText, { color: t.textMuted, fontSize: t.fs(11) }]}
+              numberOfLines={1}
+            >
+              {isBn ? 'ব্র্যান্ডসমূহ: ' : 'Brands: '}
+              <Text style={{ color: t.text, fontWeight: '600' }}>{item.brands}</Text>
+            </Text>
           </View>
-        )}
-      </View>
+        ) : null}
+      </TouchableOpacity>
     );
   },
   (prev, next) =>
-    prev.isExpanded === next.isExpanded &&
     prev.isBn === next.isBn &&
     prev.t === next.t &&
     prev.item.id === next.item.id
@@ -409,7 +238,7 @@ export default function MedicineScreen({
 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedCompany, setSelectedCompany] = useState('all');
-  const [expandedId, setExpandedId] = useState(null);
+  const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [renderLimit, setRenderLimit] = useState(30);
 
   const globalLang = language || 'bn';
@@ -471,9 +300,40 @@ export default function MedicineScreen({
     return MEDICINE_COMPANIES.find((c) => c.id === selectedCompany) || MEDICINE_COMPANIES[0];
   }, [selectedCompany]);
 
-  // COMBINED FILTER: Instant microsecond filtering over pre-indexed dataset!
+  // Semantic search analysis on active query
+  const semanticData = useMemo(() => {
+    return getSemanticMatches(deferredSearchQuery);
+  }, [deferredSearchQuery]);
+
+  // WHILE TYPING: Find matching pharmaceutical companies to suggest as instant filter
+  const matchingCompanies = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+    if (q.length < 2) return [];
+
+    return MEDICINE_COMPANIES.filter((comp) => {
+      if (comp.id === 'all') return false;
+      if (comp.id === selectedCompany) return false;
+
+      const shortName = (comp.short_name || '').toLowerCase();
+      const fullName = (comp.name_en || '').toLowerCase();
+      const bnName = (comp.name_bn || '').toLowerCase();
+      const slug = (comp.slug || '').toLowerCase();
+
+      return (
+        shortName.includes(q) ||
+        fullName.includes(q) ||
+        bnName.includes(q) ||
+        slug.includes(q)
+      );
+    }).slice(0, 8); // Top 8 matching companies
+  }, [searchQuery, selectedCompany]);
+
+  // COMBINED FILTER: Semantic Search + Company + Category over pre-indexed dataset!
   const filteredMedicines = useMemo(() => {
     const q = deferredSearchQuery.toLowerCase().trim();
+    const hasQuery = q.length > 0;
+    const { expansionTerms } = semanticData;
+    const hasSemanticTerms = expansionTerms.length > 0;
 
     return INDEXED_MEDICINES.filter((med) => {
       // 1. System Category Filter
@@ -486,14 +346,24 @@ export default function MedicineScreen({
         return false;
       }
 
-      // 3. Search Query
-      if (q && !med._search.includes(q)) {
+      // 3. Search Query (Exact search OR Semantic concept expansion)
+      if (hasQuery) {
+        // Direct match in search blob
+        const directMatch = med._search.includes(q);
+        if (directMatch) return true;
+
+        // Semantic concepts match in indications / action
+        if (hasSemanticTerms) {
+          const semanticMatch = expansionTerms.some((term) => med._search.includes(term));
+          if (semanticMatch) return true;
+        }
+
         return false;
       }
 
       return true;
     });
-  }, [deferredSearchQuery, selectedCategory, selectedCompany]);
+  }, [deferredSearchQuery, selectedCategory, selectedCompany, semanticData]);
 
   // Sliced dataset for instant initial render and infinite batch loading
   const displayedMedicines = useMemo(() => {
@@ -506,8 +376,12 @@ export default function MedicineScreen({
     }
   }, [filteredMedicines.length, renderLimit]);
 
-  const toggleExpand = useCallback((id) => {
-    setExpandedId((prev) => (prev === id ? null : id));
+  const handleOpenDetail = useCallback((item) => {
+    setSelectedMedicine(item);
+  }, []);
+
+  const handleCloseDetail = useCallback(() => {
+    setSelectedMedicine(null);
   }, []);
 
   const handleSelectCompany = useCallback((id) => {
@@ -527,6 +401,7 @@ export default function MedicineScreen({
   const handleResetFilters = useCallback(() => {
     setSelectedCompany('all');
     setSelectedCategory('all');
+    setSearchQuery('');
     setRenderLimit(30);
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
     showHeader();
@@ -537,14 +412,13 @@ export default function MedicineScreen({
       return (
         <MedicineCardItem
           item={item}
-          isExpanded={expandedId === item.id}
           isBn={globalLang === 'bn'}
           t={t}
-          onToggleExpand={toggleExpand}
+          onPress={handleOpenDetail}
         />
       );
     },
-    [expandedId, globalLang, t, toggleExpand]
+    [globalLang, handleOpenDetail, t]
   );
 
   const keyExtractor = useCallback((item) => item.id, []);
@@ -675,7 +549,7 @@ export default function MedicineScreen({
           </Text>
         </View>
 
-        {/* Full-width Search Bar */}
+        {/* Full-width Search Bar with Semantic Search */}
         <View
           style={[
             styles.searchBar,
@@ -691,8 +565,8 @@ export default function MedicineScreen({
             style={[styles.searchInput, { color: t.text }]}
             placeholder={
               globalLang === 'bn'
-                ? 'ওষুধ, ব্র্যান্ড (Napa, Seclo) বা ফার্মা কোম্পানি খুঁজুন...'
-                : 'Search 2,500+ medicines, brands & 225 companies...'
+                ? 'লক্ষণ (মাথা ব্যথা, জ্বর), ওষুধ বা কোম্পানি খুঁজুন...'
+                : 'Search symptoms (headache, fever), brands & pharma...'
             }
             placeholderTextColor={t.textMuted}
             value={searchQuery}
@@ -724,6 +598,56 @@ export default function MedicineScreen({
             </TouchableOpacity>
           )}
         </View>
+
+        {/* WHILE TYPING: SUGGESTED MATCHING COMPANIES AS QUICK FILTER */}
+        {matchingCompanies.length > 0 && (
+          <View style={[styles.companySuggestionsBox, { backgroundColor: t.surfaceSecondary, borderColor: t.border }]}>
+            <View style={styles.suggestionTitleRow}>
+              <HealthIcon name="pharmacy" size={12} color={t.text} style={{ marginRight: 5 }} />
+              <Text style={[styles.suggestionTitle, { color: t.text }]}>
+                {globalLang === 'bn' ? 'কোম্পানি ফিল্টার বেছে নিন:' : 'Filter by Matching Company:'}
+              </Text>
+            </View>
+            <View style={styles.suggestionChipsWrap}>
+              {matchingCompanies.map((comp) => (
+                <TouchableOpacity
+                  key={comp.id}
+                  style={[
+                    styles.suggestionChip,
+                    {
+                      backgroundColor: t.isDark ? '#27272a' : '#e4e4e7',
+                      borderColor: t.cardBorder,
+                    },
+                  ]}
+                  onPress={() => {
+                    handleSelectCompany(comp.id);
+                    setSearchQuery('');
+                    Keyboard.dismiss();
+                    onScrollLock?.(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.suggestionChipText, { color: t.text }]}>
+                    + {comp.short_name} ({comp.brands_count.toLocaleString()})
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        )}
+
+        {/* SEMANTIC SEARCH CONCEPT DETECTED INDICATOR */}
+        {semanticData.concepts.length > 0 && (
+          <View style={[styles.semanticBadgeBar, { backgroundColor: t.surfaceSecondary, borderColor: t.border }]}>
+            <HealthIcon name="medicines" size={12} color={t.text} style={{ marginRight: 6 }} />
+            <Text style={[styles.semanticBadgeText, { color: t.text }]} numberOfLines={1}>
+              {globalLang === 'bn' ? 'সেমান্টিক লক্ষণ মিল: ' : 'Semantic Symptom Match: '}
+              <Text style={{ fontWeight: '800' }}>
+                {semanticData.concepts.map((c) => (globalLang === 'bn' ? c.label_bn : c.label_en)).join(', ')}
+              </Text>
+            </Text>
+          </View>
+        )}
 
         {/* ROW 1: PHARMACEUTICAL COMPANY FILTER (225 MedEx Companies) */}
         <View
@@ -783,7 +707,7 @@ export default function MedicineScreen({
         </View>
 
         {/* Combined Filter Active Indicator & Quick Reset */}
-        {(selectedCompany !== 'all' || selectedCategory !== 'all') && (
+        {(selectedCompany !== 'all' || selectedCategory !== 'all' || searchQuery.trim().length > 0) && (
           <View style={styles.activeFilterBar}>
             {selectedCompany !== 'all' && (
               <TouchableOpacity
@@ -817,6 +741,22 @@ export default function MedicineScreen({
                 </Text>
               </TouchableOpacity>
             )}
+            {searchQuery.trim().length > 0 && (
+              <TouchableOpacity
+                style={[
+                  styles.filterTag,
+                  {
+                    backgroundColor: t.isDark ? '#27272a' : '#e4e4e7',
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+                onPress={() => setSearchQuery('')}
+              >
+                <Text style={[styles.filterTagText, { color: t.text }]}>
+                  "{searchQuery}" ✕
+                </Text>
+              </TouchableOpacity>
+            )}
             <TouchableOpacity
               style={[
                 styles.resetAllBtn,
@@ -828,7 +768,7 @@ export default function MedicineScreen({
               onPress={handleResetFilters}
             >
               <Text style={[styles.resetAllBtnText, { color: t.textMuted }]}>
-                {globalLang === 'bn' ? 'রিসেট' : 'Reset'}
+                {globalLang === 'bn' ? 'সব রিসেট' : 'Reset All'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -927,11 +867,20 @@ export default function MedicineScreen({
             />
             <Text style={[styles.emptyText, { color: t.text }]}>
               {globalLang === 'bn'
-                ? 'এই কোম্পানি ও সিস্টেমে কোনো ওষুধ পাওয়া যায়নি'
-                : 'No Medicines Found for this Company & System'}
+                ? 'এই কোম্পানি, লক্ষণ বা সিস্টেমে কোনো ওষুধ পাওয়া যায়নি'
+                : 'No Medicines Found for this Search, Company & System'}
             </Text>
           </View>
         }
+      />
+
+      {/* DEDICATED SEPARATE MEDICINE DETAILS PAGE (FULL-SCREEN) */}
+      <MedicineDetailModal
+        visible={!!selectedMedicine}
+        medicine={selectedMedicine}
+        onClose={handleCloseDetail}
+        themeObj={t}
+        initialLanguage={globalLang}
       />
     </View>
   );
@@ -975,7 +924,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 12,
     height: 44,
-    marginBottom: 8,
+    marginBottom: 6,
   },
   searchInput: {
     flex: 1,
@@ -986,10 +935,55 @@ const styles = StyleSheet.create({
     fontSize: 16,
     paddingHorizontal: 4,
   },
+  companySuggestionsBox: {
+    borderWidth: 1,
+    borderRadius: 12,
+    padding: 8,
+    marginBottom: 6,
+  },
+  suggestionTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  suggestionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.3,
+  },
+  suggestionChipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 5,
+  },
+  suggestionChip: {
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+  },
+  suggestionChipText: {
+    fontSize: 11,
+    fontWeight: '600',
+  },
+  semanticBadgeBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    marginBottom: 6,
+  },
+  semanticBadgeText: {
+    fontSize: 11,
+    flex: 1,
+  },
   filterSectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 5,
+    marginTop: 4,
   },
   filterSectionLabel: {
     fontSize: 11,
@@ -1122,12 +1116,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     letterSpacing: -0.2,
   },
+  medGenericText: {
+    marginTop: 1,
+  },
   badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
     gap: 5,
-    marginTop: 4,
+    marginTop: 5,
   },
   categoryBadge: {
     borderWidth: 1,
@@ -1150,7 +1147,7 @@ const styles = StyleSheet.create({
   headerRight: {
     marginLeft: 4,
   },
-  expandPill: {
+  detailArrowBtn: {
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -1158,41 +1155,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  expandPillText: {
-    fontSize: 10,
+  detailArrowText: {
+    fontSize: 14,
     fontWeight: '800',
   },
-  expandedContent: {
+  cardFooter: {
     borderTopWidth: StyleSheet.hairlineWidth,
-    padding: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
   },
-  detailBlock: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    paddingBottom: 10,
-    marginBottom: 10,
-  },
-  detailTitle: {
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  detailText: {
-    lineHeight: 18,
-  },
-  brandChipsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-    marginTop: 4,
-  },
-  brandTag: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  brandTagText: {
+  cardFooterText: {
     fontSize: 11,
-    fontWeight: '600',
   },
   emptyContainer: {
     alignItems: 'center',
