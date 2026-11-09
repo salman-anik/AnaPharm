@@ -57,13 +57,15 @@ export default function MedicineDetailModal({
               {
                 backgroundColor: t.surfaceSecondary,
                 borderColor: t.cardBorder,
+                paddingVertical: Math.max(5, Math.round(t.fs(6))),
+                paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
               },
             ]}
             onPress={onClose}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             activeOpacity={0.7}
           >
-            <Text style={[styles.backButtonText, { color: t.text }]}>← Back</Text>
+            <Text style={[styles.backButtonText, { color: t.text, fontSize: t.fs(12) }]}>← Back</Text>
           </TouchableOpacity>
 
           {/* Title in Center Top in English */}
@@ -87,6 +89,10 @@ export default function MedicineDetailModal({
             <TouchableOpacity
               style={[
                 styles.langPill,
+                {
+                  paddingVertical: Math.max(3, Math.round(t.fs(4))),
+                  paddingHorizontal: Math.max(6, Math.round(t.fs(8))),
+                },
                 isBn && { backgroundColor: t.isDark ? '#ffffff' : '#000000' },
               ]}
               onPress={() => setLang('bn')}
@@ -95,7 +101,10 @@ export default function MedicineDetailModal({
               <Text
                 style={[
                   styles.langPillText,
-                  { color: isBn ? (t.isDark ? '#000000' : '#ffffff') : t.textMuted },
+                  {
+                    color: isBn ? (t.isDark ? '#000000' : '#ffffff') : t.textMuted,
+                    fontSize: t.fs(11),
+                  },
                 ]}
               >
                 বাং
@@ -105,6 +114,10 @@ export default function MedicineDetailModal({
             <TouchableOpacity
               style={[
                 styles.langPill,
+                {
+                  paddingVertical: Math.max(3, Math.round(t.fs(4))),
+                  paddingHorizontal: Math.max(6, Math.round(t.fs(8))),
+                },
                 !isBn && { backgroundColor: t.isDark ? '#ffffff' : '#000000' },
               ]}
               onPress={() => setLang('en')}
@@ -113,7 +126,10 @@ export default function MedicineDetailModal({
               <Text
                 style={[
                   styles.langPillText,
-                  { color: !isBn ? (t.isDark ? '#000000' : '#ffffff') : t.textMuted },
+                  {
+                    color: !isBn ? (t.isDark ? '#000000' : '#ffffff') : t.textMuted,
+                    fontSize: t.fs(11),
+                  },
                 ]}
               >
                 EN
@@ -364,19 +380,19 @@ export default function MedicineDetailModal({
 
               <View style={[styles.companyStatsBox, { backgroundColor: t.surfaceSecondary, borderColor: t.border }]}>
                 <View style={styles.companyStatCol}>
-                  <Text style={[styles.companyStatVal, { color: t.text }]}>
+                  <Text style={[styles.companyStatVal, { color: t.text, fontSize: t.fs(15) }]}>
                     {company.brands_count.toLocaleString()}
                   </Text>
-                  <Text style={[styles.companyStatLbl, { color: t.textMuted }]}>
+                  <Text style={[styles.companyStatLbl, { color: t.textMuted, fontSize: t.fs(10) }]}>
                     MedEx Brands
                   </Text>
                 </View>
                 <View style={[styles.companyStatDivider, { backgroundColor: t.border }]} />
                 <View style={styles.companyStatCol}>
-                  <Text style={[styles.companyStatVal, { color: t.text }]}>
+                  <Text style={[styles.companyStatVal, { color: t.text, fontSize: t.fs(15) }]}>
                     {company.generics_count.toLocaleString()}
                   </Text>
-                  <Text style={[styles.companyStatLbl, { color: t.textMuted }]}>
+                  <Text style={[styles.companyStatLbl, { color: t.textMuted, fontSize: t.fs(10) }]}>
                     MedEx Generics
                   </Text>
                 </View>
@@ -429,7 +445,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   backButtonText: {
-    fontSize: 12,
     fontWeight: '700',
   },
   navTitleWrap: {
@@ -458,7 +473,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   langPillText: {
-    fontSize: 11,
     fontWeight: '700',
   },
   scrollArea: {
@@ -587,11 +601,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   companyStatVal: {
-    fontSize: 15,
     fontWeight: '800',
   },
   companyStatLbl: {
-    fontSize: 10,
     fontWeight: '600',
     marginTop: 2,
     textTransform: 'uppercase',

@@ -431,6 +431,7 @@ export default function MedicineScreen({
         ? selectedCompany === item.id
         : selectedCategory === item.id;
       const chipIconColor = active ? (t.isDark ? '#000000' : '#ffffff') : t.text;
+      const iconSize = Math.max(12, Math.round(t.fs(13)));
 
       return (
         <TouchableOpacity
@@ -443,6 +444,8 @@ export default function MedicineScreen({
                   : '#000000'
                 : t.chipBg,
               borderColor: active ? t.text : t.chipBorder,
+              paddingVertical: Math.max(5, Math.round(t.fs(6))),
+              paddingHorizontal: Math.max(10, Math.round(t.fs(12))),
             },
           ]}
           onPress={() => {
@@ -462,7 +465,7 @@ export default function MedicineScreen({
                 ? HEALTH_ICONS.medicines
                 : getMedicineCategoryIcon(item.id)
             }
-            size={12}
+            size={iconSize}
             color={chipIconColor}
             style={{ marginRight: 5 }}
           />
@@ -475,6 +478,7 @@ export default function MedicineScreen({
                     ? '#000000'
                     : '#ffffff'
                   : t.text,
+                fontSize: t.fs(13),
                 fontWeight: active ? '800' : '600',
               },
             ]}
@@ -530,13 +534,14 @@ export default function MedicineScreen({
             {
               backgroundColor: t.inputBg,
               borderColor: t.glassBorder,
+              minHeight: Math.max(42, Math.round(t.fs(44))),
             },
           ]}
           onTouchStart={() => onScrollLock?.(true)}
         >
-          <HealthIcon name="magnifyingGlass" size={15} color={t.textMuted} style={{ marginRight: 8 }} />
+          <HealthIcon name="magnifyingGlass" size={Math.max(15, Math.round(t.fs(16)))} color={t.textMuted} style={{ marginRight: 8 }} />
           <TextInput
-            style={[styles.searchInput, { color: t.text }]}
+            style={[styles.searchInput, { color: t.text, fontSize: t.fs(14) }]}
             placeholder={
               globalLang === 'bn'
                 ? 'লক্ষণ (মাথা ব্যথা, জ্বর), ওষুধ বা কোম্পানি খুঁজুন...'
@@ -568,7 +573,7 @@ export default function MedicineScreen({
               }}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={[styles.clearBtnText, { color: t.textMuted }]}>✕</Text>
+              <Text style={[styles.clearBtnText, { color: t.textMuted, fontSize: t.fs(16) }]}>✕</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -576,7 +581,7 @@ export default function MedicineScreen({
         {/* WHILE TYPING: Sleek, compact 1-line matching company suggestions */}
         {matchingCompanies.length > 0 && (
           <View style={styles.matchingCompanyBar}>
-            <Text style={[styles.matchingCompanyHint, { color: t.textMuted }]}>
+            <Text style={[styles.matchingCompanyHint, { color: t.textMuted, fontSize: t.fs(11) }]}>
               {globalLang === 'bn' ? 'কোম্পানি ফিল্টার:' : 'Filter Company:'}
             </Text>
             {matchingCompanies.map((comp) => (
@@ -587,6 +592,8 @@ export default function MedicineScreen({
                   {
                     backgroundColor: t.surfaceSecondary,
                     borderColor: t.cardBorder,
+                    paddingVertical: Math.max(3, Math.round(t.fs(4))),
+                    paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                   },
                 ]}
                 onPress={() => {
@@ -597,7 +604,7 @@ export default function MedicineScreen({
                 }}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.matchingCompanyPillText, { color: t.text }]}>
+                <Text style={[styles.matchingCompanyPillText, { color: t.text, fontSize: t.fs(12) }]}>
                   + {comp.short_name}
                 </Text>
               </TouchableOpacity>
@@ -626,6 +633,10 @@ export default function MedicineScreen({
             <TouchableOpacity
               style={[
                 styles.scopeTabBtn,
+                {
+                  paddingVertical: Math.max(5, Math.round(t.fs(6))),
+                  paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
+                },
                 filterMode === 'system' && {
                   backgroundColor: t.isDark ? '#ffffff' : '#000000',
                 },
@@ -635,7 +646,7 @@ export default function MedicineScreen({
             >
               <HealthIcon
                 name="bodyOutline"
-                size={11}
+                size={Math.max(12, Math.round(t.fs(13)))}
                 color={
                   filterMode === 'system'
                     ? t.isDark
@@ -643,7 +654,7 @@ export default function MedicineScreen({
                       : '#ffffff'
                     : t.textMuted
                 }
-                style={{ marginRight: 3 }}
+                style={{ marginRight: 4 }}
               />
               <Text
                 style={[
@@ -655,6 +666,7 @@ export default function MedicineScreen({
                           ? '#000000'
                           : '#ffffff'
                         : t.textMuted,
+                    fontSize: t.fs(13),
                     fontWeight: filterMode === 'system' ? '800' : '600',
                   },
                 ]}
@@ -670,6 +682,10 @@ export default function MedicineScreen({
             <TouchableOpacity
               style={[
                 styles.scopeTabBtn,
+                {
+                  paddingVertical: Math.max(5, Math.round(t.fs(6))),
+                  paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
+                },
                 filterMode === 'company' && {
                   backgroundColor: t.isDark ? '#ffffff' : '#000000',
                 },
@@ -679,7 +695,7 @@ export default function MedicineScreen({
             >
               <HealthIcon
                 name="pharmacy"
-                size={11}
+                size={Math.max(12, Math.round(t.fs(13)))}
                 color={
                   filterMode === 'company'
                     ? t.isDark
@@ -687,7 +703,7 @@ export default function MedicineScreen({
                       : '#ffffff'
                     : t.textMuted
                 }
-                style={{ marginRight: 3 }}
+                style={{ marginRight: 4 }}
               />
               <Text
                 style={[
@@ -699,6 +715,7 @@ export default function MedicineScreen({
                           ? '#000000'
                           : '#ffffff'
                         : t.textMuted,
+                    fontSize: t.fs(13),
                     fontWeight: filterMode === 'company' ? '800' : '600',
                   },
                 ]}
@@ -744,11 +761,13 @@ export default function MedicineScreen({
                   {
                     backgroundColor: t.surfaceSecondary,
                     borderColor: t.cardBorder,
+                    paddingVertical: Math.max(3, Math.round(t.fs(4))),
+                    paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                   },
                 ]}
                 onPress={() => handleSelectCompany('all')}
               >
-                <Text style={[styles.compactFilterTagText, { color: t.text }]}>
+                <Text style={[styles.compactFilterTagText, { color: t.text, fontSize: t.fs(12) }]}>
                   {selectedCompanyObj.short_name || selectedCompanyObj.name_en} ✕
                 </Text>
               </TouchableOpacity>
@@ -761,11 +780,13 @@ export default function MedicineScreen({
                   {
                     backgroundColor: t.surfaceSecondary,
                     borderColor: t.cardBorder,
+                    paddingVertical: Math.max(3, Math.round(t.fs(4))),
+                    paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                   },
                 ]}
                 onPress={() => handleSelectCategory('all')}
               >
-                <Text style={[styles.compactFilterTagText, { color: t.text }]}>
+                <Text style={[styles.compactFilterTagText, { color: t.text, fontSize: t.fs(12) }]}>
                   {MEDICINE_CATEGORIES.find((c) => c.id === selectedCategory)?.label_bn || selectedCategory} ✕
                 </Text>
               </TouchableOpacity>
@@ -778,10 +799,12 @@ export default function MedicineScreen({
                   {
                     backgroundColor: t.surfaceSecondary,
                     borderColor: t.cardBorder,
+                    paddingVertical: Math.max(3, Math.round(t.fs(4))),
+                    paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                   },
                 ]}
               >
-                <Text style={[styles.compactFilterTagText, { color: t.textMuted }]}>
+                <Text style={[styles.compactFilterTagText, { color: t.textMuted, fontSize: t.fs(12) }]}>
                   💡 {semanticData.concepts[0]?.label_en}
                 </Text>
               </View>
@@ -791,7 +814,7 @@ export default function MedicineScreen({
               style={styles.clearAllLink}
               onPress={handleResetFilters}
             >
-              <Text style={[styles.clearAllLinkText, { color: t.textMuted }]}>
+              <Text style={[styles.clearAllLinkText, { color: t.textMuted, fontSize: t.fs(12) }]}>
                 {globalLang === 'bn' ? 'সব মুছুন' : 'Clear All'}
               </Text>
             </TouchableOpacity>
@@ -952,11 +975,9 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    fontSize: 13,
     paddingVertical: 0,
   },
   clearBtnText: {
-    fontSize: 15,
     paddingHorizontal: 4,
   },
   matchingCompanyBar: {
@@ -967,7 +988,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   matchingCompanyHint: {
-    fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
   },
@@ -978,7 +998,6 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   matchingCompanyPillText: {
-    fontSize: 11,
     fontWeight: '600',
   },
   unifiedFilterRow: {
@@ -1000,9 +1019,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 10,
   },
-  scopeTabText: {
-    fontSize: 11,
-  },
+  scopeTabText: {},
   activeDot: {
     width: 4,
     height: 4,
@@ -1028,9 +1045,7 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     marginRight: 6,
   },
-  chipLabel: {
-    fontSize: 11,
-  },
+  chipLabel: {},
   activeFilterStrip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1046,7 +1061,6 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   compactFilterTagText: {
-    fontSize: 10,
     fontWeight: '600',
   },
   clearAllLink: {
@@ -1054,7 +1068,6 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   clearAllLinkText: {
-    fontSize: 10,
     fontWeight: '700',
     textDecorationLine: 'underline',
   },
