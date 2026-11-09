@@ -10,26 +10,35 @@ import {
 } from 'react-native';
 import { SYSTEMS } from '../data/anatomyData';
 import { getTheme } from '../theme/theme';
+import HealthIcon, { getSystemIcon } from './HealthIcon';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get('window');
 
-export default function OrganDetailsSheet({ visible, organData, onClose, theme = 'dark' }) {
+export default function OrganDetailsSheet({
+  visible,
+  organData,
+  onClose,
+  theme = 'dark',
+  fontSize = 'medium',
+}) {
   if (!organData) return null;
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeTab, setActiveTab] = useState('all');
 
-  const t = getTheme(theme);
-  const isLight = !t.isDark;
-  const systemInfo = SYSTEMS[organData.system] || { name: 'Human Anatomy', icon: '🧬', color: '#38bdf8' };
+  const t = getTheme(theme, fontSize);
+  const systemInfo = SYSTEMS[organData.system] || {
+    name: 'Human Anatomy',
+    icon: '🧬',
+  };
 
   const tabs = [
     { id: 'all', label: 'All Details' },
-    { id: 'overview', label: '📋 Overview' },
-    { id: 'diseases', label: '⚠️ Diseases' },
-    { id: 'treatments', label: '🩺 Treatments' },
-    { id: 'fitness', label: '🌿 Fitness' },
-    { id: 'meds', label: '💊 Medications' },
+    { id: 'overview', label: 'Overview' },
+    { id: 'diseases', label: 'Diseases' },
+    { id: 'treatments', label: 'Treatments' },
+    { id: 'fitness', label: 'Fitness' },
+    { id: 'meds', label: 'Medications' },
   ];
 
   return (
@@ -49,84 +58,125 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
         <View
           style={[
             styles.sheetContainer,
-            { backgroundColor: t.surface, borderColor: t.cardBorder },
-            { height: isExpanded ? SCREEN_HEIGHT * 0.93 : SCREEN_HEIGHT * 0.48 },
+            {
+              backgroundColor: t.surface,
+              borderColor: t.glassBorder,
+              height: isExpanded ? SCREEN_HEIGHT * 0.94 : SCREEN_HEIGHT * 0.50,
+            },
           ]}
         >
-          {/* Interactive Drag / Tap Handle */}
+          {/* Drag Handle - Clean, No hint text */}
           <TouchableOpacity
             style={styles.handleContainer}
             onPress={() => setIsExpanded(!isExpanded)}
-            hitSlop={{ top: 12, bottom: 12, left: 30, right: 30 }}
+            hitSlop={{ top: 14, bottom: 14, left: 40, right: 40 }}
             activeOpacity={0.7}
           >
-            <View style={[styles.dragHandle, isLight && styles.dragHandleLight]} />
-            <View style={[styles.handleBadge, isLight && styles.handleBadgeLight]}>
-              <Text style={[styles.handleHint, isLight && styles.handleHintLight]}>
-                {isExpanded ? '▼ Minimize to Half Screen' : '▲ Tap to Expand Full Screen'}
-              </Text>
-            </View>
+            <View
+              style={[
+                styles.dragHandle,
+                { backgroundColor: t.isDark ? '#52525b' : '#d4d4d8' },
+              ]}
+            />
           </TouchableOpacity>
 
           {/* Sticky Header */}
-          <View style={[styles.header, isLight && styles.headerLight]}>
+          <View
+            style={[
+              styles.header,
+              {
+                backgroundColor: t.headerBg,
+                borderBottomColor: t.glassBorder,
+              },
+            ]}
+          >
             <View style={styles.titleColumn}>
               <View style={styles.titleRow}>
-                <Text style={[styles.organTitle, isLight && styles.organTitleLight]}>
+                <Text style={[styles.organTitle, { color: t.text }]}>
                   {organData.name}
                 </Text>
-                {organData.name_bn ? (
-                  <Text style={styles.organTitleBn}>({organData.name_bn})</Text>
-                ) : null}
               </View>
               <View style={styles.metaRow}>
                 <View
                   style={[
                     styles.badge,
                     {
-                      backgroundColor: systemInfo.color + '25',
-                      borderColor: systemInfo.color,
+                      backgroundColor: t.chipBg,
+                      borderColor: t.cardBorder,
                     },
                   ]}
                 >
-                  <Text style={[styles.badgeText, { color: systemInfo.color }]}>
-                    {systemInfo.icon} {systemInfo.name}
-                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <HealthIcon
+                      source={getSystemIcon(organData.system)}
+                      size={14}
+                      color={t.text}
+                      style={{ marginRight: 6 }}
+                    />
+                    <Text
+                      style={[
+                        styles.badgeText,
+                        { color: t.text },
+                      ]}
+                    >
+                      {systemInfo.name}
+                    </Text>
+                  </View>
                 </View>
                 {organData.latin ? (
-                  <Text style={[styles.latinText, isLight && styles.latinTextLight]}>
+                  <Text style={[styles.latinText, { color: t.textMuted }]}>
                     {organData.latin}
                   </Text>
                 ) : null}
               </View>
             </View>
 
-            {/* Action Buttons: Expand Toggle & Close with accessible large touch targets */}
+            {/* Action Buttons: Expand Toggle & Close */}
             <View style={styles.headerActions}>
               <TouchableOpacity
                 onPress={() => setIsExpanded(!isExpanded)}
-                style={[styles.expandToggleBtn, isLight && styles.expandToggleBtnLight]}
+                style={[
+                  styles.expandToggleBtn,
+                  {
+                    backgroundColor: t.chipBg,
+                    borderColor: t.cardBorder,
+                  },
+                ]}
                 hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-                activeOpacity={0.7}
+                activeOpacity={0.75}
               >
-                <Text style={styles.expandToggleText}>
-                  {isExpanded ? '⤡ Half View' : '⤢ Full View'}
+                <Text style={[styles.expandToggleText, { color: t.text }]}>
+                  {isExpanded ? 'Half' : 'Full'}
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={onClose}
-                style={[styles.closeBtn, isLight && styles.closeBtnLight]}
+                style={[
+                  styles.closeBtn,
+                  {
+                    backgroundColor: t.chipBg,
+                    borderColor: t.cardBorder,
+                  },
+                ]}
                 hitSlop={{ top: 16, bottom: 16, left: 16, right: 16 }}
-                activeOpacity={0.7}
+                activeOpacity={0.75}
               >
-                <Text style={[styles.closeBtnText, isLight && styles.closeBtnTextLight]}>✕</Text>
+                <Text style={[styles.closeBtnText, { color: t.text }]}>✕</Text>
               </TouchableOpacity>
             </View>
           </View>
 
-          {/* Section Filter Chips */}
-          <View style={[styles.tabBar, isLight && styles.tabBarLight]}>
+          {/* Section Filter Chips - High Contrast: Selected font NEVER blends with background! */}
+          <View
+            style={[
+              styles.tabBar,
+              {
+                backgroundColor: t.surfaceSecondary,
+                borderBottomColor: t.border,
+              },
+            ]}
+          >
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -139,8 +189,14 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
                     key={tab.id}
                     style={[
                       styles.tabChip,
-                      isLight && styles.tabChipLight,
-                      isActive && styles.tabChipActive,
+                      {
+                        backgroundColor: isActive
+                          ? t.isDark
+                            ? '#ffffff'
+                            : '#000000'
+                          : t.chipBg,
+                        borderColor: isActive ? t.text : t.chipBorder,
+                      },
                     ]}
                     onPress={() => setActiveTab(tab.id)}
                     activeOpacity={0.7}
@@ -148,8 +204,14 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
                     <Text
                       style={[
                         styles.tabChipText,
-                        isLight && styles.tabChipTextLight,
-                        isActive && styles.tabChipTextActive,
+                        {
+                          color: isActive
+                            ? t.isDark
+                              ? '#000000'
+                              : '#ffffff'
+                            : t.text,
+                          fontWeight: isActive ? '800' : '600',
+                        },
                       ]}
                     >
                       {tab.label}
@@ -168,17 +230,25 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
           >
             {/* Overview / Clinical Summary */}
             {activeTab === 'all' || activeTab === 'overview' ? (
-              <View style={[styles.sectionCard, isLight && styles.sectionCardLight]}>
-                <Text style={[styles.sectionHeading, isLight && styles.sectionHeadingLight]}>
-                  📋 Overview & Functions (বিবরণ ও ভূমিকা)
+              <View
+                style={[
+                  styles.sectionCard,
+                  {
+                    backgroundColor: t.card,
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+              >
+                <Text style={[styles.sectionHeading, { color: t.text }]}>
+                  Overview
                 </Text>
                 {organData.desc_bn ? (
-                  <Text style={[styles.descText, isLight && styles.descTextLight]}>
+                  <Text style={[styles.descText, { color: t.text }]}>
                     {organData.desc_bn}
                   </Text>
                 ) : null}
                 {organData.desc_en ? (
-                  <Text style={[styles.descEnText, isLight && styles.descEnTextLight]}>
+                  <Text style={[styles.descEnText, { color: t.textMuted }]}>
                     {organData.desc_en}
                   </Text>
                 ) : null}
@@ -186,11 +256,15 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
                 {/* Function Points */}
                 {organData.funcs_bn && organData.funcs_bn.length > 0 ? (
                   <View style={styles.bulletList}>
-                    <Text style={styles.subHeading}>প্রধান কাজসমূহ (Key Functions):</Text>
+                    <Text style={[styles.subHeading, { color: t.text }]}>
+                      Functions:
+                    </Text>
                     {organData.funcs_bn.map((fn, idx) => (
                       <View key={idx} style={styles.bulletItem}>
-                        <Text style={styles.bulletDot}>•</Text>
-                        <Text style={[styles.bulletText, isLight && styles.bulletTextLight]}>
+                        <Text style={[styles.bulletDot, { color: t.text }]}>
+                          •
+                        </Text>
+                        <Text style={[styles.bulletText, { color: t.text }]}>
                           {fn}
                         </Text>
                       </View>
@@ -198,11 +272,21 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
                   </View>
                 ) : null}
 
-                {/* Did You Know Fact */}
+                {/* Clinical Fact */}
                 {organData.fact_bn ? (
-                  <View style={[styles.factBox, isLight && styles.factBoxLight]}>
-                    <Text style={styles.factTitle}>💡 আপনি কি জানেন? (Clinical Fact):</Text>
-                    <Text style={[styles.factText, isLight && styles.factTextLight]}>
+                  <View
+                    style={[
+                      styles.factBox,
+                      {
+                        backgroundColor: t.surfaceSecondary,
+                        borderLeftColor: t.text,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.factTitle, { color: t.text }]}>
+                      Clinical Fact:
+                    </Text>
+                    <Text style={[styles.factText, { color: t.text }]}>
                       {organData.fact_bn}
                     </Text>
                   </View>
@@ -212,21 +296,29 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
 
             {/* Diseases & Pathologies */}
             {activeTab === 'all' || activeTab === 'diseases' ? (
-              <View style={[styles.sectionCard, isLight && styles.sectionCardLight]}>
-                <Text style={[styles.sectionHeading, { color: '#f59e0b' }]}>
-                  ⚠️ Pathologies & Disorders (রোগ ও সমস্যা)
+              <View
+                style={[
+                  styles.sectionCard,
+                  {
+                    backgroundColor: t.card,
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+              >
+                <Text style={[styles.sectionHeading, { color: t.text }]}>
+                  Pathologies & Disorders
                 </Text>
                 {organData.diseases_bn && organData.diseases_bn.length > 0 ? (
                   organData.diseases_bn.map((dis, idx) => (
                     <View key={idx} style={styles.diseaseItem}>
-                      <Text style={styles.diseaseDot}>▪</Text>
-                      <Text style={[styles.diseaseText, isLight && styles.diseaseTextLight]}>
+                      <Text style={[styles.diseaseDot, { color: t.text }]}>▪</Text>
+                      <Text style={[styles.diseaseText, { color: t.text }]}>
                         {dis}
                       </Text>
                     </View>
                   ))
                 ) : (
-                  <Text style={[styles.descText, isLight && styles.descTextLight]}>
+                  <Text style={[styles.descText, { color: t.textMuted }]}>
                     {organData.patho_bn || organData.patho_en}
                   </Text>
                 )}
@@ -235,21 +327,29 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
 
             {/* Solutions & Treatments */}
             {activeTab === 'all' || activeTab === 'treatments' ? (
-              <View style={[styles.sectionCard, isLight && styles.sectionCardLight]}>
-                <Text style={[styles.sectionHeading, { color: '#06b6d4' }]}>
-                  🩺 Clinical Solutions & Tests (চিকিৎসা ও পরীক্ষা)
+              <View
+                style={[
+                  styles.sectionCard,
+                  {
+                    backgroundColor: t.card,
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+              >
+                <Text style={[styles.sectionHeading, { color: t.text }]}>
+                  Treatments & Tests
                 </Text>
                 {organData.solutions_bn && organData.solutions_bn.length > 0 ? (
                   organData.solutions_bn.map((sol, idx) => (
                     <View key={idx} style={styles.solutionItem}>
-                      <Text style={styles.solutionDot}>✔</Text>
-                      <Text style={[styles.solutionText, isLight && styles.solutionTextLight]}>
+                      <Text style={[styles.solutionDot, { color: t.text }]}>✔</Text>
+                      <Text style={[styles.solutionText, { color: t.text }]}>
                         {sol}
                       </Text>
                     </View>
                   ))
                 ) : (
-                  <Text style={[styles.descText, isLight && styles.descTextLight]}>
+                  <Text style={[styles.descText, { color: t.textMuted }]}>
                     নিয়মিত স্বাস্থ্য পরীক্ষা ও বিশেষজ্ঞ চিকিৎসকের পরামর্শ গ্রহণ করুন।
                   </Text>
                 )}
@@ -258,21 +358,30 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
 
             {/* Lifestyle & Fitness Tips */}
             {activeTab === 'all' || activeTab === 'fitness' ? (
-              <View style={[styles.sectionCard, isLight && styles.sectionCardLight]}>
-                <Text style={[styles.sectionHeading, { color: '#10b981' }]}>
-                  🌿 Lifestyle & Fitness Advice (সুস্থ থাকার নির্দেশিকা)
+              <View
+                style={[
+                  styles.sectionCard,
+                  {
+                    backgroundColor: t.card,
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+              >
+                <Text style={[styles.sectionHeading, { color: t.text }]}>
+                  Care & Health Guidance
                 </Text>
-                {organData.fitness_tips_bn && organData.fitness_tips_bn.length > 0 ? (
+                {organData.fitness_tips_bn &&
+                organData.fitness_tips_bn.length > 0 ? (
                   organData.fitness_tips_bn.map((tip, idx) => (
                     <View key={idx} style={styles.fitnessItem}>
-                      <Text style={styles.fitnessDot}>☘</Text>
-                      <Text style={[styles.fitnessText, isLight && styles.fitnessTextLight]}>
+                      <Text style={[styles.fitnessDot, { color: t.text }]}>☘</Text>
+                      <Text style={[styles.fitnessText, { color: t.text }]}>
                         {tip}
                       </Text>
                     </View>
                   ))
                 ) : (
-                  <Text style={[styles.descText, isLight && styles.descTextLight]}>
+                  <Text style={[styles.descText, { color: t.textMuted }]}>
                     সুষম খাদ্য গ্রহণ, পর্যাপ্ত ঘুম এবং নিয়মিত শারীরিক ব্যায়াম করুন।
                   </Text>
                 )}
@@ -281,11 +390,19 @@ export default function OrganDetailsSheet({ visible, organData, onClose, theme =
 
             {/* Related Medications */}
             {activeTab === 'all' || activeTab === 'meds' ? (
-              <View style={[styles.sectionCard, isLight && styles.sectionCardLight]}>
-                <Text style={[styles.sectionHeading, { color: '#ec4899' }]}>
-                  💊 Common Medications (সম্পর্কিত ওষুধ নির্দেশিকা)
+              <View
+                style={[
+                  styles.sectionCard,
+                  {
+                    backgroundColor: t.card,
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+              >
+                <Text style={[styles.sectionHeading, { color: t.text }]}>
+                  Medications
                 </Text>
-                <Text style={[styles.medsText, isLight && styles.medsTextLight]}>
+                <Text style={[styles.medsText, { color: t.text }]}>
                   {organData.medications_bn ||
                     'প্রয়োজনে রেজিস্টার্ড চিকিৎসকের প্রেসক্রিপশন অনুযায়ী নির্দিষ্ট মাত্রায় সেবন করুন।'}
                 </Text>
@@ -302,60 +419,32 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0, 0, 0, 0.45)',
+    backgroundColor: 'rgba(0, 0, 0, 0.65)',
   },
   backdrop: {
     flex: 1,
   },
   sheetContainer: {
-    width: '100%',
-    backgroundColor: '#0f172a',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
-    paddingTop: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderTopWidth: 1.5,
+    borderLeftWidth: 1,
+    borderRightWidth: 1,
+    overflow: 'hidden',
+    elevation: 20,
     shadowColor: '#000',
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 12,
-  },
-  sheetContainerLight: {
-    backgroundColor: '#ffffff',
-    borderColor: '#e2e8f0',
-    shadowOpacity: 0.15,
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
   },
   handleContainer: {
     alignItems: 'center',
-    paddingVertical: 6,
-    marginBottom: 4,
+    paddingVertical: 10,
   },
   dragHandle: {
     width: 44,
     height: 5,
-    backgroundColor: '#475569',
     borderRadius: 3,
-    marginBottom: 6,
-  },
-  dragHandleLight: {
-    backgroundColor: '#cbd5e1',
-  },
-  handleBadge: {
-    paddingHorizontal: 12,
-    paddingVertical: 2,
-    borderRadius: 12,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
-  },
-  handleBadgeLight: {
-    backgroundColor: 'rgba(2, 132, 199, 0.1)',
-  },
-  handleHint: {
-    color: '#38bdf8',
-    fontSize: 11,
-    fontWeight: '700',
-  },
-  handleHintLight: {
-    color: '#0284c7',
   },
   header: {
     flexDirection: 'row',
@@ -364,40 +453,24 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  headerLight: {
-    borderBottomColor: '#e2e8f0',
   },
   titleColumn: {
     flex: 1,
-    paddingRight: 12,
+    marginRight: 10,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 4,
   },
   organTitle: {
     fontSize: 18,
     fontWeight: '800',
-    color: '#ffffff',
-  },
-  organTitleLight: {
-    color: '#0f172a',
-  },
-  organTitleBn: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#38bdf8',
   },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
     gap: 8,
+    marginTop: 4,
   },
   badge: {
     paddingHorizontal: 8,
@@ -411,91 +484,53 @@ const styles = StyleSheet.create({
   },
   latinText: {
     fontStyle: 'italic',
-    color: '#94a3b8',
-    fontSize: 12,
-  },
-  latinTextLight: {
-    color: '#64748b',
+    fontSize: 11,
   },
   headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   expandToggleBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#0284c7',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 14,
     borderWidth: 1,
-    borderColor: '#38bdf8',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  expandToggleBtnLight: {
-    backgroundColor: '#0284c7',
-    borderColor: '#0284c7',
-  },
   expandToggleText: {
-    color: '#ffffff',
     fontSize: 11,
     fontWeight: '700',
   },
   closeBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: '#334155',
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  closeBtnLight: {
-    backgroundColor: '#e2e8f0',
-  },
   closeBtnText: {
-    color: '#ffffff',
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: '800',
-  },
-  closeBtnTextLight: {
-    color: '#1e293b',
   },
   tabBar: {
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
-    backgroundColor: '#0b1322',
-  },
-  tabBarLight: {
-    backgroundColor: '#f8fafc',
-    borderBottomColor: '#e2e8f0',
   },
   tabScroll: {
     paddingHorizontal: 14,
     gap: 8,
   },
   tabChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
     borderRadius: 14,
-    backgroundColor: '#1e293b',
-  },
-  tabChipLight: {
-    backgroundColor: '#e2e8f0',
-  },
-  tabChipActive: {
-    backgroundColor: '#0284c7',
+    borderWidth: 1,
   },
   tabChipText: {
-    color: '#94a3b8',
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  tabChipTextLight: {
-    color: '#64748b',
-  },
-  tabChipTextActive: {
-    color: '#ffffff',
+    fontSize: 12,
   },
   scrollBody: {
     flex: 1,
@@ -505,41 +540,24 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   sectionCard: {
-    backgroundColor: '#1e293b',
-    borderRadius: 14,
+    borderRadius: 16,
     padding: 14,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  sectionCardLight: {
-    backgroundColor: '#f8fafc',
-    borderColor: '#e2e8f0',
+    elevation: 2,
   },
   sectionHeading: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#ffffff',
+    fontWeight: '800',
     marginBottom: 8,
-  },
-  sectionHeadingLight: {
-    color: '#0f172a',
   },
   descText: {
     fontSize: 13,
     lineHeight: 20,
-    color: '#e2e8f0',
-  },
-  descTextLight: {
-    color: '#334155',
   },
   descEnText: {
     fontSize: 12,
     lineHeight: 18,
-    color: '#94a3b8',
     marginTop: 4,
-  },
-  descEnTextLight: {
-    color: '#64748b',
   },
   bulletList: {
     marginTop: 10,
@@ -547,8 +565,7 @@ const styles = StyleSheet.create({
   },
   subHeading: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#38bdf8',
+    fontWeight: '800',
     marginBottom: 2,
   },
   bulletItem: {
@@ -557,7 +574,6 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   bulletDot: {
-    color: '#38bdf8',
     fontSize: 14,
     lineHeight: 18,
   },
@@ -565,36 +581,21 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     lineHeight: 18,
-    color: '#cbd5e1',
-  },
-  bulletTextLight: {
-    color: '#334155',
   },
   factBox: {
     marginTop: 12,
     padding: 10,
     borderRadius: 10,
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
     borderLeftWidth: 3,
-    borderLeftColor: '#38bdf8',
-  },
-  factBoxLight: {
-    backgroundColor: 'rgba(2, 132, 199, 0.08)',
-    borderLeftColor: '#0284c7',
   },
   factTitle: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#38bdf8',
+    fontWeight: '800',
     marginBottom: 2,
   },
   factText: {
     fontSize: 12,
     lineHeight: 17,
-    color: '#e0f2fe',
-  },
-  factTextLight: {
-    color: '#0f172a',
   },
   diseaseItem: {
     flexDirection: 'row',
@@ -603,7 +604,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   diseaseDot: {
-    color: '#f59e0b',
     fontSize: 12,
     marginTop: 2,
   },
@@ -611,10 +611,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     lineHeight: 18,
-    color: '#fef3c7',
-  },
-  diseaseTextLight: {
-    color: '#78350f',
   },
   solutionItem: {
     flexDirection: 'row',
@@ -623,7 +619,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   solutionDot: {
-    color: '#06b6d4',
     fontSize: 12,
     marginTop: 2,
   },
@@ -631,10 +626,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     lineHeight: 18,
-    color: '#cffafe',
-  },
-  solutionTextLight: {
-    color: '#164e63',
   },
   fitnessItem: {
     flexDirection: 'row',
@@ -643,7 +634,6 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   fitnessDot: {
-    color: '#10b981',
     fontSize: 12,
     marginTop: 2,
   },
@@ -651,17 +641,9 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     lineHeight: 18,
-    color: '#d1fae5',
-  },
-  fitnessTextLight: {
-    color: '#064e3b',
   },
   medsText: {
     fontSize: 12,
     lineHeight: 19,
-    color: '#fce7f3',
-  },
-  medsTextLight: {
-    color: '#831843',
   },
 });

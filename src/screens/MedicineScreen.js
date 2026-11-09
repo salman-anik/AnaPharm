@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useRef } from 'react';
 import {
   StyleSheet,
   View,
@@ -12,325 +12,911 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MEDICINE_DATABASE, MEDICINE_CATEGORIES } from '../data/medicineData';
 import { getTheme } from '../theme/theme';
+import HealthIcon, { HEALTH_ICONS, getSystemIcon, getMedicineCategoryIcon } from '../components/HealthIcon';
 
-export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [expandedId, setExpandedId] = useState(null);
-  const [globalLang, setGlobalLang] = useState('bn'); // 'bn' | 'en'
-  const [cardLangMap, setCardLangMap] = useState({});
+export const MEDICINE_COMPANIES = [
+  { id: 'all', name_en: 'All Pharma', name_bn: 'সকল ফার্মা', icon: '🏭', patterns: [] },
+  {
+    id: 'square',
+    name_en: 'Square',
+    name_bn: 'স্কয়ার',
+    icon: '🟦',
+    patterns: [
+      'square', 'ace', 'seclo', 'ciprocin', 'alatrol', 'filmet', 'camlosart',
+      'entacyd', 'tofen', 'virux', 'clofenac', 'xinc', 'flamyd', 'bizoran',
+      'calbo', 'lefra', 'd-vit', 'lucent', 'oradexon', 'provair', 'roxex',
+      'fixal', 'glicron', 'coralcal', 'trupan', 'anaflex', 'angilock',
+      'neotack', 'olmesart', 'pulmocure', 'acerux', 'adalimab', 'advixa',
+      'novirax', 'simplovir', 'acitretin', 'soricap', 'soritec', 'mucomist',
+      'acemox', 'remox',
+    ],
+  },
+  {
+    id: 'beximco',
+    name_en: 'Beximco',
+    name_bn: 'বেক্সিমকো',
+    icon: '🟡',
+    patterns: [
+      'beximco', 'napa', 'neoceptin', 'bexitrol', 'azmasol', 'tyclav',
+      'inflam', 'proceptin', 'de-rash', 'amdocal', 'atova', 'c-vit',
+      'diapro', 'e-gel', 'fexo', 'ipratrop', 'lora', 'melix', 'nabilup',
+      'olmesan', 'pantonil', 'rosu', 'torax', 'triocim', 'bexicap',
+      'bexidal', 'azicap', 'cefaclor', 'clobet', 'depram', 'etolac',
+      'fexofen', 'glipita', 'kopen', 'levoking', 'moxacillin', 'nadoxin',
+      'neoflox', 'optocef', 'provent', 'ranitid', 'solbion', 'trilept',
+      'ultracef', 'volmax',
+    ],
+  },
+  {
+    id: 'incepta',
+    name_en: 'Incepta',
+    name_bn: 'ইনসেপ্টা',
+    icon: '🟢',
+    patterns: [
+      'incepta', 'pantonix', 'osartil', 'monas', 'rivotril', 'cef-3',
+      'esoral', 'fixocard', 'bio-emg', 'diabeta', 'furocef', 'gliclazide',
+      'hexitol', 'i-comb', 'linaglip', 'maxima', 'nilstat', 'ometac',
+      'preva', 'q-pin', 'robit', 'secrin', 'triben', 'unisat', 'v-plex',
+      'zimad', 'alacot', 'aniracet', 'apixaban', 'azithro', 'calcin',
+      'dexa', 'esita', 'famotak', 'g-amox', 'inbac', 'ketotif', 'lefun',
+      'moxiflox', 'neurorub', 'olmesar', 'pantop', 'quetiap', 'rovast',
+      'setalo', 'tamsulosin', 'vildaglip', 'zolpid',
+    ],
+  },
+  {
+    id: 'renata',
+    name_en: 'Renata',
+    name_bn: 'রেনাটা',
+    icon: '🟣',
+    patterns: [
+      'renata', 'maxpro', 'rolac', 'alarid', 'cabolin', 'fenofex', 'altrum',
+      'ben-a', 'cal-d', 'd-rise', 'e-cap', 'fevastin', 'lamotrig', 'melic',
+      'normens', 'orastat', 'progut', 'quickgel', 'renacor', 's-amlo',
+      'triocard', 'aceclo', 'bronkolat', 'cabergol', 'densit', 'esoprex',
+      'felocord', 'gliben', 'hycort', 'isomax', 'ketorol', 'levomax',
+      'mefen', 'nitrocot', 'omastat', 'parafen', 'reno', 'somina',
+      'tolfen', 'urispas', 'zincovit',
+    ],
+  },
+  {
+    id: 'sk_f',
+    name_en: 'SK+F',
+    name_bn: 'এসকেএফ',
+    icon: '🔴',
+    patterns: [
+      'sk+f', 'eskayef', 'losan', 'monocast', 'pepticon', 'viodin',
+      'tirlac', 'cefotax', 'diclofen', 'efadox', 'flamir', 'gliclaz',
+      'intracef', 'ketolac', 'mycoril', 'neuro-b', 'odrel', 'p-cef',
+      'sk-cef', 'tivoral', 'agile', 'betameson', 'cardizem', 'defuz',
+      'entero', 'flucon', 'gastran', 'hicap', 'irbesten', 'ketofen',
+      'locid', 'micon', 'norflox', 'optal', 'pantocid', 'rosutin',
+      'sk-z', 'topi', 'urolax', 'verap',
+    ],
+  },
+  {
+    id: 'opsonin',
+    name_en: 'Opsonin',
+    name_bn: 'অপসোনিন',
+    icon: '🔵',
+    patterns: [
+      'opsonin', 'finix', 'opso', 'gastrid', 'cipro-a', 'diclophen',
+      'epitol', 'famotack', 'glifix', 'histan', 'imotil', 'ketoral',
+      'metron', 'noflam', 'paracetamol opso', 'quinol', 'ronid', 'sedil',
+      'triam', 'ascor', 'beklo', 'cefix', 'dexameson', 'ebast', 'flunat',
+      'gemcit', 'hyos', 'ipra', 'k-cit', 'leflo', 'myorel', 'norin',
+      'optacort', 'polymyx', 'ranit', 'spasmo', 'tolnaft', 'veron',
+      'zinet',
+    ],
+  },
+  {
+    id: 'aristopharma',
+    name_en: 'Aristopharma',
+    name_bn: 'অ্যারিস্টোফার্মা',
+    icon: '🟠',
+    patterns: [
+      'aristo', 'aristopharma', 'arixon', 'rovator', 'afun', 'aristovit',
+      'cartilage', 'dofic', 'ermox', 'furoside', 'melafex', 'ocid',
+      'pantaloc', 'q-ten', 'rozith', 'trizol', 'ultrafen', 'almex',
+      'becovon', 'cefox', 'deslor', 'esomep', 'flur', 'gabitril',
+      'hifen', 'isordil', 'koflet', 'lorace', 'mucospel', 'norxacin',
+      'optipen', 'prelica', 'relac', 'supramox', 'telmi', 'vasocor',
+      'zenith',
+    ],
+  },
+  {
+    id: 'aci',
+    name_en: 'ACI',
+    name_bn: 'এসিআই',
+    icon: '🌿',
+    patterns: [
+      'aci', 'anadol', 'cerox-a', 'fluclox', 'aci-plus', 'bioderm',
+      'c-plus', 'deflux', 'emistat', 'fixolin', 'g-met', 'i-drop',
+      'k-plex', 'lipicon', 'moxac', 'naprosyn', 'oticon', 'provit',
+      'respolin', 'synalin', 'tyflox', 'algin', 'b-50', 'cloxa',
+      'dextro', 'epirub', 'furo', 'gastinol', 'hepa', 'irocap',
+      'ketor', 'lucan', 'mycofin', 'nise', 'oraderm', 'pepsil',
+      'risper', 'sedno', 'tramadol aci', 'vasartan', 'zovir',
+    ],
+  },
+  {
+    id: 'acme',
+    name_en: 'Acme',
+    name_bn: 'একমি',
+    icon: '🔷',
+    patterns: [
+      'acme', 'paracip', 'tenor', 'acme-cef', 'claricin', 'diclomax',
+      'e-plex', 'fast', 'g-pred', 'h-cort', 'i-clav', 'kalium',
+      'lorin', 'micoson', 'nervo', 'omez', 'prednisolone acme', 'rano',
+      'salbutamol acme', 'azithromycin acme', 'b-vit', 'ceftriaxone acme',
+      'd-cal', 'efen', 'folison', 'g-flox', 'histacin', 'inpec',
+      'k-lyte', 'lovat', 'metroderm', 'neo-hydro', 'odipine', 'pantoz',
+      'renil', 'sol-b', 'tetracycline acme', 'urox',
+    ],
+  },
+  {
+    id: 'healthcare',
+    name_en: 'Healthcare',
+    name_bn: 'হেলথকেয়ার',
+    icon: '🏥',
+    patterns: [
+      'healthcare', 'hpl', 'sergel', 'h-b12', 'c-plex', 'dulox',
+      'esomeprazole hpl', 'feroglobin', 'g-care', 'h-cal', 'i-soft',
+      'linatop', 'mirak', 'neurocare', 'o-cal', 'rosuva', 'telmi',
+      'z-zinc', 'actil', 'b-complex hpl', 'cefutox', 'diacare',
+      'ezetim', 'fexotab', 'glim', 'h-cipro', 'ivor', 'ketoderm',
+      'livocare', 'montair', 'normolax', 'osteocal', 'pepcid',
+      'quiclox', 'rostab', 'secnid', 'tropic', 'uromid', 'vildap',
+    ],
+  },
+  {
+    id: 'popular',
+    name_en: 'Popular',
+    name_bn: 'পপুলার',
+    icon: '⭐',
+    patterns: [
+      'popular', 'poplor', 'pop-cef', 'acifix', 'biocef', 'ceftron',
+      'denvar', 'epocel', 'folitab', 'glirid', 'hepashield', 'immuvit',
+      'levocet', 'moxiflox', 'neuro-p', 'optidrop', 'p-amlo',
+      'sulbacin', 'alcef', 'b-neuro', 'cifran', 'diafree', 'ezipen',
+      'famotin', 'glicon', 'heparin pop', 'iso-b', 'ketoskin',
+      'losamax', 'm-clox', 'novapen', 'omipres', 'provas', 'renaflox',
+      'spasmonil', 'trovan', 'unidox', 'v-cef',
+    ],
+  },
+  {
+    id: 'drug_intl',
+    name_en: 'Drug Intl',
+    name_bn: 'ড্রাগ ইন্টা.',
+    icon: '🌐',
+    patterns: [
+      'drug intl', 'drug international', 'd-cef', 'g-amoxicillin',
+      'a-cal', 'b-complex', 'cipro-d', 'd-fluc', 'e-oil', 'folic',
+      'g-cetirizine', 'hilin', 'iron-d', 'ketoconazole d',
+      'losartan-d', 'metformin-d', 'n-drop', 'omeprazole-d',
+      'ampicillin d', 'cal-cit d', 'dexa-d', 'esom-d', 'fexo-d',
+      'g-rab', 'h-vit d', 'i-ceft', 'k-plus d', 'levo-d',
+      'm-cef d', 'n-flam', 'os-d', 'pan-d', 'q-cef d', 'r-zole',
+      's-cor d', 't-cin d', 'u-ceft',
+    ],
+  },
+];
 
-  const t = getTheme(theme);
-  const isLight = !t.isDark;
+// Pre-index the entire medicine database ONCE at startup!
+// Pre-calculates company matching and unified lowercase search text upfront
+// so filter and search runs in microseconds with zero string re-allocation.
+const INDEXED_MEDICINES = MEDICINE_DATABASE.map((med) => {
+  const brandsLower = (med.brands || '').toLowerCase();
+  const nameLower = (med.name_en || '').toLowerCase();
 
-  const filteredMedicines = useMemo(() => {
-    return MEDICINE_DATABASE.filter((med) => {
-      const matchesCat =
-        selectedCategory === 'all' || med.category === selectedCategory;
+  let detectedCompany = null;
+  for (const comp of MEDICINE_COMPANIES) {
+    if (comp.id === 'all') continue;
+    if (comp.patterns.some((p) => brandsLower.includes(p) || nameLower.includes(p))) {
+      detectedCompany = comp;
+      break;
+    }
+  }
 
-      if (!matchesCat) return false;
+  const searchText = (
+    nameLower + ' ' +
+    (med.generic || '').toLowerCase() + ' ' +
+    (med.work_bn || '').toLowerCase() + ' ' +
+    (med.work_en || '').toLowerCase() + ' ' +
+    (med.category_bn || '').toLowerCase() + ' ' +
+    (med.target_organ || '').toLowerCase() + ' ' +
+    brandsLower
+  );
 
-      if (!searchQuery.trim()) return true;
-
-      const q = searchQuery.toLowerCase().trim();
-      const nameEn = (med.name_en || '').toLowerCase();
-      const generic = (med.generic || '').toLowerCase();
-      const workBn = (med.work_bn || '').toLowerCase();
-      const workEn = (med.work_en || '').toLowerCase();
-      const catBn = (med.category_bn || '').toLowerCase();
-      const organ = (med.target_organ || '').toLowerCase();
-      const brands = (med.brands || '').toLowerCase();
-
-      return (
-        nameEn.includes(q) ||
-        generic.includes(q) ||
-        workBn.includes(q) ||
-        workEn.includes(q) ||
-        catBn.includes(q) ||
-        organ.includes(q) ||
-        brands.includes(q)
-      );
-    });
-  }, [searchQuery, selectedCategory]);
-
-  const toggleExpand = (id) => {
-    setExpandedId(expandedId === id ? null : id);
+  return {
+    ...med,
+    _companyId: detectedCompany ? detectedCompany.id : null,
+    _company: detectedCompany,
+    _search: searchText,
   };
+});
 
-  const toggleCardLang = (id) => {
-    setCardLangMap((prev) => {
-      const current = prev[id] || globalLang;
-      return { ...prev, [id]: current === 'bn' ? 'en' : 'bn' };
-    });
-  };
+// Memoized Card Component: Prevents re-rendering untouched cards
+const MedicineCardItem = React.memo(function MedicineCardItem({
+  item,
+  isExpanded,
+  isBn,
+  t,
+  onToggleExpand,
+}) {
+  const detectedCompany = item._company;
 
-  const renderMedicineCard = ({ item }) => {
-    const isExpanded = expandedId === item.id;
-    const cardLang = cardLangMap[item.id] || globalLang;
-    const isBn = cardLang === 'bn';
+  return (
+    <View
+      style={[
+        styles.card,
+        {
+          backgroundColor: t.card,
+          borderColor: isExpanded ? t.text : t.cardBorder,
+          shadowColor: t.shadowColor,
+        },
+      ]}
+    >
+      <TouchableOpacity
+        style={[
+          styles.cardHeader,
+          {
+            backgroundColor: isExpanded ? t.accentBg : 'transparent',
+            borderBottomColor: t.border,
+          },
+        ]}
+        onPress={() => onToggleExpand(item.id)}
+        activeOpacity={0.75}
+      >
+        <View style={styles.headerLeft}>
+          <View
+            style={[
+              styles.iconCircle,
+              {
+                backgroundColor: t.accentBg,
+                borderColor: t.cardBorder,
+              },
+            ]}
+          >
+            <HealthIcon
+              source={getMedicineCategoryIcon(item.category)}
+              size={20}
+              color={t.text}
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.medNameEn, { color: t.text, fontSize: t.fs(15) }]}>
+              {item.name_en}
+            </Text>
 
-    return (
-      <View style={[styles.card, isLight && styles.cardLight]}>
-        <TouchableOpacity
-          style={[styles.cardHeader, isLight && styles.cardHeaderLight]}
-          onPress={() => toggleExpand(item.id)}
-          activeOpacity={0.7}
-        >
-          <View style={styles.headerLeft}>
-            <View style={[styles.iconCircle, isLight && styles.iconCircleLight]}>
-              <Text style={styles.medIcon}>{item.icon}</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.medNameEn, isLight && styles.medNameEnLight]}>{item.name_en}</Text>
-              <View style={styles.badgeRow}>
-                <View style={[styles.categoryBadge, isLight && styles.categoryBadgeLight]}>
-                  <Text style={[styles.categoryBadgeText, isLight && styles.categoryBadgeTextLight]}>
-                    {isBn ? item.category_bn : item.category_en}
+            {/* Badges row */}
+            <View style={styles.badgeRow}>
+              <View
+                style={[
+                  styles.categoryBadge,
+                  {
+                    backgroundColor: t.surfaceSecondary,
+                    borderColor: t.border,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                  },
+                ]}
+              >
+                <HealthIcon
+                  source={getMedicineCategoryIcon(item.category)}
+                  size={11}
+                  color={t.text}
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={[styles.categoryBadgeText, { color: t.text, fontSize: t.fs(11) }]}>
+                  {item.category_bn}
+                </Text>
+              </View>
+
+              {detectedCompany ? (
+                <View
+                  style={[
+                    styles.companyBadge,
+                    {
+                      backgroundColor: t.accentBg,
+                      borderColor: t.cardBorder,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    },
+                  ]}
+                >
+                  <HealthIcon
+                    name="pharmacy"
+                    size={11}
+                    color={t.text}
+                    style={{ marginRight: 4 }}
+                  />
+                  <Text style={[styles.companyBadgeText, { color: t.text, fontSize: t.fs(11) }]}>
+                    {detectedCompany.name_en}
                   </Text>
                 </View>
-                {item.target_organ ? (
-                  <View style={[styles.organBadge, isLight && styles.organBadgeLight]}>
-                    <Text style={[styles.organBadgeText, isLight && styles.organBadgeTextLight]}>
-                      🎯 {item.target_organ}
-                    </Text>
-                  </View>
-                ) : null}
-              </View>
+              ) : null}
             </View>
           </View>
-
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <TouchableOpacity
-              onPress={() => toggleCardLang(item.id)}
-              style={[styles.cardLangPill, isLight && styles.cardLangPillLight]}
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-            >
-              <Text style={[styles.cardLangPillText, isLight && styles.cardLangPillTextLight]}>
-                {isBn ? '🇧🇩 BN' : '🇬🇧 EN'}
-              </Text>
-            </TouchableOpacity>
-            <View style={[styles.expandPill, isLight && styles.expandPillLight]}>
-              <Text style={[styles.expandPillText, isLight && styles.expandPillTextLight]}>
-                {isExpanded ? '▲' : '▼'}
-              </Text>
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Primary Work / Indication */}
-        <View style={[styles.workContainer, isLight && styles.workContainerLight]}>
-          <View style={styles.workHeaderRow}>
-            <Text style={[styles.workLabel, isLight && styles.workLabelLight]}>
-              {isBn ? 'ওষুধের মূল কাজ (Primary Action):' : 'Primary Action & Clinical Indication:'}
-            </Text>
-          </View>
-          <Text style={[styles.workText, isLight && styles.workTextLight]}>
-            {isBn ? item.work_bn : (item.work_en || item.primary_indication_en)}
-          </Text>
         </View>
 
-        {/* Expanded Detailed Clinical Dossier */}
-        {isExpanded ? (
-          <View style={[styles.expandedContent, isLight && styles.expandedContentLight]}>
-            {/* Mechanism of Action */}
-            <View style={[styles.detailBlock, isLight && styles.detailBlockLight]}>
-              <Text style={[styles.detailTitle, isLight && styles.detailTitleLight]}>
-                🔬 {isBn ? 'যেভাবে কাজ করে (Mechanism of Action):' : 'Mechanism of Action & Pharmacology:'}
-              </Text>
-              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
-                {isBn ? item.how_it_works_bn : item.how_it_works_en}
-              </Text>
-            </View>
-
-            {/* Dosage */}
-            <View style={[styles.detailBlock, isLight && styles.detailBlockLight]}>
-              <Text style={[styles.detailTitle, isLight && styles.detailTitleLight]}>
-                💊 {isBn ? 'খাবার নিয়ম ও মাত্রা (Dosage Guidance):' : 'Dosage & Administration:'}
-              </Text>
-              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
-                {isBn ? item.dosage_bn : item.dosage_en}
-              </Text>
-            </View>
-
-            {/* Side Effects */}
-            <View style={[styles.detailBlock, isLight && styles.detailBlockLight]}>
-              <Text style={[styles.detailTitle, { color: isLight ? '#d97706' : '#f59e0b' }]}>
-                ⚠️ {isBn ? 'সম্ভাব্য পার্শ্বপ্রতিক্রিয়া (Side Effects):' : 'Possible Adverse Effects:'}
-              </Text>
-              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
-                {isBn ? item.side_effects_bn : item.side_effects_en}
-              </Text>
-            </View>
-
-            {/* Precautions */}
-            <View style={styles.detailBlock}>
-              <Text style={[styles.detailTitle, { color: isLight ? '#e11d48' : '#f43f5e' }]}>
-                🛑 {isBn ? 'সতর্কতা ও নিষেধাজ্ঞা (Precautions):' : 'Precautions & Contraindications:'}
-              </Text>
-              <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
-                {isBn ? item.precautions_bn : item.precautions_en}
-              </Text>
-            </View>
-
-            {/* Top Bangladesh Brands */}
-            {item.brands ? (
-              <View style={[styles.detailBlock, { borderBottomWidth: 0 }]}>
-                <Text style={[styles.detailTitle, { color: isLight ? '#0284c7' : '#38bdf8' }]}>
-                  🏷️ {isBn ? 'বাংলাদেশে প্রচলিত ব্র্যান্ড (Top BD Brands):' : 'Popular Bangladesh Brands:'}
-                </Text>
-                <Text style={[styles.detailText, isLight && styles.detailTextLight, { fontWeight: '700' }]}>
-                  {item.brands}
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Pregnancy Category */}
-            {item.pregnancy_bn || item.pregnancy_en ? (
-              <View style={[styles.detailBlock, { borderBottomWidth: 0, marginTop: 4 }]}>
-                <Text style={[styles.detailTitle, { color: isLight ? '#7c3aed' : '#a855f7' }]}>
-                  🤰 {isBn ? 'গর্ভকালীন নিরাপত্তা (Pregnancy Safety):' : 'Pregnancy & Lactation Advice:'}
-                </Text>
-                <Text style={[styles.detailText, isLight && styles.detailTextLight]}>
-                  {isBn ? item.pregnancy_bn : item.pregnancy_en}
-                </Text>
-              </View>
-            ) : null}
+        <View style={styles.headerRight}>
+          <View
+            style={[
+              styles.expandPill,
+              {
+                backgroundColor: isExpanded ? (t.isDark ? '#ffffff' : '#000000') : t.chipBg,
+                borderColor: t.chipBorder,
+              },
+            ]}
+          >
+            <Text
+              style={[
+                styles.expandPillText,
+                { color: isExpanded ? (t.isDark ? '#000000' : '#ffffff') : t.text },
+              ]}
+            >
+              {isExpanded ? '▲' : '▼'}
+            </Text>
           </View>
-        ) : null}
-      </View>
-    );
-  };
+        </View>
+      </TouchableOpacity>
+
+      {/* Detailed Clinical Content when expanded */}
+      {isExpanded && (
+        <View
+          style={[
+            styles.expandedContent,
+            {
+              backgroundColor: t.card,
+              borderTopColor: t.border,
+            },
+          ]}
+        >
+          {/* Primary Action Box */}
+          <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <HealthIcon name="medicines" size={13} color={t.text} style={{ marginRight: 6 }} />
+              <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
+                {isBn
+                  ? 'ওষুধের কাজ (Primary Action):'
+                  : 'Primary Action:'}
+              </Text>
+            </View>
+            <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
+              {isBn ? item.work_bn : item.work_en || item.primary_indication_en}
+            </Text>
+          </View>
+
+          {/* Mechanism of Action */}
+          <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <HealthIcon name="microscope" size={13} color={t.text} style={{ marginRight: 6 }} />
+              <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
+                {isBn
+                  ? 'যেভাবে কাজ করে (Mechanism of Action):'
+                  : 'Mechanism of Action:'}
+              </Text>
+            </View>
+            <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
+              {isBn ? item.how_it_works_bn : item.how_it_works_en}
+            </Text>
+          </View>
+
+          {/* Dosage */}
+          <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <HealthIcon name="pills" size={13} color={t.text} style={{ marginRight: 6 }} />
+              <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
+                {isBn
+                  ? 'খাবার নিয়ম ও মাত্রা (Dosage Guidance):'
+                  : 'Dosage Guidance:'}
+              </Text>
+            </View>
+            <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
+              {isBn ? item.dosage_bn : item.dosage_en}
+            </Text>
+          </View>
+
+          {/* Side Effects */}
+          <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <HealthIcon name="alert" size={13} color={t.text} style={{ marginRight: 6 }} />
+              <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
+                {isBn
+                  ? 'সম্ভাব্য পার্শ্বপ্রতিক্রিয়া (Side Effects):'
+                  : 'Side Effects:'}
+              </Text>
+            </View>
+            <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
+              {isBn ? item.side_effects_bn : item.side_effects_en}
+            </Text>
+          </View>
+
+          {/* Precautions */}
+          <View style={[styles.detailBlock, { borderBottomColor: t.border }]}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+              <HealthIcon name="alert" size={13} color={t.text} style={{ marginRight: 6 }} />
+              <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
+                {isBn
+                  ? 'সতর্কতা ও নিষেধাজ্ঞা (Precautions):'
+                  : 'Precautions:'}
+              </Text>
+            </View>
+            <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
+              {isBn ? item.precautions_bn : item.precautions_en}
+            </Text>
+          </View>
+
+          {/* Top Bangladesh Brands */}
+          {item.brands ? (
+            <View style={[styles.detailBlock, { borderBottomWidth: 0 }]}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <HealthIcon name="pharmacy" size={13} color={t.text} style={{ marginRight: 6 }} />
+                <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
+                  {isBn
+                    ? 'বাংলাদেশে প্রচলিত ব্র্যান্ড (Top BD Brands):'
+                    : 'Popular Bangladesh Brands:'}
+                </Text>
+              </View>
+              <View style={styles.brandChipsWrap}>
+                {item.brands.split(',').map((b, bIdx) => {
+                  const bTrim = b.trim();
+                  if (!bTrim) return null;
+                  return (
+                    <View
+                      key={bIdx}
+                      style={[
+                        styles.brandTag,
+                        {
+                          backgroundColor: t.surfaceSecondary,
+                          borderColor: t.cardBorder,
+                        },
+                      ]}
+                    >
+                      <Text style={[styles.brandTagText, { color: t.text }]}>
+                        {bTrim}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          ) : null}
+
+          {/* Pregnancy Category */}
+          {item.pregnancy_bn || item.pregnancy_en ? (
+            <View
+              style={[
+                styles.detailBlock,
+                {
+                  borderBottomWidth: 0,
+                  marginTop: 6,
+                  backgroundColor: t.surfaceSecondary,
+                  borderRadius: 12,
+                  padding: 10,
+                },
+              ]}
+            >
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                <HealthIcon name="femaleReproductive" size={13} color={t.text} style={{ marginRight: 6 }} />
+                <Text style={[styles.detailTitle, { color: t.text, fontSize: t.fs(12) }]}>
+                  {isBn
+                    ? 'গর্ভকালীন নিরাপত্তা (Pregnancy Safety):'
+                    : 'Pregnancy Safety:'}
+                </Text>
+              </View>
+              <Text style={[styles.detailText, { color: t.text, fontSize: t.fs(13), lineHeight: Math.round(t.fs(13) * 1.45) }]}>
+                {isBn ? item.pregnancy_bn : item.pregnancy_en}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      )}
+    </View>
+  );
+});
+
+export default function MedicineScreen({
+  theme = 'dark',
+  fontSize = 'medium',
+  onNavigateToOrgan,
+  onScrollLock,
+}) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCompany, setSelectedCompany] = useState('all');
+  const [expandedId, setExpandedId] = useState(null);
+  const [globalLang, setGlobalLang] = useState('bn');
+
+  const flatListRef = useRef(null);
+  const t = getTheme(theme, fontSize);
+
+  const selectedCompanyObj = useMemo(() => {
+    return MEDICINE_COMPANIES.find((c) => c.id === selectedCompany) || MEDICINE_COMPANIES[0];
+  }, [selectedCompany]);
+
+  // COMBINED FILTER: Instant microsecond filtering over pre-indexed dataset!
+  const filteredMedicines = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim();
+
+    return INDEXED_MEDICINES.filter((med) => {
+      // 1. System Category Filter
+      if (selectedCategory !== 'all' && med.category !== selectedCategory) {
+        return false;
+      }
+
+      // 2. Pharmaceutical Company Filter
+      if (selectedCompany !== 'all' && med._companyId !== selectedCompany) {
+        return false;
+      }
+
+      // 3. Search Query
+      if (q && !med._search.includes(q)) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [searchQuery, selectedCategory, selectedCompany]);
+
+  const toggleExpand = useCallback((id) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  }, []);
+
+  const handleSelectCompany = useCallback((id) => {
+    setSelectedCompany(id);
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, []);
+
+  const handleSelectCategory = useCallback((id) => {
+    setSelectedCategory(id);
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, []);
+
+  const handleResetFilters = useCallback(() => {
+    setSelectedCompany('all');
+    setSelectedCategory('all');
+    flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+  }, []);
+
+  const renderMedicineCard = useCallback(
+    ({ item }) => {
+      return (
+        <MedicineCardItem
+          item={item}
+          isExpanded={expandedId === item.id}
+          isBn={globalLang === 'bn'}
+          t={t}
+          onToggleExpand={toggleExpand}
+        />
+      );
+    },
+    [expandedId, globalLang, t, toggleExpand]
+  );
+
+  const keyExtractor = useCallback((item) => item.id, []);
 
   return (
     <SafeAreaView
       edges={['top']}
-      style={[
-        styles.container,
-        { backgroundColor: t.bg },
-      ]}
+      style={[styles.container, { backgroundColor: t.bg }]}
     >
       {/* Top Header */}
-      <View style={[styles.topHeader, { backgroundColor: t.headerBg, borderBottomColor: t.border }]}>
-        <View style={styles.titleRow}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-            <View style={[styles.logoBadge, isLight && styles.logoBadgeLight]}>
-              <Image
-                source={require('../../assets/icon.png')}
-                style={{ width: 34, height: 34, borderRadius: 17 }}
-                resizeMode="cover"
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.screenTitle, isLight && styles.screenTitleLight]}>AnaPharm</Text>
-              <Text style={[styles.screenSubTitle, isLight && styles.screenSubTitleLight]}>
-                {globalLang === 'bn'
-                  ? `ঔষধ নির্দেশিকা (${filteredMedicines.length} Generics)`
-                  : `Clinical Directory (${filteredMedicines.length} Generics)`}
-              </Text>
-            </View>
-          </View>
+      <View
+        style={[
+          styles.topHeader,
+          {
+            backgroundColor: t.headerBg,
+            borderBottomColor: t.glassBorder,
+          },
+        ]}
+      >
+        {/* Page Title & Language Toggle at Top Right */}
+        <View style={styles.headerTitleRow}>
+          <Text style={[styles.pageTitle, { color: t.text, fontSize: t.fs(26) }]}>
+            {globalLang === 'bn' ? 'ওষুধ ও ব্র্যান্ড' : 'Medicines'}
+          </Text>
 
-          {/* Global Language Toggle */}
-          <View style={[styles.langToggleWrap, isLight && styles.langToggleWrapLight]}>
+          {/* Global Language Toggle at Top Right */}
+          <View
+            style={[
+              styles.langToggleWrap,
+              {
+                backgroundColor: t.chipBg,
+                borderColor: t.chipBorder,
+              },
+            ]}
+          >
             <TouchableOpacity
-              style={[styles.langTab, globalLang === 'bn' && styles.langTabActive]}
-              onPress={() => {
-                setGlobalLang('bn');
-                setCardLangMap({});
-              }}
+              style={[
+                styles.langTab,
+                globalLang === 'bn' && { backgroundColor: t.isDark ? '#ffffff' : '#000000' },
+              ]}
+              onPress={() => setGlobalLang('bn')}
               activeOpacity={0.8}
             >
-              <Text style={[styles.langTabText, globalLang === 'bn' && styles.langTabTextActive]}>
-                🇧🇩 বাংলা
+              <Text
+                style={[
+                  styles.langTabText,
+                  {
+                    color: globalLang === 'bn'
+                      ? t.isDark ? '#000000' : '#ffffff'
+                      : t.text,
+                  },
+                ]}
+              >
+                বাংলা
               </Text>
             </TouchableOpacity>
             <TouchableOpacity
-              style={[styles.langTab, globalLang === 'en' && styles.langTabActive]}
-              onPress={() => {
-                setGlobalLang('en');
-                setCardLangMap({});
-              }}
+              style={[
+                styles.langTab,
+                globalLang === 'en' && { backgroundColor: t.isDark ? '#ffffff' : '#000000' },
+              ]}
+              onPress={() => setGlobalLang('en')}
               activeOpacity={0.8}
             >
-              <Text style={[styles.langTabText, globalLang === 'en' && styles.langTabTextActive]}>
-                🇬🇧 EN
+              <Text
+                style={[
+                  styles.langTabText,
+                  {
+                    color: globalLang === 'en'
+                      ? t.isDark ? '#000000' : '#ffffff'
+                      : t.text,
+                  },
+                ]}
+              >
+                EN
               </Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* Search Bar */}
-        <View style={[styles.searchBar, isLight && styles.searchBarLight]}>
-          <Text style={styles.searchIcon}>🔍</Text>
+        {/* Full-width Search Bar */}
+        <View
+          style={[
+            styles.searchBar,
+            {
+              backgroundColor: t.inputBg,
+              borderColor: t.glassBorder,
+            },
+          ]}
+        >
+          <HealthIcon name="magnifyingGlass" size={16} color={t.textMuted} style={{ marginRight: 8 }} />
           <TextInput
-            style={[styles.searchInput, isLight && styles.searchInputLight]}
+            style={[styles.searchInput, { color: t.text }]}
             placeholder={
               globalLang === 'bn'
-                ? 'ঔষধ, ব্র্যান্ড (Napa, Seclo, প্যারাসিটামল) খুঁজুন...'
-                : 'Search 2,500+ generics, BD brands (Napa, Seclo)...'
+                ? 'ওষুধ, ব্র্যান্ড (Napa, Seclo) খুঁজুন...'
+                : 'Search 2,500+ generics, brands...'
             }
-            placeholderTextColor={isLight ? '#94a3b8' : '#64748b'}
+            placeholderTextColor={t.textMuted}
             value={searchQuery}
             onChangeText={setSearchQuery}
-            clearButtonMode="while-editing"
           />
-          {searchQuery ? (
-            <TouchableOpacity onPress={() => setSearchQuery('')} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-              <Text style={[styles.clearBtnText, isLight && styles.clearBtnTextLight]}>✕</Text>
+          {searchQuery.length > 0 && (
+            <TouchableOpacity
+              onPress={() => setSearchQuery('')}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <Text style={[styles.clearBtnText, { color: t.textMuted }]}>✕</Text>
             </TouchableOpacity>
-          ) : null}
+          )}
         </View>
 
-        {/* Category Filters */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoryScroll}
+        {/* ROW 1: PHARMACEUTICAL COMPANY FILTER */}
+        <View
+          style={styles.filterSectionRow}
+          onTouchStart={() => onScrollLock?.(true)}
+          onTouchEnd={() => onScrollLock?.(false)}
+          onTouchCancel={() => onScrollLock?.(false)}
         >
-          {MEDICINE_CATEGORIES.map((cat) => {
-            const active = selectedCategory === cat.id;
-            return (
-              <TouchableOpacity
-                key={cat.id}
-                style={[
-                  styles.categoryChip,
-                  isLight && styles.categoryChipLight,
-                  active && (isLight ? styles.categoryChipActiveLight : styles.categoryChipActive),
-                ]}
-                onPress={() => setSelectedCategory(cat.id)}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.categoryChipIcon}>{cat.icon}</Text>
-                <Text
+          <Text style={[styles.filterSectionLabel, { color: t.textMuted }]}>
+            Company:
+          </Text>
+          <ScrollView
+            horizontal
+            nestedScrollEnabled={true}
+            onScrollBeginDrag={() => onScrollLock?.(true)}
+            onScrollEndDrag={() => onScrollLock?.(false)}
+            onMomentumScrollEnd={() => onScrollLock?.(false)}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipsScroll}
+          >
+            {MEDICINE_COMPANIES.map((comp) => {
+              const active = selectedCompany === comp.id;
+              const compIconColor = active ? (t.isDark ? '#000000' : '#ffffff') : t.text;
+              return (
+                <TouchableOpacity
+                  key={comp.id}
                   style={[
-                    styles.categoryChipLabel,
-                    isLight && styles.categoryChipLabelLight,
-                    active && styles.categoryChipLabelActive,
+                    styles.chip,
+                    {
+                      backgroundColor: active
+                        ? t.isDark
+                          ? '#ffffff'
+                          : '#000000'
+                        : t.chipBg,
+                      borderColor: active ? t.text : t.chipBorder,
+                    },
                   ]}
+                  onPress={() => handleSelectCompany(comp.id)}
+                  activeOpacity={0.7}
                 >
-                  {globalLang === 'bn' ? cat.label_bn : (cat.label_en || cat.label_bn)}
+                  <HealthIcon
+                    name="pharmacy"
+                    size={13}
+                    color={compIconColor}
+                    style={{ marginRight: 5 }}
+                  />
+                  <Text
+                    style={[
+                      styles.chipLabel,
+                      {
+                        color: active
+                          ? t.isDark
+                            ? '#000000'
+                            : '#ffffff'
+                          : t.text,
+                        fontWeight: active ? '800' : '600',
+                      },
+                    ]}
+                  >
+                    {comp.name_en}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* ROW 2: SYSTEM CATEGORY FILTER */}
+        <View
+          style={styles.filterSectionRow}
+          onTouchStart={() => onScrollLock?.(true)}
+          onTouchEnd={() => onScrollLock?.(false)}
+          onTouchCancel={() => onScrollLock?.(false)}
+        >
+          <Text style={[styles.filterSectionLabel, { color: t.textMuted }]}>
+            {globalLang === 'bn' ? 'সিস্টেম:' : 'System:'}
+          </Text>
+          <ScrollView
+            horizontal
+            nestedScrollEnabled={true}
+            onScrollBeginDrag={() => onScrollLock?.(true)}
+            onScrollEndDrag={() => onScrollLock?.(false)}
+            onMomentumScrollEnd={() => onScrollLock?.(false)}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.chipsScroll}
+          >
+            {MEDICINE_CATEGORIES.map((cat) => {
+              const active = selectedCategory === cat.id;
+              const catIconColor = active ? (t.isDark ? '#000000' : '#ffffff') : t.text;
+              return (
+                <TouchableOpacity
+                  key={cat.id}
+                  style={[
+                    styles.chip,
+                    {
+                      backgroundColor: active
+                        ? t.isDark
+                          ? '#ffffff'
+                          : '#000000'
+                        : t.chipBg,
+                      borderColor: active ? t.text : t.chipBorder,
+                    },
+                  ]}
+                  onPress={() => handleSelectCategory(cat.id)}
+                  activeOpacity={0.7}
+                >
+                  <HealthIcon
+                    source={cat.id === 'all' ? HEALTH_ICONS.medicines : getMedicineCategoryIcon(cat.id)}
+                    size={13}
+                    color={catIconColor}
+                    style={{ marginRight: 5 }}
+                  />
+                  <Text
+                    style={[
+                      styles.chipLabel,
+                      {
+                        color: active
+                          ? t.isDark
+                            ? '#000000'
+                            : '#ffffff'
+                          : t.text,
+                        fontWeight: active ? '800' : '600',
+                      },
+                    ]}
+                  >
+                    {globalLang === 'bn'
+                      ? cat.label_bn
+                      : cat.label_en || cat.label_bn}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Combined Filter Active Indicator & Quick Reset */}
+        {(selectedCompany !== 'all' || selectedCategory !== 'all') && (
+          <View style={styles.activeFilterBar}>
+            {selectedCompany !== 'all' && (
+              <TouchableOpacity
+                style={[
+                  styles.filterTag,
+                  {
+                    backgroundColor: t.isDark ? '#27272a' : '#e4e4e7',
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+                onPress={() => handleSelectCompany('all')}
+              >
+                <Text style={[styles.filterTagText, { color: t.text }]}>
+                  {selectedCompanyObj.name_en} ✕
                 </Text>
               </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
+            )}
+            {selectedCategory !== 'all' && (
+              <TouchableOpacity
+                style={[
+                  styles.filterTag,
+                  {
+                    backgroundColor: t.isDark ? '#27272a' : '#e4e4e7',
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+                onPress={() => handleSelectCategory('all')}
+              >
+                <Text style={[styles.filterTagText, { color: t.text }]}>
+                  {MEDICINE_CATEGORIES.find((c) => c.id === selectedCategory)?.label_bn || selectedCategory} ✕
+                </Text>
+              </TouchableOpacity>
+            )}
+            <TouchableOpacity
+              style={[
+                styles.resetAllBtn,
+                {
+                  backgroundColor: t.surfaceSecondary,
+                  borderColor: t.border,
+                },
+              ]}
+              onPress={handleResetFilters}
+            >
+              <Text style={[styles.resetAllBtnText, { color: t.textMuted }]}>
+                {globalLang === 'bn' ? 'রিসেট' : 'Reset'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Medicine List */}
       <FlatList
+        ref={flatListRef}
         data={filteredMedicines}
-        keyExtractor={(item) => item.id}
+        keyExtractor={keyExtractor}
         renderItem={renderMedicineCard}
         contentContainerStyle={styles.listContent}
-        initialNumToRender={12}
-        maxToRenderPerBatch={15}
-        windowSize={7}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={5}
+        updateCellsBatchingPeriod={50}
         removeClippedSubviews={true}
+        keyboardShouldPersistTaps="handled"
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyIcon}>🔍</Text>
-            <Text style={[styles.emptyText, isLight && styles.emptyTextLight]}>কোনো ওষুধ পাওয়া যায়নি</Text>
-            <Text style={[styles.emptySubText, isLight && styles.emptySubTextLight]}>অন্য কোনো নাম বা বাংলা রোগ দিয়ে অনুসন্ধান করুন</Text>
+            <HealthIcon
+              name="magnifyingGlass"
+              size={38}
+              color={t.textMuted}
+              style={{ marginBottom: 12 }}
+            />
+            <Text style={[styles.emptyText, { color: t.text }]}>
+              {globalLang === 'bn'
+                ? 'এই কোম্পানি ও সিস্টেমে কোনো ওষুধ পাওয়া যায়নি'
+                : 'No Medicines Found for this Company & System'}
+            </Text>
           </View>
         }
       />
@@ -341,110 +927,79 @@ export default function MedicineScreen({ theme = 'dark', onNavigateToOrgan }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
   },
   topHeader: {
-    backgroundColor: '#0f172a',
     paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 10,
+    paddingTop: 10,
+    paddingBottom: 8,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    elevation: 6,
+  },
+  searchRowWithLang: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   titleRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  titleLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 10,
+  },
+  logoBadge: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  pageTitle: {
+    fontSize: 26,
+    fontWeight: '900',
+    letterSpacing: -0.3,
+  },
+  screenTitle: {
+    fontSize: 26,
+    fontWeight: '900',
+    letterSpacing: -0.3,
   },
   langToggleWrap: {
     flexDirection: 'row',
-    backgroundColor: '#1e293b',
-    borderRadius: 10,
-    padding: 2,
+    borderRadius: 14,
+    padding: 3,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  langToggleWrapLight: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#e2e8f0',
   },
   langTab: {
-    paddingHorizontal: 9,
+    paddingHorizontal: 10,
     paddingVertical: 5,
-    borderRadius: 8,
-  },
-  langTabActive: {
-    backgroundColor: '#0284c7',
+    borderRadius: 10,
   },
   langTabText: {
     fontSize: 11,
     fontWeight: '700',
-    color: '#94a3b8',
-  },
-  langTabTextActive: {
-    color: '#ffffff',
-  },
-  cardLangPill: {
-    backgroundColor: '#334155',
-    paddingHorizontal: 7,
-    paddingVertical: 4,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  cardLangPillLight: {
-    backgroundColor: '#e2e8f0',
-    borderColor: '#cbd5e1',
-  },
-  cardLangPillText: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#38bdf8',
-  },
-  cardLangPillTextLight: {
-    color: '#0284c7',
-  },
-  workHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  logoBadge: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(14, 165, 233, 0.2)',
-    borderWidth: 1,
-    borderColor: 'rgba(14, 165, 233, 0.4)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: {
-    fontSize: 20,
-  },
-  screenTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#f8fafc',
-    letterSpacing: 0.3,
-  },
-  screenSubTitle: {
-    fontSize: 12,
-    color: '#38bdf8',
-    marginTop: 2,
   },
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e293b',
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 12,
-    paddingVertical: 8,
+    height: 42,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   searchIcon: {
     fontSize: 16,
@@ -452,86 +1007,111 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: '#ffffff',
     fontSize: 13,
     paddingVertical: 0,
   },
   clearBtnText: {
-    color: '#94a3b8',
     fontSize: 14,
+    fontWeight: '700',
     paddingHorizontal: 4,
   },
-  categoryScroll: {
-    gap: 8,
-    paddingBottom: 4,
-  },
-  categoryChip: {
+  filterSectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    backgroundColor: '#1e293b',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
+    marginBottom: 6,
     gap: 6,
   },
-  categoryChipActive: {
-    backgroundColor: '#0284c7',
-    borderColor: '#38bdf8',
+  filterSectionLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    width: 52,
   },
-  categoryChipIcon: {
-    fontSize: 13,
+  chipsScroll: {
+    gap: 6,
+    paddingVertical: 2,
   },
-  categoryChipLabel: {
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 11,
+    paddingVertical: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+  },
+  chipIcon: {
     fontSize: 12,
-    fontWeight: '600',
-    color: '#94a3b8',
   },
-  categoryChipLabelActive: {
-    color: '#ffffff',
+  chipLabel: {
+    fontSize: 11,
+  },
+  activeFilterBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 4,
+    marginBottom: 2,
+    flexWrap: 'wrap',
+  },
+  filterTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  filterTagText: {
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  resetAllBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  resetAllBtnText: {
+    fontSize: 10,
+    fontWeight: '600',
   },
   listContent: {
-    padding: 16,
-    gap: 14,
+    padding: 14,
+    gap: 12,
   },
   card: {
-    backgroundColor: '#0f172a',
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
     overflow: 'hidden',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    elevation: 4,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: 14,
-    backgroundColor: '#1e293b',
+    padding: 12,
   },
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
     flex: 1,
   },
   iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   medIcon: {
     fontSize: 20,
   },
   medNameEn: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#ffffff',
+    fontSize: 15,
+    fontWeight: '800',
     marginBottom: 4,
   },
   badgeRow: {
@@ -542,79 +1122,84 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 8,
-    backgroundColor: 'rgba(14, 165, 233, 0.2)',
+    borderWidth: 1,
   },
   categoryBadgeText: {
     fontSize: 10,
-    color: '#38bdf8',
     fontWeight: '600',
+  },
+  companyBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  companyBadgeText: {
+    fontSize: 10,
+    fontWeight: '700',
   },
   organBadge: {
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 8,
-    backgroundColor: 'rgba(244, 63, 94, 0.18)',
+    borderWidth: 1,
   },
   organBadgeText: {
     fontSize: 10,
-    color: '#fb7185',
     fontWeight: '600',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: 8,
   },
   expandPill: {
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#334155',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   expandPillText: {
-    color: '#94a3b8',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  workContainer: {
-    padding: 14,
-    backgroundColor: 'rgba(2, 6, 23, 0.6)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  workLabel: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#38bdf8',
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  workText: {
-    fontSize: 13,
-    lineHeight: 20,
-    color: '#f1f5f9',
-    fontWeight: '500',
+    fontSize: 10,
+    fontWeight: '800',
   },
   expandedContent: {
     padding: 14,
-    backgroundColor: '#090f1d',
-    gap: 12,
+    gap: 10,
+    borderTopWidth: 1,
   },
   detailBlock: {
-    paddingBottom: 12,
+    paddingBottom: 10,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.06)',
   },
   detailTitle: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#38bdf8',
     marginBottom: 4,
   },
   detailText: {
     fontSize: 12,
-    lineHeight: 19,
-    color: '#cbd5e1',
+    lineHeight: 18,
+  },
+  brandChipsWrap: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginTop: 6,
+  },
+  brandTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  brandTagText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   emptyContainer: {
     alignItems: 'center',
@@ -622,123 +1207,13 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
   },
   emptyIcon: {
-    fontSize: 48,
-    marginBottom: 12,
+    fontSize: 44,
+    marginBottom: 10,
   },
   emptyText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#f8fafc',
-    marginBottom: 4,
-  },
-  emptySubText: {
-    fontSize: 12,
-    color: '#64748b',
-  },
-  // Light Theme Styles
-  containerLight: {
-    backgroundColor: '#f8fafc',
-  },
-  topHeaderLight: {
-    backgroundColor: '#ffffff',
-    borderBottomColor: '#e2e8f0',
-  },
-  logoBadgeLight: {
-    backgroundColor: 'rgba(2, 132, 199, 0.1)',
-    borderColor: 'rgba(2, 132, 199, 0.25)',
-  },
-  screenTitleLight: {
-    color: '#0f172a',
-  },
-  screenSubTitleLight: {
-    color: '#0284c7',
-  },
-  searchBarLight: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#e2e8f0',
-  },
-  searchInputLight: {
-    color: '#0f172a',
-  },
-  clearBtnTextLight: {
-    color: '#64748b',
-  },
-  categoryChipLight: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#e2e8f0',
-  },
-  categoryChipActiveLight: {
-    backgroundColor: '#0284c7',
-    borderColor: '#0284c7',
-  },
-  categoryChipLabelLight: {
-    color: '#475569',
-  },
-  cardLight: {
-    backgroundColor: '#ffffff',
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  cardHeaderLight: {
-    backgroundColor: '#f8fafc',
-    borderBottomWidth: 1,
-    borderBottomColor: '#f1f5f9',
-  },
-  iconCircleLight: {
-    backgroundColor: 'rgba(2, 132, 199, 0.1)',
-    borderColor: 'rgba(2, 132, 199, 0.25)',
-  },
-  medNameEnLight: {
-    color: '#0f172a',
-  },
-  categoryBadgeLight: {
-    backgroundColor: 'rgba(2, 132, 199, 0.1)',
-  },
-  categoryBadgeTextLight: {
-    color: '#0284c7',
-  },
-  organBadgeLight: {
-    backgroundColor: 'rgba(244, 63, 94, 0.1)',
-  },
-  organBadgeTextLight: {
-    color: '#e11d48',
-  },
-  expandPillLight: {
-    backgroundColor: '#e2e8f0',
-  },
-  expandPillTextLight: {
-    color: '#475569',
-  },
-  workContainerLight: {
-    backgroundColor: '#f8fafc',
-    borderBottomColor: '#f1f5f9',
-  },
-  workLabelLight: {
-    color: '#0284c7',
-  },
-  workTextLight: {
-    color: '#1e293b',
-  },
-  expandedContentLight: {
-    backgroundColor: '#ffffff',
-  },
-  detailBlockLight: {
-    borderBottomColor: '#f1f5f9',
-  },
-  detailTitleLight: {
-    color: '#0284c7',
-  },
-  detailTextLight: {
-    color: '#334155',
-  },
-  emptyTextLight: {
-    color: '#0f172a',
-  },
-  emptySubTextLight: {
-    color: '#64748b',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });

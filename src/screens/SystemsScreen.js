@@ -10,15 +10,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { SYSTEMS, ANATOMY_DATA } from '../data/anatomyData';
 import OrganDetailsSheet from '../components/OrganDetailsSheet';
 import { getTheme } from '../theme/theme';
+import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIcon';
 
-export default function SystemsScreen({ theme = 'dark' }) {
+export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
   const [selectedSystem, setSelectedSystem] = useState(null);
   const [selectedOrganData, setSelectedOrganData] = useState(null);
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  const t = getTheme(theme);
-  const isLight = !t.isDark;
-
+  const t = getTheme(theme, fontSize);
   const systemKeys = Object.keys(SYSTEMS);
 
   const getOrgansForSystem = (sysKey) => {
@@ -33,15 +32,33 @@ export default function SystemsScreen({ theme = 'dark' }) {
   return (
     <SafeAreaView
       edges={['top']}
-      style={[
-        styles.container,
-        { backgroundColor: t.bg },
-      ]}
+      style={[styles.container, { backgroundColor: t.bg }]}
     >
-      {/* Screen Header */}
-      <View style={[styles.header, { backgroundColor: t.headerBg, borderBottomColor: t.border }]}>
-        <Text style={[styles.title, isLight && styles.titleLight]}>Anatomical Systems</Text>
-        <Text style={[styles.subtitle, isLight && styles.subtitleLight]}>Explore organ networks and physiological pathways</Text>
+      {/* Clean Frosted Header - No annoying subtitles */}
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: t.headerBg,
+            borderBottomColor: t.glassBorder,
+          },
+        ]}
+      >
+        <View style={styles.headerTitleRow}>
+          <Text style={[styles.title, { color: t.text, fontSize: t.fs(26) }]}>
+            Anatomical Systems
+          </Text>
+          <View
+            style={[
+              styles.pillBadge,
+              { backgroundColor: t.accentBg, borderColor: t.cardBorder },
+            ]}
+          >
+            <Text style={[styles.pillBadgeText, { color: t.text }]}>
+              {systemKeys.length} NETWORKS
+            </Text>
+          </View>
+        </View>
       </View>
 
       <ScrollView contentContainerStyle={styles.scrollList}>
@@ -51,45 +68,118 @@ export default function SystemsScreen({ theme = 'dark' }) {
           const isExpanded = selectedSystem === sysKey;
 
           return (
-            <View key={sysKey} style={[styles.systemCard, isLight && styles.systemCardLight]}>
+            <View
+              key={sysKey}
+              style={[
+                styles.systemCard,
+                {
+                  backgroundColor: t.card,
+                  borderColor: isExpanded ? t.text : t.cardBorder,
+                  shadowColor: t.shadowColor,
+                },
+              ]}
+            >
               <TouchableOpacity
-                style={[styles.cardHeader, isLight && styles.cardHeaderLight]}
-                activeOpacity={0.7}
+                style={[
+                  styles.cardHeader,
+                  {
+                    backgroundColor: isExpanded
+                      ? t.accentBg
+                      : 'transparent',
+                    borderBottomColor: isExpanded ? t.border : 'transparent',
+                  },
+                ]}
+                activeOpacity={0.75}
                 onPress={() => setSelectedSystem(isExpanded ? null : sysKey)}
               >
-                <View style={[styles.iconCircle, isLight && styles.iconCircleLight]}>
-                  <Text style={styles.sysIcon}>{sys.icon}</Text>
+                <View
+                  style={[
+                    styles.iconCircle,
+                    {
+                      backgroundColor: t.accentBg,
+                      borderColor: t.cardBorder,
+                    },
+                  ]}
+                >
+                  <HealthIcon source={getSystemIcon(sysKey)} size={22} color={t.text} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.sysName, isLight && styles.sysNameLight]}>
+                  <Text style={[styles.sysName, { color: t.text }]}>
                     {sys.name}
                   </Text>
-                  <Text style={[styles.organCount, isLight && styles.organCountLight]}>
+                  <Text style={[styles.organCount, { color: t.textMuted }]}>
                     {organs.length} {organs.length === 1 ? 'organ mapped' : 'organs mapped'}
                   </Text>
                 </View>
-                <Text style={[styles.chevron, isLight && styles.chevronLight]}>{isExpanded ? '▲' : '▼'}</Text>
+                <View
+                  style={[
+                    styles.chevronBox,
+                    {
+                      backgroundColor: isExpanded ? (t.isDark ? '#3f3f46' : '#d4d4d8') : t.chipBg,
+                      borderColor: t.chipBorder,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.chevron, { color: t.text }]}>
+                    {isExpanded ? '▲' : '▼'}
+                  </Text>
+                </View>
               </TouchableOpacity>
 
               {/* Expanded Organ List */}
               {isExpanded && (
-                <View style={[styles.organsContainer, isLight && styles.organsContainerLight]}>
+                <View
+                  style={[
+                    styles.organsContainer,
+                    {
+                      backgroundColor: t.surfaceSecondary,
+                      borderTopColor: t.border,
+                    },
+                  ]}
+                >
                   {organs.map((organ) => (
                     <TouchableOpacity
                       key={organ.name}
-                      style={[styles.organRow, isLight && styles.organRowLight]}
+                      style={[
+                        styles.organRow,
+                        {
+                          backgroundColor: t.card,
+                          borderColor: t.cardBorder,
+                        },
+                      ]}
                       onPress={() => handleOpenOrgan(organ)}
+                      activeOpacity={0.7}
                     >
                       <View style={{ flex: 1 }}>
-                        <Text style={[styles.organName, isLight && styles.organNameLight]}>
-                          {organ.name}
-                        </Text>
+                        <View style={styles.organTitleRow}>
+                          <HealthIcon
+                            source={getOrganIcon(organ.name)}
+                            size={16}
+                            color={t.text}
+                            style={{ marginRight: 8 }}
+                          />
+                          <Text style={[styles.organName, { color: t.text }]}>
+                            {organ.name}
+                          </Text>
+                        </View>
                         {organ.latin ? (
-                          <Text style={[styles.organLatin, isLight && styles.organLatinLight]}>{organ.latin}</Text>
+                          <Text style={[styles.organLatin, { color: t.textMuted }]}>
+                            {organ.latin}
+                          </Text>
                         ) : null}
                       </View>
-                      <View style={[styles.viewBadge, isLight && styles.viewBadgeLight]}>
-                        <Text style={[styles.viewBadgeText, isLight && styles.viewBadgeTextLight]}>Details ➔</Text>
+                      <View
+                        style={[
+                          styles.viewBadge,
+                          {
+                            backgroundColor: t.accentBg,
+                            borderColor: t.cardBorder,
+                          },
+                        ]}
+                      >
+                        <Text style={[styles.viewBadgeText, { color: t.text }]}>
+                          Details ➔
+                        </Text>
                       </View>
                     </TouchableOpacity>
                   ))}
@@ -100,12 +190,13 @@ export default function SystemsScreen({ theme = 'dark' }) {
         })}
       </ScrollView>
 
-      {/* Details Sheet */}
+      {/* Details Sheet with live theme support */}
       <OrganDetailsSheet
         visible={sheetVisible}
         organData={selectedOrganData}
         onClose={() => setSheetVisible(false)}
         theme={theme}
+        fontSize={fontSize}
       />
     </SafeAreaView>
   );
@@ -114,175 +205,123 @@ export default function SystemsScreen({ theme = 'dark' }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
   },
   header: {
     paddingHorizontal: 20,
     paddingTop: 14,
-    paddingBottom: 12,
+    paddingBottom: 14,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    elevation: 4,
+  },
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   title: {
-    color: '#ffffff',
-    fontSize: 22,
-    fontWeight: '700',
+    fontSize: 26,
+    fontWeight: '900',
+    letterSpacing: -0.3,
   },
-  subtitle: {
-    color: '#94a3b8',
-    fontSize: 13,
-    marginTop: 2,
+  pillBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
+    borderWidth: 1,
+  },
+  pillBadgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
   scrollList: {
     padding: 16,
     gap: 12,
   },
   systemCard: {
-    backgroundColor: '#0f172a',
-    borderRadius: 16,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
     overflow: 'hidden',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+    elevation: 4,
   },
   cardHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    gap: 14,
+    padding: 14,
+    gap: 12,
+    borderBottomWidth: 1,
   },
   iconCircle: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#1e293b',
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
   },
   sysIcon: {
     fontSize: 22,
   },
   sysName: {
-    color: '#f8fafc',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  sysNameBn: {
-    color: '#38bdf8',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  organNameBn: {
-    color: '#38bdf8',
-    fontSize: 12,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '700',
+    marginBottom: 2,
   },
   organCount: {
-    color: '#64748b',
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 11,
+  },
+  chevronBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
   },
   chevron: {
-    color: '#94a3b8',
-    fontSize: 12,
+    fontSize: 10,
+    fontWeight: '800',
   },
   organsContainer: {
+    padding: 12,
+    gap: 8,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
-    backgroundColor: '#1e293b22',
-    paddingHorizontal: 16,
-    paddingVertical: 6,
   },
   organRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.04)',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    borderWidth: 1,
+  },
+  organTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flexWrap: 'wrap',
   },
   organName: {
-    color: '#e2e8f0',
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 13,
+    fontWeight: '700',
   },
   organLatin: {
-    color: '#38bdf8',
-    fontSize: 12,
     fontStyle: 'italic',
+    fontSize: 11,
     marginTop: 2,
   },
   viewBadge: {
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
     paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 5,
+    borderRadius: 10,
+    borderWidth: 1,
   },
   viewBadgeText: {
-    color: '#38bdf8',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  // Light Theme Styles
-  containerLight: {
-    backgroundColor: '#f8fafc',
-  },
-  headerLight: {
-    backgroundColor: '#ffffff',
-    borderBottomColor: '#e2e8f0',
-  },
-  titleLight: {
-    color: '#0f172a',
-  },
-  subtitleLight: {
-    color: '#64748b',
-  },
-  systemCardLight: {
-    backgroundColor: '#ffffff',
-    borderColor: '#e2e8f0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
-  },
-  cardHeaderLight: {
-    backgroundColor: '#ffffff',
-  },
-  iconCircleLight: {
-    backgroundColor: '#f1f5f9',
-  },
-  sysNameLight: {
-    color: '#0f172a',
-  },
-  sysNameBnLight: {
-    color: '#0284c7',
-  },
-  organCountLight: {
-    color: '#64748b',
-  },
-  chevronLight: {
-    color: '#64748b',
-  },
-  organsContainerLight: {
-    backgroundColor: '#f8fafc',
-    borderTopColor: '#e2e8f0',
-  },
-  organRowLight: {
-    borderBottomColor: '#f1f5f9',
-  },
-  organNameLight: {
-    color: '#1e293b',
-  },
-  organNameBnLight: {
-    color: '#0284c7',
-  },
-  organLatinLight: {
-    color: '#0284c7',
-  },
-  viewBadgeLight: {
-    backgroundColor: 'rgba(2, 132, 199, 0.1)',
-  },
-  viewBadgeTextLight: {
-    color: '#0284c7',
+    fontSize: 11,
+    fontWeight: '700',
   },
 });

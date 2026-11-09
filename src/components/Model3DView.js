@@ -12,23 +12,18 @@ export default function Model3DView({
   explodeVal = 0,
   focusRegion = 'all',
   theme = 'dark',
+  resetKey = 0,
 }) {
   const webViewRef = useRef(null);
 
   const getBgCssForTheme = (t) => {
     if (t === 'light') return '#e2e8f0';
-    if (t === 'blue_dark') return '#020617';
-    if (t === 'purple_dark') return '#090414';
-    if (t === 'emerald_dark') return '#02120b';
-    return '#000000'; // Pure Dark (Not blue!)
+    return '#000000'; // Pure OLED Black
   };
 
   const getBgHexForTheme = (t) => {
     if (t === 'light') return '0xe2e8f0';
-    if (t === 'blue_dark') return '0x020617';
-    if (t === 'purple_dark') return '0x090414';
-    if (t === 'emerald_dark') return '0x02120b';
-    return '0x000000'; // Pure Dark (Not blue!)
+    return '0x000000'; // Pure OLED Black
   };
 
   // Send state updates into WebView Three.js scene via both postMessage and injectJavaScript
@@ -52,6 +47,17 @@ export default function Model3DView({
       true;
     `);
   }, [bpm, respRate, autoRotate, xrayMode, explodeVal, focusRegion, theme]);
+
+  // Handle explicit 3D camera reset trigger
+  useEffect(() => {
+    if (!webViewRef.current || resetKey === 0) return;
+    webViewRef.current.injectJavaScript(`
+      if (window.onResetView) {
+        window.onResetView();
+      }
+      true;
+    `);
+  }, [resetKey]);
 
   const handleMessage = (event) => {
     try {
@@ -781,9 +787,37 @@ export default function Model3DView({
       }
     }
 
+    function resetCamera() {
+      if (controls) {
+        controls.reset();
+      }
+      targetCamPos.copy(CAM_VIEWS.all.p);
+      targetCamLook.copy(CAM_VIEWS.all.t);
+      if (camera && controls) {
+        camera.position.copy(CAM_VIEWS.all.p);
+        controls.target.copy(CAM_VIEWS.all.t);
+        camera.lookAt(CAM_VIEWS.all.t);
+        controls.update();
+      }
+      isCamTransitioning = true;
+    }
+
     window.onConfigUpdate = handleConfigMessage;
-    window.addEventListener('message', (e) => handleConfigMessage(e.data));
-    document.addEventListener('message', (e) => handleConfigMessage(e.data));
+    window.onResetView = resetCamera;
+    window.addEventListener('message', (e) => {
+      if (typeof e.data === 'string' && e.data.includes('RESET_VIEW')) {
+        resetCamera();
+      } else {
+        handleConfigMessage(e.data);
+      }
+    });
+    document.addEventListener('message', (e) => {
+      if (typeof e.data === 'string' && e.data.includes('RESET_VIEW')) {
+        resetCamera();
+      } else {
+        handleConfigMessage(e.data);
+      }
+    });
 
     let clock = new THREE.Clock();
     function animate() {

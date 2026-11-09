@@ -12,6 +12,7 @@ import Model3DView from '../components/Model3DView';
 import OrganDetailsSheet from '../components/OrganDetailsSheet';
 import { ANATOMY_DATA, SYSTEMS } from '../data/anatomyData';
 import { getTheme } from '../theme/theme';
+import HealthIcon, { getOrganIcon } from '../components/HealthIcon';
 
 export default function ModelScreen({
   bpm,
@@ -20,15 +21,15 @@ export default function ModelScreen({
   setAutoRotate,
   xrayMode,
   setXrayMode,
-  explodeVal,
   theme = 'dark',
+  fontSize = 'medium',
 }) {
   const [selectedOrganKey, setSelectedOrganKey] = useState(null);
   const [sheetVisible, setSheetVisible] = useState(false);
   const [focusRegion, setFocusRegion] = useState('all');
+  const [resetKey, setResetKey] = useState(0);
 
-  const t = getTheme(theme);
-  const isLight = !t.isDark;
+  const t = getTheme(theme, fontSize);
   const selectedData = selectedOrganKey ? ANATOMY_DATA[selectedOrganKey] : null;
 
   const handleSelectOrgan = (organName) => {
@@ -41,77 +42,24 @@ export default function ModelScreen({
     }
   };
 
-  const regions = [
-    { id: 'all', label: '🧍 All Body' },
-    { id: 'head', label: '🧠 Head & Brain' },
-    { id: 'thorax', label: '🫀 Thorax' },
-    { id: 'abdomen', label: '🍽️ Abdomen' },
-    { id: 'pelvis', label: '🦵 Pelvis & Legs' },
-  ];
+  const handleReset = () => {
+    setFocusRegion('all');
+    setSelectedOrganKey(null);
+    setSheetVisible(false);
+    setAutoRotate && setAutoRotate(false);
+    setResetKey((prev) => prev + 1);
+  };
 
-  const organKeys = Object.keys(ANATOMY_DATA).filter(k => k !== 'Body Surface (Skin)');
+  const organKeys = Object.keys(ANATOMY_DATA).filter(
+    (k) => k !== 'Body Surface (Skin)'
+  );
 
   return (
     <SafeAreaView
       edges={['top']}
-      style={[
-        styles.container,
-        { backgroundColor: t.bg },
-      ]}
+      style={[styles.container, { backgroundColor: t.bg }]}
     >
-      {/* Top Bar */}
-      <View style={[styles.topBar, { backgroundColor: t.headerBg, borderBottomColor: t.border }]}>
-        <View style={styles.brandRow}>
-          <View style={[styles.logoBadge, isLight && styles.logoBadgeLight]}>
-            <Image
-              source={require('../../assets/icon.png')}
-              style={{ width: 34, height: 34, borderRadius: 17 }}
-              resizeMode="cover"
-            />
-          </View>
-          <View>
-            <Text style={[styles.brandText, isLight && styles.brandTextLight]}>AnaPharm</Text>
-            <Text style={[styles.subBrandText, isLight && styles.subBrandTextLight]}>
-              3D Anatomy & Clinical Pharmacopoeia
-            </Text>
-          </View>
-        </View>
-
-        {/* Focus Region Chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.regionScroll}
-        >
-          {regions.map((r) => {
-            const active = focusRegion === r.id;
-            return (
-              <TouchableOpacity
-                key={r.id}
-                style={[
-                  styles.regionChip,
-                  isLight && styles.regionChipLight,
-                  active && styles.regionChipActive,
-                ]}
-                onPress={() => setFocusRegion(r.id)}
-                activeOpacity={0.7}
-              >
-                <Text
-                  style={[
-                    styles.regionText,
-                    isLight && styles.regionTextLight,
-                    active && styles.regionTextActive,
-                  ]}
-                >
-                  {r.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {/* 3D Viewport Area */}
+      {/* 3D Viewport Area - Fullscreen immersion, no top bar */}
       <View style={styles.viewport}>
         <Model3DView
           onSelectOrgan={handleSelectOrgan}
@@ -119,43 +67,59 @@ export default function ModelScreen({
           respRate={respRate}
           autoRotate={autoRotate}
           xrayMode={xrayMode}
-          explodeVal={explodeVal}
           focusRegion={focusRegion}
           theme={theme}
+          resetKey={resetKey}
         />
 
-        {/* Live Vitals HUD */}
-        <View style={[styles.vitalsHud, isLight && styles.vitalsHudLight]}>
+        {/* Frosted Glass Live Vitals HUD */}
+        <View
+          style={[
+            styles.vitalsHud,
+            {
+              backgroundColor: t.glassBg,
+              borderColor: t.glassBorder,
+              shadowColor: t.shadowColor,
+            },
+          ]}
+        >
           <View style={styles.vitalItem}>
-            <Text style={styles.vitalIcon}>💓</Text>
+            <HealthIcon name="heartbeat" size={16} color={t.text} style={{ marginRight: 6 }} />
             <View>
-              <Text style={[styles.vitalValue, isLight && styles.vitalValueLight]}>{bpm}</Text>
-              <Text style={styles.vitalUnit}>BPM</Text>
+              <Text style={[styles.vitalValue, { color: t.text }]}>{bpm}</Text>
+              <Text style={[styles.vitalUnit, { color: t.textMuted }]}>BPM</Text>
             </View>
           </View>
-          <View style={[styles.vitalDivider, isLight && styles.vitalDividerLight]} />
+          <View
+            style={[styles.vitalDivider, { backgroundColor: t.glassBorder }]}
+          />
           <View style={styles.vitalItem}>
-            <Text style={styles.vitalIcon}>🫁</Text>
+            <HealthIcon name="lungs" size={16} color={t.text} style={{ marginRight: 6 }} />
             <View>
-              <Text style={[styles.vitalValue, isLight && styles.vitalValueLight]}>{respRate}</Text>
-              <Text style={styles.vitalUnit}>RPM</Text>
+              <Text style={[styles.vitalValue, { color: t.text }]}>
+                {respRate}
+              </Text>
+              <Text style={[styles.vitalUnit, { color: t.textMuted }]}>RPM</Text>
             </View>
           </View>
         </View>
 
-        {/* Quick Viewport Action FABs */}
+        {/* Floating Viewport Action FABs */}
         <View style={styles.fabColumn}>
           <TouchableOpacity
             style={[
               styles.actionFab,
-              isLight && styles.actionFabLight,
-              autoRotate && styles.actionFabActive,
+              {
+                backgroundColor: autoRotate ? (t.isDark ? '#3f3f46' : '#d4d4d8') : t.glassBg,
+                borderColor: t.glassBorder,
+                shadowColor: t.shadowColor,
+              },
             ]}
             onPress={() => setAutoRotate && setAutoRotate(!autoRotate)}
             activeOpacity={0.8}
           >
-            <Text style={styles.fabIcon}>🔄</Text>
-            <Text style={[styles.fabLabel, isLight && styles.fabLabelLight]}>
+            <HealthIcon name="bodyOutline" size={20} color={t.text} />
+            <Text style={[styles.fabLabel, { color: t.text }]}>
               {autoRotate ? 'Orbit On' : 'Rotate'}
             </Text>
           </TouchableOpacity>
@@ -163,33 +127,53 @@ export default function ModelScreen({
           <TouchableOpacity
             style={[
               styles.actionFab,
-              isLight && styles.actionFabLight,
-              xrayMode && styles.actionFabActive,
+              {
+                backgroundColor: xrayMode ? (t.isDark ? '#3f3f46' : '#d4d4d8') : t.glassBg,
+                borderColor: t.glassBorder,
+                shadowColor: t.shadowColor,
+              },
             ]}
             onPress={() => setXrayMode && setXrayMode(!xrayMode)}
             activeOpacity={0.8}
           >
-            <Text style={styles.fabIcon}>⚡</Text>
-            <Text style={[styles.fabLabel, isLight && styles.fabLabelLight]}>
+            <HealthIcon name="xray" size={20} color={t.text} />
+            <Text style={[styles.fabLabel, { color: t.text }]}>
               {xrayMode ? 'X-Ray On' : 'X-Ray'}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionFab, isLight && styles.actionFabLight]}
-            onPress={() => setFocusRegion('all')}
+            style={[
+              styles.actionFab,
+              {
+                backgroundColor: t.glassBg,
+                borderColor: t.glassBorder,
+                shadowColor: t.shadowColor,
+              },
+            ]}
+            onPress={handleReset}
             activeOpacity={0.8}
           >
-            <Text style={styles.fabIcon}>🎯</Text>
-            <Text style={[styles.fabLabel, isLight && styles.fabLabelLight]}>Reset</Text>
+            <HealthIcon name="uiZoom" size={20} color={t.text} />
+            <Text style={[styles.fabLabel, { color: t.text }]}>Reset</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Bottom Quick Organ Picker Bar */}
-        <View style={[styles.organPickerContainer, isLight && styles.organPickerContainerLight]}>
-          <Text style={[styles.pickerTitle, isLight && styles.pickerTitleLight]}>
-            SELECT ORGAN:
-          </Text>
+        {/* Bottom Organ Selector Dock */}
+        <View
+          style={[
+            styles.organPickerContainer,
+            {
+              backgroundColor: t.glassBg,
+              borderTopColor: t.glassBorder,
+            },
+          ]}
+        >
+          <View style={styles.dockHeaderRow}>
+            <Text style={[styles.pickerTitle, { color: t.text }]}>
+              ORGANS
+            </Text>
+          </View>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -197,20 +181,47 @@ export default function ModelScreen({
           >
             {organKeys.map((key) => {
               const organ = ANATOMY_DATA[key];
-              const sys = SYSTEMS[organ.system] || { icon: '🫀', color: '#38bdf8' };
+              const isSelected = selectedOrganKey === key;
+              const pillIconColor = isSelected
+                ? (t.isDark ? '#000000' : '#ffffff')
+                : t.text;
+
               return (
                 <TouchableOpacity
                   key={key}
                   style={[
                     styles.organPill,
-                    isLight && styles.organPillLight,
-                    { borderColor: sys.color + '70' },
+                    {
+                      backgroundColor: isSelected
+                        ? t.isDark
+                          ? '#ffffff'
+                          : '#000000'
+                        : t.chipBg,
+                      borderColor: isSelected ? t.text : t.chipBorder,
+                    },
                   ]}
                   onPress={() => handleSelectOrgan(key)}
                   activeOpacity={0.7}
                 >
-                  <Text style={styles.organPillIcon}>{sys.icon}</Text>
-                  <Text style={[styles.organPillName, isLight && styles.organPillNameLight]}>
+                  <HealthIcon
+                    source={getOrganIcon(key)}
+                    size={16}
+                    color={pillIconColor}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text
+                    style={[
+                      styles.organPillName,
+                      {
+                        color: isSelected
+                          ? t.isDark
+                            ? '#000000'
+                            : '#ffffff'
+                          : t.text,
+                        fontWeight: isSelected ? '800' : '600',
+                      },
+                    ]}
+                  >
                     {organ.name}
                   </Text>
                 </TouchableOpacity>
@@ -220,12 +231,13 @@ export default function ModelScreen({
         </View>
       </View>
 
-      {/* Detail Bottom Sheet */}
+      {/* Detail Bottom Sheet with full Theme support */}
       <OrganDetailsSheet
         visible={sheetVisible}
         organData={selectedData}
         onClose={() => setSheetVisible(false)}
         theme={theme}
+        fontSize={fontSize}
       />
     </SafeAreaView>
   );
@@ -234,93 +246,6 @@ export default function ModelScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#020617',
-  },
-  containerLight: {
-    backgroundColor: '#f8fafc',
-  },
-  topBar: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-    paddingBottom: 10,
-    backgroundColor: '#0b132b',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-  },
-  topBarLight: {
-    backgroundColor: '#ffffff',
-    borderBottomColor: '#e2e8f0',
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
-  },
-  logoBadge: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoBadgeLight: {
-    backgroundColor: 'rgba(2, 132, 199, 0.12)',
-    borderColor: 'rgba(2, 132, 199, 0.25)',
-  },
-  brandLogo: {
-    fontSize: 18,
-  },
-  brandText: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#ffffff',
-    letterSpacing: 0.3,
-  },
-  brandTextLight: {
-    color: '#0f172a',
-  },
-  subBrandText: {
-    fontSize: 11,
-    color: '#38bdf8',
-  },
-  subBrandTextLight: {
-    color: '#0284c7',
-  },
-  regionScroll: {
-    gap: 8,
-    paddingVertical: 2,
-  },
-  regionChip: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: '#1e293b',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  regionChipLight: {
-    backgroundColor: '#f1f5f9',
-    borderColor: '#e2e8f0',
-  },
-  regionChipActive: {
-    backgroundColor: '#0284c7',
-    borderColor: '#38bdf8',
-  },
-  regionText: {
-    color: '#94a3b8',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  regionTextLight: {
-    color: '#64748b',
-  },
-  regionTextActive: {
-    color: '#ffffff',
-    fontWeight: '700',
   },
   viewport: {
     flex: 1,
@@ -332,21 +257,15 @@ const styles = StyleSheet.create({
     left: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(15, 23, 42, 0.92)',
-    borderRadius: 14,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    gap: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 18,
     borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
-    shadowColor: '#000',
-    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
     shadowRadius: 8,
-    elevation: 6,
-  },
-  vitalsHudLight: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderColor: '#cbd5e1',
-    shadowOpacity: 0.1,
+    elevation: 8,
   },
   vitalItem: {
     flexDirection: 'row',
@@ -354,95 +273,66 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   vitalIcon: {
-    fontSize: 14,
+    fontSize: 16,
   },
   vitalValue: {
-    color: '#f8fafc',
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: '800',
-  },
-  vitalValueLight: {
-    color: '#0f172a',
+    lineHeight: 18,
   },
   vitalUnit: {
-    color: '#38bdf8',
     fontSize: 9,
     fontWeight: '700',
+    letterSpacing: 0.5,
   },
   vitalDivider: {
     width: 1,
-    height: 18,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    marginHorizontal: 10,
-  },
-  vitalDividerLight: {
-    backgroundColor: '#e2e8f0',
+    height: 22,
   },
   fabColumn: {
     position: 'absolute',
     top: 14,
     right: 14,
-    gap: 8,
+    gap: 10,
   },
   actionFab: {
     alignItems: 'center',
     justifyContent: 'center',
     width: 52,
     height: 52,
-    borderRadius: 14,
-    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+    borderRadius: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
-    shadowColor: '#000',
-    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 5,
-  },
-  actionFabLight: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderColor: '#cbd5e1',
-    shadowOpacity: 0.1,
-  },
-  actionFabActive: {
-    backgroundColor: '#0284c7',
-    borderColor: '#38bdf8',
+    elevation: 6,
   },
   fabIcon: {
-    fontSize: 17,
+    fontSize: 18,
   },
   fabLabel: {
-    color: '#94a3b8',
     fontSize: 9,
-    fontWeight: '600',
+    fontWeight: '700',
     marginTop: 2,
-  },
-  fabLabelLight: {
-    color: '#475569',
   },
   organPickerContainer: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(11, 19, 43, 0.95)',
     paddingVertical: 10,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.08)',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
   },
-  organPickerContainerLight: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderTopColor: '#e2e8f0',
-  },
-  pickerTitle: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#38bdf8',
-    letterSpacing: 0.5,
+  dockHeaderRow: {
     marginBottom: 6,
   },
-  pickerTitleLight: {
-    color: '#0284c7',
+  pickerTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 0.8,
   },
   pickerScroll: {
     gap: 8,
@@ -451,28 +341,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
     borderRadius: 14,
-    backgroundColor: '#1e293b',
     borderWidth: 1,
-  },
-  organPillLight: {
-    backgroundColor: '#f1f5f9',
   },
   organPillIcon: {
     fontSize: 16,
   },
   organPillName: {
-    color: '#f8fafc',
     fontSize: 12,
-    fontWeight: '700',
-  },
-  organPillNameLight: {
-    color: '#0f172a',
-  },
-  organPillBn: {
-    color: '#94a3b8',
-    fontSize: 10,
   },
 });
