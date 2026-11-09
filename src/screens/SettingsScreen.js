@@ -714,7 +714,7 @@ export default function SettingsScreen({
                 Version
               </Text>
               <Text style={[styles.devInfoValue, { color: t.text }]}>
-                2.0.0
+                2.5.0 (Developer)
               </Text>
             </View>
           </View>
