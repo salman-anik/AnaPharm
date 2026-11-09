@@ -531,7 +531,7 @@ export default function SettingsScreen({
                 Version
               </Text>
               <Text style={[styles.devInfoValue, { color: t.text }]}>
-                1.0.0
+                2.0.0
               </Text>
             </View>
           </View>
@@ -571,11 +571,14 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     borderBottomWidth: 1,
     elevation: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 26,
     fontWeight: '900',
     letterSpacing: -0.3,
+    textAlign: 'center',
   },
   scrollList: {
     padding: 16,

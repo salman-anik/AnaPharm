@@ -44,20 +44,13 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
           },
         ]}
       >
-        <View style={styles.headerTitleRow}>
+        <View style={styles.headerTitleColumn}>
           <Text style={[styles.title, { color: t.text, fontSize: t.fs(26) }]}>
             Anatomical Systems
           </Text>
-          <View
-            style={[
-              styles.pillBadge,
-              { backgroundColor: t.accentBg, borderColor: t.cardBorder },
-            ]}
-          >
-            <Text style={[styles.pillBadgeText, { color: t.text }]}>
-              {systemKeys.length} NETWORKS
-            </Text>
-          </View>
+          <Text style={[styles.subTitle, { color: t.textMuted, fontSize: t.fs(12) }]}>
+            {systemKeys.length} Networks
+          </Text>
         </View>
       </View>
 
@@ -213,26 +206,22 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     elevation: 4,
   },
-  headerTitleRow: {
-    flexDirection: 'row',
+  headerTitleColumn: {
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
   },
   title: {
     fontSize: 26,
     fontWeight: '900',
     letterSpacing: -0.3,
+    textAlign: 'center',
   },
-  pillBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-    borderWidth: 1,
-  },
-  pillBadgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.8,
+  subTitle: {
+    fontSize: 12,
+    fontWeight: '600',
+    letterSpacing: 0.3,
+    marginTop: 2,
+    textAlign: 'center',
   },
   scrollList: {
     padding: 16,

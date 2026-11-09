@@ -536,12 +536,15 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   headerTitleRow: {
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 8,
   },
   headerTitle: {
     fontSize: 26,
     fontWeight: '900',
     letterSpacing: -0.3,
+    textAlign: 'center',
   },
   inputContainer: {
     flexDirection: 'row',

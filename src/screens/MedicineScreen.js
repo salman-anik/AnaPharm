@@ -964,20 +964,26 @@ const styles = StyleSheet.create({
   headerTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
     marginBottom: 10,
+    position: 'relative',
+    minHeight: 38,
   },
   pageTitle: {
     fontSize: 26,
     fontWeight: '900',
     letterSpacing: -0.3,
+    textAlign: 'center',
   },
   screenTitle: {
     fontSize: 26,
     fontWeight: '900',
     letterSpacing: -0.3,
+    textAlign: 'center',
   },
   langToggleWrap: {
+    position: 'absolute',
+    right: 0,
     flexDirection: 'row',
     borderRadius: 14,
     padding: 3,
