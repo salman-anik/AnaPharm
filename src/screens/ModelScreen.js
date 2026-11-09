@@ -20,7 +20,7 @@ export default function ModelScreen({
   setAutoRotate,
   xrayMode,
   setXrayMode,
-  theme = 'dark',
+  theme = 'light',
   setTheme,
   fontSize = 'medium',
   language = 'bn',

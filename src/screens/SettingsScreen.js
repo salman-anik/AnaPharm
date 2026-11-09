@@ -142,9 +142,9 @@ export default function SettingsScreen({
                     {
                       backgroundColor: item.card,
                       borderColor: isSelected
-                        ? (item.isDark ? '#ffffff' : '#000000')
+                        ? '#D8BDF8'
                         : item.cardBorder,
-                      borderWidth: isSelected ? 2 : 1,
+                      borderWidth: isSelected ? 2.5 : 1,
                     },
                   ]}
                   onPress={() => setTheme(item.id)}
@@ -160,13 +160,13 @@ export default function SettingsScreen({
                       <View
                         style={[
                           styles.activeCheckBadge,
-                          { backgroundColor: item.isDark ? '#ffffff' : '#000000' },
+                          { backgroundColor: '#D8BDF8' },
                         ]}
                       >
                         <Text
                           style={[
                             styles.activeCheckText,
-                            { color: item.isDark ? '#000000' : '#ffffff' },
+                            { color: '#1e1b4b' },
                           ]}
                         >
                           ✓
@@ -216,7 +216,7 @@ export default function SettingsScreen({
                   style={[
                     styles.fontSizeBtn,
                     active && {
-                      backgroundColor: t.isDark ? '#ffffff' : '#000000',
+                      backgroundColor: '#D8BDF8',
                     },
                   ]}
                   onPress={() => setFontSize && setFontSize(opt.id)}
@@ -226,9 +226,7 @@ export default function SettingsScreen({
                     style={[
                       styles.fontSizeBtnIcon,
                       {
-                        color: active
-                          ? (t.isDark ? '#000000' : '#ffffff')
-                          : t.text,
+                        color: active ? '#1e1b4b' : t.text,
                       },
                     ]}
                   >
@@ -238,10 +236,9 @@ export default function SettingsScreen({
                     style={[
                       styles.fontSizeBtnLabel,
                       {
-                        color: active
-                          ? (t.isDark ? '#000000' : '#ffffff')
-                          : t.textMuted,
+                        color: active ? '#1e1b4b' : t.textMuted,
                         fontWeight: active ? '800' : '600',
+                        fontFamily: active ? 'HindSiliguri-Bold' : 'HindSiliguri-Medium',
                       },
                     ]}
                   >
@@ -274,219 +271,6 @@ export default function SettingsScreen({
             >
               Paracetamol 500mg • প্যারাসিটামল ৫০০ মি.গ্রা.
             </Text>
-          </View>
-        </View>
-
-        {/* CARD 3: LANGUAGE - Clean, No subtitles, No emoji */}
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: t.card,
-              borderColor: t.cardBorder,
-              shadowColor: t.shadowColor,
-            },
-          ]}
-        >
-          <View style={styles.cardHeader}>
-            <Text style={[styles.cardHeading, { color: t.text }]}>Language</Text>
-          </View>
-
-          <View
-            style={[
-              styles.fontSizeRow,
-              {
-                backgroundColor: t.surfaceSecondary,
-                borderColor: t.border,
-              },
-            ]}
-          >
-            {[
-              { id: 'bn', label: 'বাংলা' },
-              { id: 'en', label: 'English' },
-            ].map((opt) => {
-              const active = (language || 'bn') === opt.id;
-              return (
-                <TouchableOpacity
-                  key={opt.id}
-                  style={[
-                    styles.fontSizeBtn,
-                    active && {
-                      backgroundColor: t.isDark ? '#ffffff' : '#000000',
-                    },
-                  ]}
-                  onPress={() => setLanguage && setLanguage(opt.id)}
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={[
-                      styles.fontSizeBtnLabel,
-                      {
-                        color: active
-                          ? (t.isDark ? '#000000' : '#ffffff')
-                          : t.textMuted,
-                        fontWeight: active ? '800' : '600',
-                        fontSize: t.fs(13),
-                      },
-                    ]}
-                  >
-                    {opt.label}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* CARD 4: 3D VIEW CONTROLS - Clean, No subtitles, No emoji */}
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: t.card,
-              borderColor: t.cardBorder,
-              shadowColor: t.shadowColor,
-            },
-          ]}
-        >
-          <View style={styles.cardHeader}>
-            <Text style={[styles.cardHeading, { color: t.text }]}>
-              3D Controls
-            </Text>
-          </View>
-
-          <View style={styles.settingRow}>
-            <Text style={[styles.rowLabel, { color: t.text }]}>Auto-Rotate</Text>
-            <Switch
-              value={autoRotate}
-              onValueChange={setAutoRotate}
-              trackColor={{
-                false: t.isDark ? '#334155' : '#cbd5e1',
-                true: t.isDark ? '#ffffff' : '#000000',
-              }}
-              thumbColor={
-                autoRotate
-                  ? t.isDark
-                    ? '#000000'
-                    : '#ffffff'
-                  : t.isDark
-                  ? '#94a3b8'
-                  : '#f8fafc'
-              }
-            />
-          </View>
-
-          <View
-            style={[
-              styles.settingRow,
-              styles.rowBorderTop,
-              { borderTopColor: t.border },
-            ]}
-          >
-            <Text style={[styles.rowLabel, { color: t.text }]}>
-              X-Ray Mode
-            </Text>
-            <Switch
-              value={xrayMode}
-              onValueChange={setXrayMode}
-              trackColor={{
-                false: t.isDark ? '#334155' : '#cbd5e1',
-                true: t.isDark ? '#ffffff' : '#000000',
-              }}
-              thumbColor={
-                xrayMode
-                  ? t.isDark
-                    ? '#000000'
-                    : '#ffffff'
-                  : t.isDark
-                  ? '#94a3b8'
-                  : '#f8fafc'
-              }
-            />
-          </View>
-        </View>
-
-        {/* CARD 4: PHYSIOLOGY - Clean, No subtitles, No emoji */}
-        <View
-          style={[
-            styles.card,
-            {
-              backgroundColor: t.card,
-              borderColor: t.cardBorder,
-              shadowColor: t.shadowColor,
-            },
-          ]}
-        >
-          <View style={styles.cardHeader}>
-            <Text style={[styles.cardHeading, { color: t.text }]}>
-              Physiology
-            </Text>
-          </View>
-
-          {/* Heart Rate */}
-          <View style={styles.stepperRow}>
-            <Text style={[styles.rowLabel, { color: t.text }]}>Heart Rate</Text>
-            <View
-              style={[
-                styles.stepperControls,
-                {
-                  backgroundColor: t.surfaceSecondary,
-                  borderColor: t.border,
-                },
-              ]}
-            >
-              <TouchableOpacity
-                style={[styles.stepBtn, { backgroundColor: t.chipBg }]}
-                onPress={() => setBpm((prev) => Math.max(40, prev - 5))}
-              >
-                <Text style={[styles.stepBtnText, { color: t.text }]}>−</Text>
-              </TouchableOpacity>
-              <Text style={[styles.stepValue, { color: t.text }]}>
-                {bpm} <Text style={{ fontSize: 10, color: t.textMuted }}>BPM</Text>
-              </Text>
-              <TouchableOpacity
-                style={[styles.stepBtn, { backgroundColor: t.chipBg }]}
-                onPress={() => setBpm((prev) => Math.min(180, prev + 5))}
-              >
-                <Text style={[styles.stepBtnText, { color: t.text }]}>+</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Respiration */}
-          <View
-            style={[
-              styles.stepperRow,
-              styles.rowBorderTop,
-              { borderTopColor: t.border },
-            ]}
-          >
-            <Text style={[styles.rowLabel, { color: t.text }]}>Respiration</Text>
-            <View
-              style={[
-                styles.stepperControls,
-                {
-                  backgroundColor: t.surfaceSecondary,
-                  borderColor: t.border,
-                },
-              ]}
-            >
-              <TouchableOpacity
-                style={[styles.stepBtn, { backgroundColor: t.chipBg }]}
-                onPress={() => setRespRate((prev) => Math.max(8, prev - 2))}
-              >
-                <Text style={[styles.stepBtnText, { color: t.text }]}>−</Text>
-              </TouchableOpacity>
-              <Text style={[styles.stepValue, { color: t.text }]}>
-                {respRate} <Text style={{ fontSize: 10, color: t.textMuted }}>RPM</Text>
-              </Text>
-              <TouchableOpacity
-                style={[styles.stepBtn, { backgroundColor: t.chipBg }]}
-                onPress={() => setRespRate((prev) => Math.min(40, prev + 2))}
-              >
-                <Text style={[styles.stepBtnText, { color: t.text }]}>+</Text>
-              </TouchableOpacity>
-            </View>
           </View>
         </View>
 
@@ -714,7 +498,7 @@ export default function SettingsScreen({
                 Version
               </Text>
               <Text style={[styles.devInfoValue, { color: t.text }]}>
-                2.5.0 (Developer)
+                1.0.0 (Release)
               </Text>
             </View>
           </View>

@@ -1,4 +1,6 @@
-import React, { useState, useRef, useMemo, useEffect } from 'react';
+import React, { useState, useRef, useMemo, useEffect, useCallback } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFonts } from 'expo-font';
 import {
   StyleSheet,
   View,
@@ -19,16 +21,60 @@ import SettingsScreen from './src/screens/SettingsScreen';
 import { getTheme } from './src/theme/theme';
 import HealthIcon from './src/components/HealthIcon';
 
+
+const STORAGE_KEY_THEME = '@anapharm_theme';
+const STORAGE_KEY_FONT_SIZE = '@anapharm_fontSize';
+
 export default function App() {
   const { width: screenWidth } = useWindowDimensions();
-  const [activeTab, setActiveTab] = useState('model');
+  // Load modern Bangla typography (Hind Siliguri)
+  const [fontsLoaded] = useFonts({
+    'HindSiliguri-Light': require('./assets/fonts/HindSiliguri-Light.ttf'),
+    'HindSiliguri-Regular': require('./assets/fonts/HindSiliguri-Regular.ttf'),
+    'HindSiliguri-Medium': require('./assets/fonts/HindSiliguri-Medium.ttf'),
+    'HindSiliguri-SemiBold': require('./assets/fonts/HindSiliguri-SemiBold.ttf'),
+    'HindSiliguri-Bold': require('./assets/fonts/HindSiliguri-Bold.ttf'),
+  });
+  const [activeTab, setActiveTab] = useState('medicine');
   const [scrollLocked, setScrollLocked] = useState(false);
   const horizontalScrollRef = useRef(null);
   const isProgrammaticScroll = useRef(false);
 
-  // Shared state across the app - default to 'dark' (Pure OLED Black)
-  const [theme, setTheme] = useState('dark');
-  const [fontSize, setFontSize] = useState('medium');
+  // Shared state across the app - default to 'light'
+  const [theme, setThemeState] = useState('light');
+  const [fontSize, setFontSizeState] = useState('medium');
+
+  // Load persisted settings on startup
+  useEffect(() => {
+    (async () => {
+      try {
+        const savedTheme = await AsyncStorage.getItem(STORAGE_KEY_THEME);
+        if (savedTheme) {
+          setThemeState(savedTheme);
+        }
+        const savedFontSize = await AsyncStorage.getItem(STORAGE_KEY_FONT_SIZE);
+        if (savedFontSize) {
+          setFontSizeState(savedFontSize);
+        }
+      } catch (err) {
+        console.warn('Failed to load settings:', err);
+      }
+    })();
+  }, []);
+
+  const setTheme = useCallback((newTheme) => {
+    setThemeState(newTheme);
+    AsyncStorage.setItem(STORAGE_KEY_THEME, newTheme).catch((err) =>
+      console.warn('Failed to save theme:', err)
+    );
+  }, []);
+
+  const setFontSize = useCallback((newFontSize) => {
+    setFontSizeState(newFontSize);
+    AsyncStorage.setItem(STORAGE_KEY_FONT_SIZE, newFontSize).catch((err) =>
+      console.warn('Failed to save fontSize:', err)
+    );
+  }, []);
   const [language, setLanguage] = useState('bn');
   const [bpm, setBpm] = useState(72);
   const [respRate, setRespRate] = useState(16);
@@ -53,7 +99,7 @@ export default function App() {
 
   // All bottom navbar icons from healthicons.org (inlined, zero 404s)
   const tabs = [
-    { id: 'systems', iconName: 'dna' },
+    { id: 'medicine', iconName: 'medicines' },
     { id: 'diseases', iconName: 'stethoscope' },
     {
       id: 'model',
@@ -61,14 +107,14 @@ export default function App() {
       iconOutline: 'bodyOutline',
       iconFilled: 'bodyFilled',
     },
-    { id: 'medicine', iconName: 'medicines' },
+    { id: 'systems', iconName: 'dna' },
     { id: 'settings', iconName: 'settings' },
   ];
 
   const swipeTabs = [
-    { id: 'systems', label: 'Systems' },
-    { id: 'diseases', label: 'Diseases' },
     { id: 'medicine', label: 'Medicine' },
+    { id: 'diseases', label: 'Diseases' },
+    { id: 'systems', label: 'Systems' },
     { id: 'settings', label: 'Settings' },
   ];
 
@@ -238,7 +284,7 @@ export default function App() {
               contentContainerStyle={styles.pagerContent}
             >
               <View style={{ width: screenWidth, flex: 1 }}>
-                {systemsScreenComponent}
+                {medicineScreenComponent}
               </View>
 
               <View style={{ width: screenWidth, flex: 1 }}>
@@ -246,7 +292,7 @@ export default function App() {
               </View>
 
               <View style={{ width: screenWidth, flex: 1 }}>
-                {medicineScreenComponent}
+                {systemsScreenComponent}
               </View>
 
               <View style={{ width: screenWidth, flex: 1 }}>
@@ -283,10 +329,10 @@ export default function App() {
                       styles.centerHeroButton,
                       {
                         backgroundColor: isActive
-                          ? (t.isDark ? '#ffffff' : '#000000')
+                          ? '#D8BDF8'
                           : (t.isDark ? '#141418' : '#f4f4f5'),
                         borderColor: isActive
-                          ? (t.isDark ? '#ffffff' : '#000000')
+                          ? '#D8BDF8'
                           : (t.isDark ? '#2e2e34' : '#e4e4e7'),
                         shadowColor: t.shadowColor || '#000',
                       },
@@ -297,7 +343,7 @@ export default function App() {
                       size={26}
                       color={
                         isActive
-                          ? (t.isDark ? '#000000' : '#ffffff')
+                          ? '#1e1b4b'
                           : (t.isDark ? '#ffffff' : '#000000')
                       }
                     />
@@ -314,8 +360,8 @@ export default function App() {
                   isActive && [
                     styles.tabButtonActive,
                     {
-                      backgroundColor: t.accentBg,
-                      borderColor: t.cardBorder,
+                      backgroundColor: '#D8BDF8',
+                      borderColor: '#D8BDF8',
                     },
                   ],
                 ]}
@@ -325,7 +371,7 @@ export default function App() {
                 <HealthIcon
                   name={tab.iconName}
                   size={24}
-                  color={isActive ? t.text : t.textMuted}
+                  color={isActive ? '#1e1b4b' : t.textMuted}
                   style={{ opacity: isActive ? 1.0 : 0.65 }}
                 />
               </TouchableOpacity>

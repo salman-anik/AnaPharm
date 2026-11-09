@@ -1,5 +1,17 @@
 // Centralized Theme System for AnaPharm
 // STRICT FONT COLOR RULE: Black or White only! No colored fonts.
+// Modern Bangla & Latin Typography powered by Hind Siliguri
+
+export const FONTS = {
+  light: 'HindSiliguri-Light',
+  regular: 'HindSiliguri-Regular',
+  medium: 'HindSiliguri-Medium',
+  semiBold: 'HindSiliguri-SemiBold',
+  bold: 'HindSiliguri-Bold',
+};
+
+export const SELECTED_COLOR = '#D8BDF8';
+export const SELECTED_TEXT = '#1e1b4b';
 
 export const THEMES = {
   dark: {
@@ -22,6 +34,10 @@ export const THEMES = {
     accentLight: '#ffffff',
     accentGlow: '#ffffff',
     accentBg: 'rgba(255, 255, 255, 0.12)',
+    selected: SELECTED_COLOR,
+    selectedBg: SELECTED_COLOR,
+    selectedBorder: SELECTED_COLOR,
+    selectedText: SELECTED_TEXT,
     tabBarBg: 'rgba(10, 10, 12, 0.96)',
     tabBarBorder: 'rgba(255, 255, 255, 0.10)',
     inputBg: 'rgba(26, 26, 30, 0.85)',
@@ -59,6 +75,10 @@ export const THEMES = {
     accentLight: '#18181b',
     accentGlow: '#000000',
     accentBg: 'rgba(0, 0, 0, 0.08)',
+    selected: SELECTED_COLOR,
+    selectedBg: SELECTED_COLOR,
+    selectedBorder: SELECTED_COLOR,
+    selectedText: SELECTED_TEXT,
     tabBarBg: 'rgba(255, 255, 255, 0.96)',
     tabBarBorder: '#e4e4e7',
     inputBg: '#f4f4f5',
@@ -86,10 +106,16 @@ export const FONT_SIZES = {
 };
 
 export const getTheme = (themeId, fontSizeId = 'medium') => {
-  const base = THEMES[themeId] || THEMES.dark;
+  const base = THEMES[themeId] || THEMES.light;
   const fontConf = FONT_SIZES[fontSizeId] || FONT_SIZES.medium;
   return {
     ...base,
+    fonts: FONTS,
+    fontFamily: FONTS.regular,
+    fontRegular: FONTS.regular,
+    fontMedium: FONTS.medium,
+    fontSemiBold: FONTS.semiBold,
+    fontBold: FONTS.bold,
     fontSizeId: fontConf.id,
     fontScale: fontConf.scale,
     fontDelta: fontConf.delta,

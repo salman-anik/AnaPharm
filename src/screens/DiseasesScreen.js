@@ -18,7 +18,7 @@ import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIco
 import DiseaseDetailModal from './DiseaseDetailModal';
 
 export default function DiseasesScreen({
-  theme = 'dark',
+  theme = 'light',
   fontSize = 'medium',
   language = 'bn',
   onSelectMedicine,
@@ -333,19 +333,15 @@ export default function DiseasesScreen({
           >
             {DISEASE_CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
-              const catColor = isSelected ? (t.isDark ? '#000000' : '#ffffff') : t.text;
+              const catColor = isSelected ? '#1e1b4b' : t.text;
               return (
                 <TouchableOpacity
                   key={cat.id}
                   style={[
                     styles.categoryChip,
                     {
-                      backgroundColor: isSelected
-                        ? t.isDark
-                          ? '#ffffff'
-                          : '#000000'
-                        : t.chipBg,
-                      borderColor: isSelected ? t.text : t.chipBorder,
+                      backgroundColor: isSelected ? '#D8BDF8' : t.chipBg,
+                      borderColor: isSelected ? '#D8BDF8' : t.chipBorder,
                     },
                   ]}
                   onPress={() => setSelectedCategory(cat.id)}
@@ -361,12 +357,9 @@ export default function DiseasesScreen({
                     style={[
                       styles.categoryText,
                       {
-                        color: isSelected
-                          ? t.isDark
-                            ? '#000000'
-                            : '#ffffff'
-                          : t.text,
+                        color: isSelected ? '#1e1b4b' : t.text,
                         fontWeight: isSelected ? '800' : '500',
+                        fontFamily: isSelected ? 'HindSiliguri-Bold' : 'HindSiliguri-Medium',
                       },
                     ]}
                   >
@@ -527,10 +520,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   titleBn: {
+    fontFamily: 'HindSiliguri-Bold',
     fontWeight: '800',
     letterSpacing: -0.2,
   },
   titleEn: {
+    fontFamily: 'HindSiliguri-Regular',
     fontWeight: '500',
     marginTop: 1,
   },

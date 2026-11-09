@@ -15,7 +15,7 @@ import { getTheme } from '../theme/theme';
 import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIcon';
 
 export default function SystemsScreen({
-  theme = 'dark',
+  theme = 'light',
   fontSize = 'medium',
   language = 'bn',
 }) {
@@ -131,7 +131,8 @@ export default function SystemsScreen({
                 styles.systemCard,
                 {
                   backgroundColor: t.card,
-                  borderColor: isExpanded ? t.text : t.cardBorder,
+                  borderColor: isExpanded ? '#D8BDF8' : t.cardBorder,
+                  borderWidth: isExpanded ? 1.5 : 1,
                   shadowColor: t.shadowColor,
                 },
               ]}
@@ -173,13 +174,13 @@ export default function SystemsScreen({
                   style={[
                     styles.chevronBox,
                     {
-                      backgroundColor: isExpanded ? (t.isDark ? '#3f3f46' : '#d4d4d8') : t.chipBg,
-                      borderColor: t.chipBorder,
+                      backgroundColor: isExpanded ? '#D8BDF8' : t.chipBg,
+                      borderColor: isExpanded ? '#D8BDF8' : t.chipBorder,
                       flexShrink: 0,
                     },
                   ]}
                 >
-                  <Text style={[styles.chevron, { color: t.text, fontSize: t.fs(10) }]}>
+                  <Text style={[styles.chevron, { color: isExpanded ? '#1e1b4b' : t.text, fontSize: t.fs(10) }]}>
                     {isExpanded ? '▲' : '▼'}
                   </Text>
                 </View>
@@ -337,10 +338,13 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   sysName: {
+    fontFamily: 'HindSiliguri-Bold',
     fontWeight: '700',
     marginBottom: 2,
   },
-  organCount: {},
+  organCount: {
+    fontFamily: 'HindSiliguri-Regular',
+  },
   chevronBox: {
     width: 28,
     height: 28,
@@ -373,6 +377,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   organName: {
+    fontFamily: 'HindSiliguri-Medium',
     fontWeight: '700',
   },
   organLatin: {

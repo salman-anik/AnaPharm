@@ -231,7 +231,7 @@ const MedicineCardItem = React.memo(
 );
 
 export default function MedicineScreen({
-  theme = 'dark',
+  theme = 'light',
   fontSize = 'medium',
   language = 'bn',
   onNavigateToOrgan,
@@ -334,11 +334,7 @@ export default function MedicineScreen({
           key: `comp_${comp.id || cIdx}_${cIdx}`,
           type: 'company',
           id: comp.id,
-          label: String(
-            globalLang === 'bn'
-              ? (comp.short_name_bn || comp.name_bn || comp.short_name || comp.name_en)
-              : (comp.short_name || comp.name_en)
-          ),
+          label: String(comp.short_name || comp.name_en),
           iconName: 'pharmacy',
         });
       });
@@ -347,7 +343,7 @@ export default function MedicineScreen({
     } catch (e) {
       return [];
     }
-  }, [globalLang, searchQuery]);
+  }, [searchQuery]);
 
   const handleSelectSuggestion = useCallback(
     (sug) => {
@@ -466,25 +462,22 @@ export default function MedicineScreen({
 
   // Single unified renderItem for the active filter mode
   const renderFilterChip = useCallback(
-    ({ item }) => {
+    ({ item, index }) => {
       const isCompanyMode = filterMode === 'company';
       const active = isCompanyMode
         ? selectedCompany === item.id
         : selectedCategory === item.id;
-      const chipIconColor = active ? (t.isDark ? '#000000' : '#ffffff') : t.text;
+      const chipIconColor = active ? '#1e1b4b' : t.text;
       const iconSize = Math.max(12, Math.round(t.fs(13)));
 
       return (
         <TouchableOpacity
+          key={item.id ? `chip_${item.id}` : `chip_${index}`}
           style={[
             styles.chip,
             {
-              backgroundColor: active
-                ? t.isDark
-                  ? '#ffffff'
-                  : '#000000'
-                : t.chipBg,
-              borderColor: active ? t.text : t.chipBorder,
+              backgroundColor: active ? '#D8BDF8' : t.chipBg,
+              borderColor: active ? '#D8BDF8' : t.chipBorder,
               paddingVertical: Math.max(5, Math.round(t.fs(6))),
               paddingHorizontal: Math.max(10, Math.round(t.fs(12))),
             },
@@ -514,11 +507,8 @@ export default function MedicineScreen({
             style={[
               styles.chipLabel,
               {
-                color: active
-                  ? t.isDark
-                    ? '#000000'
-                    : '#ffffff'
-                  : t.text,
+                color: active ? '#1e1b4b' : t.text,
+                fontFamily: 'HindSiliguri-Medium',
                 fontSize: t.fs(13),
                 fontWeight: active ? '800' : '600',
               },
@@ -619,7 +609,7 @@ export default function MedicineScreen({
         {searchSuggestions.length > 0 && (
           <View style={styles.matchingCompanyBar}>
             <Text style={[styles.matchingCompanyHint, { color: t.textMuted, fontSize: t.fs(11) }]}>
-              {globalLang === 'bn' ? 'ফার্মা কোম্পানি:' : 'Pharma:'}
+              Pharma:
             </Text>
             <ScrollView
               style={styles.suggestionScrollView}
@@ -681,7 +671,7 @@ export default function MedicineScreen({
                   paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                 },
                 filterMode === 'company' && {
-                  backgroundColor: t.isDark ? '#ffffff' : '#000000',
+                  backgroundColor: '#D8BDF8',
                 },
               ]}
               onPress={() => setFilterMode('company')}
@@ -691,11 +681,7 @@ export default function MedicineScreen({
                 name="pharmacy"
                 size={Math.max(12, Math.round(t.fs(13)))}
                 color={
-                  filterMode === 'company'
-                    ? t.isDark
-                      ? '#000000'
-                      : '#ffffff'
-                    : t.textMuted
+                  filterMode === 'company' ? '#1e1b4b' : t.textMuted
                 }
                 style={{ marginRight: 4 }}
               />
@@ -704,11 +690,7 @@ export default function MedicineScreen({
                   styles.scopeTabText,
                   {
                     color:
-                      filterMode === 'company'
-                        ? t.isDark
-                          ? '#000000'
-                          : '#ffffff'
-                        : t.textMuted,
+                      filterMode === 'company' ? '#1e1b4b' : t.textMuted,
                     fontSize: t.fs(13),
                     fontWeight: filterMode === 'company' ? '800' : '600',
                   },
@@ -730,7 +712,7 @@ export default function MedicineScreen({
                   paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                 },
                 filterMode === 'system' && {
-                  backgroundColor: t.isDark ? '#ffffff' : '#000000',
+                  backgroundColor: '#D8BDF8',
                 },
               ]}
               onPress={() => setFilterMode('system')}
@@ -740,11 +722,7 @@ export default function MedicineScreen({
                 name="bodyOutline"
                 size={Math.max(12, Math.round(t.fs(13)))}
                 color={
-                  filterMode === 'system'
-                    ? t.isDark
-                      ? '#000000'
-                      : '#ffffff'
-                    : t.textMuted
+                  filterMode === 'system' ? '#1e1b4b' : t.textMuted
                 }
                 style={{ marginRight: 4 }}
               />
@@ -753,11 +731,7 @@ export default function MedicineScreen({
                   styles.scopeTabText,
                   {
                     color:
-                      filterMode === 'system'
-                        ? t.isDark
-                          ? '#000000'
-                          : '#ffffff'
-                        : t.textMuted,
+                      filterMode === 'system' ? '#1e1b4b' : t.textMuted,
                     fontSize: t.fs(13),
                     fontWeight: filterMode === 'system' ? '800' : '600',
                   },
@@ -774,24 +748,23 @@ export default function MedicineScreen({
           {/* Divider */}
           <View style={[styles.scopeDivider, { backgroundColor: t.border }]} />
 
-          {/* Single Virtualized Filter Chips Carousel */}
-          <FlatList
+          {/* Filter Chips Carousel */}
+          <ScrollView
             ref={filterListRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             nestedScrollEnabled={true}
-            data={currentFilterData}
-            keyExtractor={keyExtractor}
-            renderItem={renderFilterChip}
-            initialNumToRender={8}
-            maxToRenderPerBatch={8}
-            windowSize={3}
-            removeClippedSubviews={Platform.OS === 'android'}
             contentContainerStyle={styles.chipsScroll}
             onScrollBeginDrag={() => onScrollLock?.(true)}
             onScrollEndDrag={() => onScrollLock?.(false)}
             onMomentumScrollEnd={() => onScrollLock?.(false)}
-          />
+          >
+            {currentFilterData.map((item, index) => (
+              <React.Fragment key={item && item.id ? ("chip_" + filterMode + "_" + item.id) : ("chip_" + filterMode + "_" + index)}>
+                {renderFilterChip({ item, index })}
+              </React.Fragment>
+            ))}
+          </ScrollView>
         </View>
 
         {/* Clean Active Filter Strip (Shown ONLY when a filter is applied) */}
@@ -1003,6 +976,7 @@ const styles = StyleSheet.create({
     paddingTop: 2,
   },
   pageTitle: {
+    fontFamily: 'HindSiliguri-Bold',
     fontWeight: '800',
     letterSpacing: -0.5,
     textAlign: 'center',
@@ -1071,7 +1045,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: 10,
   },
-  scopeTabText: {},
+  scopeTabText: {
+    fontFamily: 'HindSiliguri-SemiBold',
+  },
   activeDot: {
     width: 4,
     height: 4,
@@ -1097,7 +1073,9 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     marginRight: 6,
   },
-  chipLabel: {},
+  chipLabel: {
+    fontFamily: 'HindSiliguri-Medium',
+  },
   activeFilterStrip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1205,6 +1183,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   medNameEn: {
+    fontFamily: 'HindSiliguri-Bold',
     fontWeight: '700',
     letterSpacing: -0.2,
   },
@@ -1225,6 +1204,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   categoryBadgeText: {
+    fontFamily: 'HindSiliguri-Medium',
     fontWeight: '600',
   },
   companyBadge: {
@@ -1234,6 +1214,7 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
   },
   companyBadgeText: {
+    fontFamily: 'HindSiliguri-Medium',
     fontWeight: '600',
   },
   headerRight: {

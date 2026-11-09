@@ -2869,5 +2869,1237 @@ export const DISEASE_DATABASE = [
     ],
     "emergency_warning_bn": "একজিমার ওপর হঠাৎ পুঁজযুক্ত ছোট ছোট ফোসকা দেখা দেওয়া, তীব্র জ্বর ও ব্যথা হার্পিস ভাইরাস সংক্রমণ (Eczema Herpeticum) নির্দেশ করে। অবিলম্বে হাসপাতালে অ্যান্টিভাইরাল থেরাপি প্রয়োজন।",
     "emergency_warning_en": "Sudden eruption of widespread painful vesicular pustules with fever indicates Eczema Herpeticum, a dermatological emergency requiring systemic Acyclovir."
+  },
+  {
+    "id": "diarrhea-cholera",
+    "name_en": "Acute Watery Diarrhea & Cholera",
+    "name_bn": "তীব্র পানিবাহিত ডায়রিয়া ও কলেরা",
+    "icd10": "A00 / A09",
+    "system": "gastrointestinal",
+    "system_bn": "পরিপাকতন্ত্র ও পেট",
+    "organ": "Small & Large Intestine",
+    "organ_icon": "🥣",
+    "severity": "Critical",
+    "overview_bn": "ভিব্রিও কলেরি বা রোটাভাইরাস দ্বারা সংক্রমিত মারাত্মক পানিবাহিত রোগ। চাল ধোয়া পানির মতো ঘন ঘন পাতলা পায়খানা ও বমি হয়ে দ্রুত বিপজ্জনক পানিশূন্যতা ও শক তৈরি হয়।",
+    "overview_en": "Severe diarrheal infection caused by Vibrio cholerae or enteropathogens, producing voluminous rice-water stools, rapid dehydration, and hypovolemic shock.",
+    "causes_bn": [
+      "দূষিত পানি ও খাবার গ্রহণ (Vibrio cholerae, Rotavirus, E. coli)",
+      "অস্বাস্থ্যকর পয়ঃনিষ্কাশন ও হাত না ধোয়ার অভ্যাস",
+      "রাস্তার খোলা ও বাসি খাবার এবং কাঁচা সালাদ খাওয়া",
+      "বন্যা ও প্রাকৃতিক দুর্যোগের পর সুপেয় পানির সংকট"
+    ],
+    "causes_en": [
+      "Contaminated drinking water and food (Vibrio cholerae, Rotavirus)",
+      "Poor sanitation and inadequate hand hygiene",
+      "Street food and uncooked raw produce exposed to flies",
+      "Post-flood drinking water contamination"
+    ],
+    "risk_factors_bn": [
+      "অনিরাপদ নলকূপ বা ওয়াসার দূষিত পানি পান",
+      "ঘনবসতিপূর্ণ এলাকা ও বস্তিবাসী",
+      "৫ বছরের কম বয়সী শিশু ও বৃদ্ধ",
+      "বর্ষাকাল ও গরম আবহাওয়া"
+    ],
+    "risk_factors_en": [
+      "Unsafe municipal or flood-affected water",
+      "Crowded urban settlements and slums",
+      "Malnourished children under 5 and elderly",
+      "Monsoon and post-monsoon seasons in Bangladesh"
+    ],
+    "symptoms_bn": [
+      "হঠাৎ শুরু হওয়া চাল ধোয়া পানির মতো প্রচুর পাতলা পায়খানা",
+      "ঘন ঘন বমি ও তীব্র পিপাসা",
+      "চোখ কোটরাগত হওয়া ও ত্বকের স্থিতিস্থাপকতা কমে যাওয়া (Skin pinch goes back slowly)",
+      "প্রস্রাবের পরিমাণ মারাত্মক কমে যাওয়া (Oliguria)",
+      "পেশিতে তীব্র টান বা ক্র্যাম্প (ইলেক্ট্রোলাইটের অভাবে)"
+    ],
+    "symptoms_en": [
+      "Sudden onset profuse watery stools (rice-water appearance)",
+      "Repeated vomiting and intense thirst",
+      "Sunken eyes, dry mucous membranes, sluggish skin turgor",
+      "Marked oliguria or anuria",
+      "Severe painful muscle cramps due to hypokalemia/hyponatremia"
+    ],
+    "diagnostic_tests": [
+      "Stool Cholera RDT (Rapid Diagnostic Strip)",
+      "Stool Routine & Microscopic Examination (R/M/E)",
+      "Serum Electrolytes (Sodium, Potassium, Bicarbonate)",
+      "Serum Creatinine & Blood Urea",
+      "Dark-field stool microscopy for darting motility"
+    ],
+    "medicines": [
+      {
+        "generic": "Oral Rehydration Salt (ORS)",
+        "class": "WHO-Formulated Fluid & Electrolyte Replacer",
+        "usage_bn": "প্রতিবার পাতলা পায়খানার পর ১ প্যাকেট খাবার স্যালাইন আধা লিটার বিশুদ্ধ পানিতে গুলে খেতে হবে",
+        "usage_en": "WHO Low-Osmolarity ORS: 1 sachet per 500 mL water after every loose stool",
+        "top_brands": [
+          "Orsaline-N (SMC)",
+          "Tasty Saline",
+          "Neo-Saline (Beximco)",
+          "Oral Saline (Square)"
+        ]
+      },
+      {
+        "generic": "Zinc Sulfate Dispersible",
+        "class": "Mucosal Repair & Antidiarrheal Micronutrient",
+        "usage_bn": "শিশুদের জন্য দৈনিক ২০ মিগ্রা (৬ মাসের কম হলে ১০ মিগ্রা) টানা ১৪ দিন",
+        "usage_en": "20 mg daily for 14 days (10 mg for infants < 6 months) for enterocyte repair",
+        "top_brands": [
+          "Baby Zinc (Square)",
+          "Zif-CI (Incepta)",
+          "Zinc-B (Beximco)",
+          "Zinkid (Renata)"
+        ]
+      },
+      {
+        "generic": "Azithromycin",
+        "class": "Macrolide Antibiotic (Cholera First-line)",
+        "usage_bn": "প্রাপ্তবয়স্কদের ক্ষেত্রে ১ গ্রাম একক মাত্রায় অথবা ৫০০ মিগ্রা দৈনিক ৩ দিন",
+        "usage_en": "1 g single dose for cholera in adults or 20 mg/kg single dose in children",
+        "top_brands": [
+          "Zimax (Square)",
+          "A-Zith (Incepta)",
+          "Tridosil (Beximco)",
+          "Zithrin (Renata)"
+        ]
+      },
+      {
+        "generic": "Ringer's Lactate (IV Infusion)",
+        "class": "Balanced Intravenous Crystalloid",
+        "usage_bn": "তীব্র পানিশূন্যতা ও শকে আক্রান্ত রোগীদের হাসপাতালে দ্রুত শিরার মাধ্যমে প্রয়োগ",
+        "usage_en": "IV fluid resuscitation: 100 mL/kg divided per WHO Plan C protocol",
+        "top_brands": [
+          "Hartman Solution (Orion)",
+          "Ringer Lactate (Square)",
+          "RL Infusion (Beximco)"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "পানি অন্তত ২০ মিনিট ফুটিয়ে অথবা হ্যালোজেন ট্যাবলেট দিয়ে বিশুদ্ধ করে পান করুন।",
+      "স্যালাইনের পাশাপাশি ভাতের মাড়, ডাবের পানি, ও চিঁড়ার পানি পান করুন।",
+      "খাওয়ার আগে ও শৌচাগার ব্যবহারের পর সাবান দিয়ে অন্তত ২০ সেকেন্ড হাত ধোয়ার অভ্যাস করুন।",
+      "ডায়রিয়া চলাকালীন শিশুদের বুকের দুধ বা স্বাভাবিক পুষ্টিকর খাবার বন্ধ করবেন না।"
+    ],
+    "lifestyle_diet_en": [
+      "Boil drinking water for at least 20 minutes or use water purification chlorine tablets.",
+      "Supplement ORS with coconut water, rice starch soup (jao), and green banana puree.",
+      "Strict handwashing with soap for 20 seconds before food prep and after toilet use.",
+      "Never withhold breastfeeding or age-appropriate nutrition during active diarrhea."
+    ],
+    "emergency_warning_bn": "রোগী অজ্ঞান বা নিস্তেজ হয়ে পড়লে, পানি পান করতে না পারলে বা কোনো প্রস্রাব না হলে মুহূর্ত বিলম্ব না করে icddr,b বা নিকটস্থ সদর হাসপাতালের জরুরি বিভাগে নিন।",
+    "emergency_warning_en": "Lethargy, unconsciousness, inability to drink, or total absence of urination indicates severe hypovolemic shock. Rush to ICDDR,B or nearest emergency hospital immediately."
+  },
+  {
+    "id": "tuberculosis",
+    "name_en": "Pulmonary Tuberculosis (TB)",
+    "name_bn": "যক্ষ্মা ও ফুসফুসের টিবি",
+    "icd10": "A15",
+    "system": "respiratory",
+    "system_bn": "শ্বাসতন্ত্র ও ফুসফুস",
+    "organ": "Lungs & Bronchi",
+    "organ_icon": "🫁",
+    "severity": "Critical",
+    "overview_bn": "মাইকোব্যাকটেরিয়াম টিউবারকিউলোসিস ব্যাক্টেরিয়া দ্বারা সৃষ্ট দীর্ঘস্থায়ী সংক্রামক ব্যাধি যা প্রধানত ফুসফুসকে আক্রমণ করে এবং কাশির মাধ্যমে বাতাসে ছড়ায়।",
+    "overview_en": "A chronic infectious bacterial disease caused by Mycobacterium tuberculosis, primarily affecting the lungs and transmitted through airborne droplets.",
+    "causes_bn": [
+      "মাইকোব্যাকটেরিয়াম টিউবারকিউলোসিস (Mycobacterium tuberculosis) ব্যাক্টেরিয়ার সংক্রমণ",
+      "আক্রান্ত রোগীর হাঁচি-কাশির ড্রপলেট বাতাসে শ্বাস নেওয়ার মাধ্যমে ফুসফুসে প্রবেশ",
+      "রোগ প্রতিরোধ ক্ষমতা দুর্বল হয়ে পড়া (যেমন অনিয়ন্ত্রিত ডায়াবেটিস বা অপুষ্টি)",
+      "অপরিচ্ছন্ন, অন্ধকার ও আলো-বাতাসহীন স্যাঁতসেঁতে পরিবেশে দীর্ঘদিন বসবাস"
+    ],
+    "causes_en": [
+      "Mycobacterium tuberculosis acid-fast bacillus infection",
+      "Inhalation of aerosolized droplets from active untreated patients",
+      "Immunosuppression, poorly controlled diabetes, or severe malnutrition",
+      "Overcrowded, poorly ventilated living conditions"
+    ],
+    "risk_factors_bn": [
+      "যক্ষ্মা রোগীর সাথে দীর্ঘসময় ঘনিষ্ঠ সংস্পর্শ",
+      "ধূমপান ও তামাক সেবন",
+      "রোগ প্রতিরোধ ক্ষমতার ঘাটতি বা স্টেরয়েড গ্রহণ",
+      "অপুষ্টি ও দারিদ্র্য"
+    ],
+    "risk_factors_en": [
+      "Close contact with untreated open pulmonary TB cases",
+      "Cigarette smoking and indoor biomass fuel smoke",
+      "Diabetes mellitus, renal failure, chronic steroid use",
+      "Malnutrition and socio-economic deprivation"
+    ],
+    "symptoms_bn": [
+      "৩ সপ্তাহের বেশি সময় ধরে স্থায়ী কাশি (কখনও কফের সাথে রক্ত পড়া)",
+      "বিকালে ও রাতে মৃদু জ্বর এবং রাতে অতিরিক্ত ঘাম হওয়া (Night sweats)",
+      "উল্লেখযোগ্য ওজন হ্রাস ও ক্ষুধামান্দ্য",
+      "বুকে চিনচিনে ব্যথা ও শ্বাসকষ্ট",
+      "অতিরিক্ত শারীরিক ক্লান্তি ও অবসাদ"
+    ],
+    "symptoms_en": [
+      "Persistent cough lasting more than 3 weeks, sometimes with hemoptysis",
+      "Low-grade evening fever and drenching night sweats",
+      "Unexplained rapid weight loss and severe anorexia",
+      "Pleuritic chest pain and breathlessness",
+      "Chronic malaise and profound fatigue"
+    ],
+    "diagnostic_tests": [
+      "GeneXpert MTB/RIF Assay (Sputum PCR)",
+      "Sputum AFB Stain & Smear Microscopy",
+      "Chest X-Ray PA View (Apical cavitation/infiltrates)",
+      "Tuberculin Skin Test (Mantoux Test - MT)",
+      "ESR & Complete Blood Count (CBC)"
+    ],
+    "medicines": [
+      {
+        "generic": "4-FDC (Rifampicin + Isoniazid + Pyrazinamide + Ethambutol)",
+        "class": "First-Line National DOTS Fixed Dose Combination",
+        "usage_bn": "জাতীয় যক্ষ্মা কর্মসূচি অনুযায়ী ওজন অনুপাতে প্রতিদিন সকালে খালিপেটে টানা ২ মাস (নিবিড় পর্ব)",
+        "usage_en": "Intensive phase: 3-4 tablets daily according to body weight for 2 months",
+        "top_brands": [
+          "Rimactazid-4 (Novartis)",
+          "4-FDC (Square)",
+          "Rifater (Sanofi)",
+          "Mycorif (Incepta)"
+        ]
+      },
+      {
+        "generic": "2-FDC (Rifampicin + Isoniazid)",
+        "class": "Continuation Phase Antitubercular Therapy",
+        "usage_bn": "নিবিড় পর্বের পর পরবর্তী ৪ মাস প্রতিদিন সকালে খালিপেটে নিয়মিত সেবন",
+        "usage_en": "Continuation phase: Daily fixed combination for 4 months to eradicate persisters",
+        "top_brands": [
+          "Rimactazid (Novartis)",
+          "Rifadiz (Incepta)",
+          "Iso-Rif (Beximco)"
+        ]
+      },
+      {
+        "generic": "Pyridoxine (Vitamin B6)",
+        "class": "Neuroprotective Co-therapy",
+        "usage_bn": "আইসোনায়াজিডের কারণে হাত-পায়ে ঝিঁঝিঁ ধরা বা নিউরোপ্যাথি প্রতিরোধে দৈনিক ২০-৫০ মিগ্রা",
+        "usage_en": "20-50 mg daily to prevent isoniazid-induced peripheral neuropathy",
+        "top_brands": [
+          "Vitamin B6 (Square)",
+          "Pyridoxine (Incepta)",
+          "Benavit (Beximco)"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "সরকারি স্বাস্থ্য কমপ্লেক্সের ডটস (DOTS) সেন্টার থেকে সম্পূর্ণ বিনামূল্যে নিয়মিত ওষুধ সেবন করুন।",
+      "কাশির সময় রুমাল বা টিস্যু ব্যবহার করুন এবং যত্রতত্র কফ-থুতু ফেলবেন না।",
+      "উচ্চ প্রোটিনযুক্ত খাবার যেমন ডিম, মাছ, মাংস, দুধ ও ডাল বেশি করে খান।",
+      "ঘরের জানালা খোলা রেখে পর্যাপ্ত আলো-বাতাস নিশ্চিত করুন।"
+    ],
+    "lifestyle_diet_en": [
+      "Complete the mandatory 6-month DOTS treatment regimen without skipping any dose.",
+      "Strict respiratory etiquette: cover mouth during coughing, avoid spitting in public.",
+      "High-protein diet: eggs, lentils, milk, fish to accelerate tissue repair and recovery.",
+      "Ensure proper ventilation and direct sunlight in the patient's room."
+    ],
+    "emergency_warning_bn": "প্রচুর পরিমাণে তাজা রক্ত বমি বা কাশির সাথে বের হলে (Massive Hemoptysis) অথবা তীব্র শ্বাসকষ্ট হলে অবিলম্বে বক্ষব্যাধি হাসপাতাল বা সদর হাসপাতালে ভর্তি হন।",
+    "emergency_warning_en": "Massive coughing of blood (>200 mL hemoptysis) or acute respiratory failure requires immediate emergency hospital admission."
+  },
+  {
+    "id": "malaria",
+    "name_en": "Malaria (Plasmodium Falciparum & Vivax)",
+    "name_bn": "ম্যালেরিয়া ও ফ্যালসিপেরাম ম্যালেরিয়া",
+    "icd10": "B50 / B51",
+    "system": "infectious",
+    "system_bn": "সংক্রামক ব্যাধি",
+    "organ": "Blood & Spleen",
+    "organ_icon": "🩸",
+    "severity": "Critical",
+    "overview_bn": "স্ত্রী অ্যানোফিলিস মশার কামড়ে ছড়ানো প্লাজমোডিয়াম পরজীবীঘটিত রক্ত সংক্রমণ। বাংলাদেশের পার্বত্য চট্টগ্রাম (বান্দরবান, রাঙামাটি, খাগড়াছড়ি) ও সিলেটের সীমান্তবর্তী অঞ্চলে এর প্রাদুর্ভাব বেশি।",
+    "overview_en": "A protozoan parasitic infection transmitted by female Anopheles mosquitoes, prevalent in the Chittagong Hill Tracts and border districts of Bangladesh.",
+    "causes_bn": [
+      "সংক্রমিত স্ত্রী অ্যানোফিলিস মশার কামড় (Plasmodium falciparum ও Plasmodium vivax)",
+      "পার্বত্য বনাঞ্চলে মশার বংশবিস্তার ও মশারির অপ্রতুল ব্যবহার",
+      "রক্তের লোহিত কণিকায় পরজীবীর দ্রুত সংখ্যাবৃদ্ধি ও ফেটে যাওয়া"
+    ],
+    "causes_en": [
+      "Infection with Plasmodium falciparum or P. vivax via female Anopheles bite",
+      "Exposure in endemic forested belts (Bandarban, Rangamati, Khagrachhari, Sylhet)",
+      "Erythrocytic rupture releasing merozoites and toxins into bloodstream"
+    ],
+    "risk_factors_bn": [
+      "পার্বত্য চট্টগ্রাম বা সীমান্ত জেলাগুলোতে ভ্রমণ বা বসবাস",
+      "রাতে বা ভোরে মশারির বাইরে ঘুমানো",
+      "জলাশয় ও বনাঞ্চলের নিকটবর্তী বাসস্থান"
+    ],
+    "risk_factors_en": [
+      "Travel or residency in Chittagong Hill Tracts and forested border areas",
+      "Outdoor sleeping without insecticide-treated bed nets (ITNs)",
+      "Stagnant clean water bodies favoring vector breeding"
+    ],
+    "symptoms_bn": [
+      "কাঁপুনি দিয়ে তীব্র জ্বর (জ্বরের ৩টি পর্যায়: শীত পর্যায়, উত্তাপ পর্যায়, ঘাম পর্যায়)",
+      "তীব্র মাথাব্যথা, বমি ও বমিভাব",
+      "পেশি ও সারা শরীরে অসহ্য ব্যথা",
+      "প্লীহা ও যকৃৎ ফুলে যাওয়া (Hepatosplenomegaly)",
+      "মারাত্মক পর্যায়ে রক্তাল্পতা ও জন্ডিস"
+    ],
+    "symptoms_en": [
+      "Paroxysms of high fever with rigors (cold stage, hot stage, sweating stage)",
+      "Severe throbbing headache, nausea, and vomiting",
+      "Myalgia, arthralgia, and profound weakness",
+      "Splenomegaly and mild hepatomegaly",
+      "Hemolytic anemia, dark urine, and jaundice"
+    ],
+    "diagnostic_tests": [
+      "Malaria Rapid Diagnostic Test (RDT for Pf & Pv antigen)",
+      "Peripheral Blood Film (PBF - Thick and Thin smears for ring forms)",
+      "Complete Blood Count (CBC showing thrombocytopenia & anemia)",
+      "Serum Bilirubin and Liver Function Tests"
+    ],
+    "medicines": [
+      {
+        "generic": "Artemether + Lumefantrine",
+        "class": "Artemisinin-based Combination Therapy (ACT)",
+        "usage_bn": "জাতীয় ম্যালেরিয়া গাইডলাইন অনুযায়ী ৩ দিনে মোট ৬ ডোজের পূর্ণ কোর্স",
+        "usage_en": "First-line ACT for P. falciparum: 6-dose regimen over 3 days with fatty meal",
+        "top_brands": [
+          "Coartem (Novartis)",
+          "Lumart (Square)",
+          "Artem (Incepta)",
+          "Coartam (Beximco)"
+        ]
+      },
+      {
+        "generic": "Primaquine Phosphate",
+        "class": "Antimalarial 8-Aminoquinoline (Gametocytocidal & Hypnozoitocidal)",
+        "usage_bn": "পুনরাক্রমণ রোধে চিকিৎসকের নির্দেশনায় নির্দিষ্ট মাত্রায় সেবন (G6PD পরীক্ষা প্রয়োজন)",
+        "usage_en": "Eradicates liver hypnozoites in P. vivax (0.25-0.5 mg/kg daily for 14 days after G6PD screen)",
+        "top_brands": [
+          "Primaquine (Sanofi)",
+          "Primacin (Square)"
+        ]
+      },
+      {
+        "generic": "Artesunate (IV Injection)",
+        "class": "Intravenous Antimalarial for Severe / Cerebral Malaria",
+        "usage_bn": "মারাত্মক ম্যালেরিয়ায় হাসপাতালে অবিলম্বে শিরার মাধ্যমে প্রয়োগ",
+        "usage_en": "IV artesunate 2.4 mg/kg at 0, 12, 24h for cerebral/complicated falciparum malaria",
+        "top_brands": [
+          "Artesun (Square)",
+          "Falcinil (Incepta)"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "পার্বত্য অঞ্চলে ভ্রমণের সময় কীটনাশকযুক্ত মশারি (LLIN) টাঙিয়ে ঘুমান।",
+      "শরীরে মসকুইটো রিপেলেন্ট ক্রিম বা লোশন ব্যবহার করুন এবং পুরো শরীর ঢাকা পোশাক পরুন।",
+      "জ্বর চলাকালীন প্রচুর তরল খাবার, ডাবের পানি ও ফলের রস পান করুন।",
+      "পার্বত্য এলাকা থেকে ফেরার পর জ্বর দেখা দিলে দ্রুত ম্যালেরিয়া রক্ত পরীক্ষা করান।"
+    ],
+    "lifestyle_diet_en": [
+      "Always sleep under Long-Lasting Insecticidal Nets (LLINs) in endemic zones.",
+      "Apply DEET mosquito repellents and wear full-length protective clothing at dawn/dusk.",
+      "Maintain high fluid intake with oral rehydration solution, coconut water, and soups.",
+      "Get prompt RDT/PBF testing upon any fever after visiting hill districts."
+    ],
+    "emergency_warning_bn": "রোগীর চেতনা কমে গেলে, প্রলাপ বকলে, খিঁচুনি হলে বা গাঢ় খয়েরি প্রস্রাব হলে তা সেরিব্রাল ম্যালেরিয়ার লক্ষণ—তাৎক্ষণিক আইসিইউ বা জেলা সদর হাসপাতালে নিন।",
+    "emergency_warning_en": "Altered sensorium, seizures, severe jaundice, or black urine (Blackwater fever) signifies Cerebral Malaria. Urgent tertiary care and IV Artesunate required."
+  },
+  {
+    "id": "viral-hepatitis-b-c",
+    "name_en": "Viral Hepatitis B & C (Chronic Liver Infection)",
+    "name_bn": "হেপাটাইটিস বি ও সি এবং জন্ডিস",
+    "icd10": "B16 / B18",
+    "system": "hepatobiliary",
+    "system_bn": "যকৃৎ ও পিত্তথলি",
+    "organ": "Liver",
+    "organ_icon": "🫀",
+    "severity": "High",
+    "overview_bn": "হেপাটাইটিস বি (HBV) ও সি (HCV) ভাইরাস দ্বারা যকৃতের দীর্ঘস্থায়ী প্রদাহ। প্রাথমিক অবস্থায় উপসর্গহীন থাকলেও অবহেলায় লিভার সিরোসিস ও লিভার ক্যান্সারের ঝুঁকি বহুগুণ বেড়ে যায়।",
+    "overview_en": "Chronic viral infections of the liver caused by Hepatitis B and C viruses, leading to chronic inflammation, progressive fibrosis, cirrhosis, and hepatocellular carcinoma.",
+    "causes_bn": [
+      "অনিরাপদ রক্ত গ্রহণ ও জীবাণুমুক্ত না করা সিরিঞ্জ ব্যবহার",
+      "সেলুনে একই ব্লেড একাধিক ব্যক্তির দাড়িকাটা বা রক্তপাত",
+      "সংক্রমিত মায়ের থেকে নবজাতকে প্রসবকালীন সংক্রমণ (Vertical transmission)",
+      "অনিরাপদ শারীরিক সম্পর্ক ও টুথব্রাশ/রেজার ভাগাভাগি"
+    ],
+    "causes_en": [
+      "Unscreened blood transfusions and contaminated needles/syringes",
+      "Shared razor blades at barbershops and non-sterile tattoo equipment",
+      "Mother-to-child vertical transmission during childbirth",
+      "Unprotected sexual contact and sharing personal grooming items"
+    ],
+    "risk_factors_bn": [
+      "অস্ত্রোপচার বা ডেন্টাল চিকিৎসার ইতিহাস",
+      "নিয়মিত রক্তগ্রহীতা (যেমন থ্যালাসেমিয়া রোগী)",
+      "পরিবারে হেপাটাইটিস বি পজিটিভ রোগী থাকা",
+      "হেপাটাইটিস বি প্রতিরোধী টিকা না নেওয়া"
+    ],
+    "risk_factors_en": [
+      "History of invasive dental or surgical procedures in unsterilized setups",
+      "Frequent blood transfusions (e.g. thalassemia patients)",
+      "Family members positive for HBsAg",
+      "Lack of Hepatitis B immunization"
+    ],
+    "symptoms_bn": [
+      "চোখ ও প্রস্রাব হলুদ হয়ে যাওয়া (জন্ডিস)",
+      "পেটের ওপরের ডানপাশে ভারী ভাব ও অস্বস্তি",
+      "ক্রমাগত অবসাদ ও খাবারে অরুচি",
+      "বমি বমি ভাব ও বদহজম",
+      "দীর্ঘমেয়াদে পেট ফুলে পানি আসা (Ascites) ও পায়ে ফোলা"
+    ],
+    "symptoms_en": [
+      "Scleral icterus and dark amber urine (jaundice)",
+      "Right upper quadrant dull ache and liver tenderness",
+      "Unremitting chronic fatigue and anorexia",
+      "Nausea, dyspepsia, and generalized pruritus",
+      "Late stages: abdominal ascites, spider angiomas, pedal edema"
+    ],
+    "diagnostic_tests": [
+      "HBsAg (Hepatitis B Surface Antigen)",
+      "Anti-HCV Total Antibody (ELISA)",
+      "HBV DNA Viral Load (Real-Time PCR)",
+      "HCV RNA Quantitative PCR",
+      "Serum Bilirubin, SGPT (ALT), SGOT (AST)",
+      "Liver FibroScan & Ultrasonography of Whole Abdomen"
+    ],
+    "medicines": [
+      {
+        "generic": "Tenofovir Disoproxil Fumarate",
+        "class": "Nucleotide Reverse Transcriptase Inhibitor (HBV First-line)",
+        "usage_bn": "হেপাটাইটিস বি ভাইরাল লোড নিয়ন্ত্রণে রাখতে দৈনিক ৩০০ মিগ্রা ১টি ট্যাবলেট নিয়মিত",
+        "usage_en": "First-line oral antiviral for Chronic Hepatitis B: 300 mg once daily",
+        "top_brands": [
+          "Tenovir (Square)",
+          "Tenohep (Incepta)",
+          "Hepavir (Beximco)",
+          "Tavin (Renata)"
+        ]
+      },
+      {
+        "generic": "Entecavir",
+        "class": "Potent HBV Polymerase Inhibitor",
+        "usage_bn": "কিডনি সমস্যাযুক্ত রোগীদের ক্ষেত্রে চিকিৎসকের পরামর্শে দৈনিক ০.৫ মিগ্রা খালিপেটে",
+        "usage_en": "0.5 mg once daily on empty stomach for chronic HBV with high genetic barrier",
+        "top_brands": [
+          "Enteca (Incepta)",
+          "Entavir (Square)",
+          "Baraclude (BMS)"
+        ]
+      },
+      {
+        "generic": "Sofosbuvir + Velpatasvir",
+        "class": "Pan-Genotypic Direct Acting Antiviral (HCV Cure)",
+        "usage_bn": "হেপাটাইটিস সি নিরাময়ে দৈনিক ১টি ট্যাবলেট টানা ১২ সপ্তাহ",
+        "usage_en": "Pan-genotypic HCV regimen: 1 tablet (400 mg/100 mg) daily for 12 weeks achieving >95% cure rate",
+        "top_brands": [
+          "Sofosvel (Beacon)",
+          "Epclusa (Gilead)",
+          "Velpat (Incepta)",
+          "Sovaldi-V (Square)"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "পরিবারের সকল সদস্যকে হেপাটাইটিস বি প্রতিরোধী ৩টি টিকার পূর্ণ ডোজ দিন।",
+      "সেলুনে প্রতিবার নতুন ব্লেড ব্যবহার নিশ্চিত করুন এবং টুথব্রাশ কখনো শেয়ার করবেন না।",
+      "তেল-চর্বিযুক্ত খাবার ও অ্যালকোহল সম্পূর্ণ পরিহার করুন।",
+      "যেকোনো রক্ত গ্রহণের পূর্বে স্ক্রিনিং টেস্ট শতভাগ নিশ্চিত করুন।"
+    ],
+    "lifestyle_diet_en": [
+      "Ensure all household contacts complete the 3-dose Hepatitis B vaccine series.",
+      "Insist on single-use disposable blades at barbers and never share toothbrushes or clippers.",
+      "Strict avoidance of alcohol, hepatotoxic medications, and excess deep-fried foods.",
+      "Verify certified nucleic-acid screening for any blood or blood product transfusions."
+    ],
+    "emergency_warning_bn": "রক্তবমি হলে, কালো আলকাতরার মতো পায়খানা হলে বা মানসিক বিভ্রান্তি/অসংলগ্ন আচরণ দেখা দিলে লিভার ব্যর্থতা হয়েছে—দ্রুত হেপাটোলজি বিভাগে ভর্তি করান।",
+    "emergency_warning_en": "Hematemesis, melena, or hepatic encephalopathy (drowsiness, flapping tremors) indicates decompensated cirrhosis. Urgent gastroenterology/hepatology hospitalization required."
+  },
+  {
+    "id": "iron-deficiency-anemia",
+    "name_en": "Iron Deficiency Anemia",
+    "name_bn": "রক্তস্বল্পতা ও আয়রনের ঘাটতি",
+    "icd10": "D50",
+    "system": "infectious",
+    "system_bn": "রক্ত ও রক্তসংবহন",
+    "organ": "Bone Marrow & Red Blood Cells",
+    "organ_icon": "🩸",
+    "severity": "Medium",
+    "overview_bn": "শরীরে আয়রনের অভাবে পর্যাপ্ত হিমোগ্লোবিন তৈরি না হওয়া। বাংলাদেশের গর্ভবতী নারী, কিশোরী ও শিশুদের মধ্যে এটি অত্যন্ত সাধারণ একটি পুষ্টিজনিত স্বাস্থ্য সমস্যা।",
+    "overview_en": "The most common nutritional disorder in Bangladesh, characterized by inadequate iron stores impairing normal erythropoiesis and hemoglobin synthesis.",
+    "causes_bn": [
+      "খাবারে অপর্যাপ্ত আয়রন গ্রহণ (শাকসবজি, মাংস ও কলিজা কম খাওয়া)",
+      "কৃমি সংক্রমণ (Hookworm infestation যা অন্ত্র থেকে নিয়মিত রক্তক্ষরণ ঘটায়)",
+      "গর্ভকালীন ও প্রসবকালীন অতিরিক্ত রক্তের চাহিদা",
+      "অতিরিক্ত ঋতুস্রাব বা পাইলস থেকে রক্তক্ষরণ"
+    ],
+    "causes_en": [
+      "Poor dietary bioavailability of heme iron",
+      "Chronic blood loss from Hookworm (Ancylostoma duodenale) infection",
+      "Increased physiological requirements during pregnancy and lactation",
+      "Menorrhagia, occult GI bleeding from peptic ulcers or hemorrhoids"
+    ],
+    "risk_factors_bn": [
+      "গর্ভবতী ও স্তন্যদানকারী মা",
+      "বৃদ্ধিপ্রাপ্ত কিশোর-কিশোরী ও বাড়ন্ত শিশু",
+      "নিয়মিত খালি পায়ে হাঁটার কারণে কৃমির সংক্রমণ",
+      "চায়ের অতিরিক্ত আসক্তি (খাবারের পর চা খেলে আয়রন শোষণ বাধাগ্রস্ত হয়)"
+    ],
+    "risk_factors_en": [
+      "Pregnant and adolescent females in low-income populations",
+      "Walking barefoot in rural soil facilitating hookworm penetration",
+      "High tannin intake: drinking tea immediately with or after meals",
+      "Frequent unspaced pregnancies"
+    ],
+    "symptoms_bn": [
+      "ত্বক, চোখের পাতা ও ঠোঁটের ভেতরের অংশ ফ্যাকাশে হয়ে যাওয়া",
+      "সামান্য পরিশ্রমে বুক ধড়ফড় ও দ্রুত হাঁপিয়ে ওঠা",
+      "মাথা ঘোরানো, মাথা ব্যথা ও চোখে অন্ধকার দেখা",
+      "নখ ভঙ্গুর ও চামচের মতো গর্ত হয়ে যাওয়া (Koilonychia)",
+      "অখাদ্য জিনিস যেমন মাটি বা বরফ খাওয়ার তীব্র ইচ্ছা (Pica)"
+    ],
+    "symptoms_en": [
+      "Pallor of skin, palpebral conjunctiva, tongue, and nailbeds",
+      "Exertional dyspnea, palpitations, and rapid fatigue",
+      "Postural dizziness, tinnitus, and morning headaches",
+      "Brittle nails and spoon-shaped nails (Koilonychia)",
+      "Craving for non-nutritive substances like clay, chalk, or ice (Pica)"
+    ],
+    "diagnostic_tests": [
+      "Complete Blood Count (CBC showing microcytic hypochromic indices, low Hb)",
+      "Serum Ferritin (Confirmatory: < 15-30 ng/mL)",
+      "Total Iron Binding Capacity (TIBC) & Transferrin Saturation",
+      "Stool Routine Examination for Hookworm Ova",
+      "Peripheral Blood Film (PBF)"
+    ],
+    "medicines": [
+      {
+        "generic": "Carbonyl Iron + Folic Acid + Zinc",
+        "class": "Oral Hematinic Formulation",
+        "usage_bn": "দৈনিক ১টি ক্যাপসুল খাবারের ১ ঘণ্টা আগে ভিটামিন সি সমৃদ্ধ পানির সাথে",
+        "usage_en": "1 capsule daily before meals or at bedtime with Vitamin C for optimal absorption",
+        "top_brands": [
+          "Fecontin-F (Incepta)",
+          "I-Car (Square)",
+          "Fefol-CI (Beximco)",
+          "Globac-Z (Renata)"
+        ]
+      },
+      {
+        "generic": "Ferric Carboxymaltose",
+        "class": "High-Dose Intravenous Iron Infusion",
+        "usage_bn": "তীব্র রক্তাল্পতায় বা মুখে ওষুধ সহ্য না হলে হাসপাতালে শিরার মাধ্যমে ৫০০০-১০০০ মিগ্রা প্রয়োগ",
+        "usage_en": "500-1000 mg IV infusion diluted in 0.9% normal saline for rapid replenishment",
+        "top_brands": [
+          "Ferinject (Vifor)",
+          "Ferrania (Square)",
+          "Orofer (Emcure)"
+        ]
+      },
+      {
+        "generic": "Albendazole",
+        "class": "Anthelmintic Co-therapy",
+        "usage_bn": "অন্ত্রের রক্তচোষা কৃমি ধ্বংস করতে ৪০০ মিগ্রা একক মাত্রায় চিবিয়ে খেতে হবে",
+        "usage_en": "400 mg single chewable dose to treat underlying hookworm blood loss",
+        "top_brands": [
+          "Almex (Square)",
+          "Alben (Incepta)",
+          "Solas (Beximco)"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "আয়রন সমৃদ্ধ খাবার যেমন গরুর কলিজা, ডিমের কুসুম, ছোট মাছ, কচুশাক ও ডাল বেশি খান।",
+      "খাবারের সাথে লেবুর রস খান—ভিটামিন সি আয়রনের শোষণ দ্বিগুণ বাড়িয়ে দেয়।",
+      "খাবার খাওয়ার অন্তত ১ ঘণ্টা আগে বা পরে চা বা কফি পান করুন।",
+      "গ্রামাঞ্চলে জুতো পরে চলাফেরা করুন যাতে হুকওয়ার্ম ত্বকে প্রবেশ করতে না পারে।"
+    ],
+    "lifestyle_diet_en": [
+      "Consume iron-rich foods: chicken/beef liver, egg yolk, small indigenous fish, spinach, lentils.",
+      "Pair meals with citrus juice or vitamin C to significantly boost non-heme iron absorption.",
+      "Never drink tea or coffee within 1 hour of meals as phytates inhibit iron uptake.",
+      "Wear sandals/shoes outdoors to avoid percutaneous hookworm larva penetration."
+    ],
+    "emergency_warning_bn": "হিমোগ্লোবিন ৫ g/dL এর নিচে নেমে গেলে, তীব্র শ্বাসকষ্ট বা বুক ধড়ফড় করে অচেতন হলে দ্রুত জরুরি রক্ত সঞ্চালনের জন্য হাসপাতালে নিন।",
+    "emergency_warning_en": "Severe anemia (Hb < 5-6 g/dL) with heart failure, syncope, or orthopnea demands immediate packed red blood cell transfusion."
+  },
+  {
+    "id": "scabies",
+    "name_en": "Scabies (Sarcoptic Mange Infestation)",
+    "name_bn": "খোস-পাঁচড়া ও ছোঁয়াচে চুলকানি",
+    "icd10": "B86",
+    "system": "dermatology",
+    "system_bn": "ত্বক ও চর্মরোগ",
+    "organ": "Skin & Subcutaneous Tissue",
+    "organ_icon": "🩹",
+    "severity": "Low",
+    "overview_bn": "সারকপটিস স্ক্যাবিয়ে নামক আণুবীক্ষণিক জীবাণুর ত্বকের নিচে গর্ত করে ডিম পাড়ার কারণে তীব্র চুলকানিযুক্ত ছোঁয়াচে চর্মরোগ। বাংলাদেশের স্কুল, মাদ্রাসা ও ঘনবসতিপূর্ণ পরিবারগুলোতে দ্রুত ছড়ায়।",
+    "overview_en": "A highly contagious parasitic skin infestation caused by Sarcoptes scabiei mite burrows, leading to intense nocturnal pruritus and secondary impetigo.",
+    "causes_bn": [
+      "আক্রান্ত ব্যক্তির সাথে ত্বকের প্রত্যক্ষ সংস্পর্শ (আলিঙ্গন বা হাত মেলানো)",
+      "একই বিছানায় ঘুমানো বা একই বিছানার চাদর, তোয়ালে ও কাপড় ব্যবহার",
+      "মাদ্রাসা, হোস্টেল বা ঘনবসতিপূর্ণ পরিবারের একজন থেকে অন্যজনে দ্রুত সংক্রমণ",
+      "ব্যক্তিগত পরিচ্ছন্নতার অভাব ও ভেজা কাপড় পরা"
+    ],
+    "causes_en": [
+      "Direct skin-to-skin contact with an infested person",
+      "Sharing bedding, mattresses, towels, or unwashed clothes",
+      "Crowded dormitories, madrasas, orphanages, and slums",
+      "Poor domestic hygiene and humid weather"
+    ],
+    "risk_factors_bn": [
+      "মাদ্রাসা ও আবাসিক হোস্টেলের শিক্ষার্থী",
+      "একই বিছানায় একাধিক সদস্য ঘুমানোর অভ্যাস",
+      "পরিবারের যেকোনো একজন সদস্যের চুলকানি থাকা",
+      "নিয়মিত সাবান দিয়ে গোসল না করা"
+    ],
+    "risk_factors_en": [
+      "Students in residential madrasas, barracks, and hostels",
+      "Sleeping together in congested domestic rooms",
+      "Family member with untreated persistent itching",
+      "Infrequent hot water laundry and bathing"
+    ],
+    "symptoms_bn": [
+      "রাতে বিছানায় শোয়ার পর অসহ্য চুলকানি (Nocturnal itching)",
+      "আঙুলের ফাঁকে, কবজি, বগল, নাভি ও যৌনাঙ্গে ছোট ছোট ফুসকুড়ি ও লাল দানা",
+      "চুলকাতে চুলকাতে ঘা হয়ে যাওয়া ও কষ বা পুঁজ বের হওয়া",
+      "পরিবারের একাধিক সদস্যের একই সাথে চুলকানি হওয়া"
+    ],
+    "symptoms_en": [
+      "Intense nocturnal pruritus exacerbated by bed warmth",
+      "Pruritic papules, vesicles, and burrows in web spaces of fingers, wrists, groin",
+      "Secondary bacterial excoriation, crusting, and impetigo",
+      "Concurrent pruritus in multiple family members"
+    ],
+    "diagnostic_tests": [
+      "Clinical Skin Examination (Burrows in web spaces)",
+      "Skin Scraping Microscopic Examination for mites/eggs",
+      "Dermoscopy (Delta wing jet sign)",
+      "Burrow Ink Test (BIT)"
+    ],
+    "medicines": [
+      {
+        "generic": "Permethrin 5% Cream / Lotion",
+        "class": "Scabicidal Neurotoxic Agent (Gold Standard)",
+        "usage_bn": "গলা থেকে পায়ের আঙুল পর্যন্ত মেখে ৮-১৪ ঘণ্টা রেখে ধুয়ে ফেলতে হবে। ৭ দিন পর পুনরায় একই নিয়মে ব্যবহার্য",
+        "usage_en": "Apply neck-to-toe, leave for 8-14 hours before washing. Repeat exactly 7 days later",
+        "top_brands": [
+          "Scabo (Square)",
+          "Permin (Incepta)",
+          "Elimite",
+          "Perbex (Beximco)"
+        ]
+      },
+      {
+        "generic": "Ivermectin",
+        "class": "Oral Anthelmintic / Scabicide",
+        "usage_bn": "চিকিৎসকের পরামর্শে ২০০ মাইক্রোগ্রাম/কেজি ওজনে খালিপেটে একক মাত্রায়, ৭ দিন পর ২য় ডোজ",
+        "usage_en": "200 mcg/kg single oral dose on empty stomach; repeat after 7-14 days for crusted/refractory scabies",
+        "top_brands": [
+          "Scabo Oral (Square)",
+          "Ivera (Incepta)",
+          "Ivermec (Beximco)"
+        ]
+      },
+      {
+        "generic": "Cetirizine / Bilastine",
+        "class": "Second-Generation Antihistamine",
+        "usage_bn": "রাতের চুলকানি কমাতে ও আরামদায়ক ঘুমের জন্য ঘুমানোর আগে ১০-২০ মিগ্রা",
+        "usage_en": "10-20 mg at bedtime to relieve severe nocturnal allergic pruritus",
+        "top_brands": [
+          "Alatrol (Square)",
+          "Cetriz (Incepta)",
+          "Bilatin (Beximco)",
+          "Bilaxten (Renata)"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "সবচেয়ে গুরুত্বপূর্ণ: পরিবারের সকল সদস্যকে উপসর্গ থাকুক বা না থাকুক একই সাথে চিকিৎসা নিতে হবে।",
+      "বিছানার চাদর, বালিশের কভার ও সকল পরিধেয় বস্ত্র ফুটন্ত গরম পানিতে ধুয়ে কড়া রোদে শুকান।",
+      "যেসব জিনিস ধোয়া যায় না, সেগুলো একটি পলিথিন ব্যাগে ভরে মুখ বন্ধ করে টানা ৭২ ঘণ্টা রেখে দিন।",
+      "নখ ছোট করে কাটুন যাতে চুলকানোর সময় ত্বকে ক্ষত ও ব্যাকটেরিয়ার সংক্রমণ না হয়।"
+    ],
+    "lifestyle_diet_en": [
+      "Crucial rule: Treat all household contacts simultaneously regardless of current symptoms.",
+      "Wash all clothing, linens, and blankets in hot water (>50 deg C) and dry in hot sun.",
+      "Seal non-washable items in airtight plastic bags for at least 72 hours to starve mites.",
+      "Keep fingernails closely trimmed to prevent excoriation and secondary streptococcal impetigo."
+    ],
+    "emergency_warning_bn": "চুলকানির ক্ষত লাল হয়ে ফুলে গেলে, প্রচুর পুঁজ বের হলে বা জ্বর দেখা দিলে ব্যাক্টেরিয়াল রক্তদূষণ (Cellulitis/Sepsis) হতে পারে—দ্রুত চর্মরোগ বিশেষজ্ঞ দেখান।",
+    "emergency_warning_en": "Erythematous swelling, purulent exudate, or systemic fever suggests secondary pyoderma or cellulitis requiring systemic antibiotics."
+  },
+  {
+    "id": "chikungunya",
+    "name_en": "Chikungunya Fever",
+    "name_bn": "চিকুনগুনিয়া জ্বর ও তীব্র গিঁটে ব্যথা",
+    "icd10": "A92.0",
+    "system": "infectious",
+    "system_bn": "সংক্রামক ব্যাধি",
+    "organ": "Joints & Immune System",
+    "organ_icon": "🦴",
+    "severity": "Medium",
+    "overview_bn": "এডিস মশার কামড়ে ছড়ানো চিকুনগুনিয়া ভাইরাসঘটিত তীব্র রোগ। এর প্রধান বৈশিষ্ট্য হলো উচ্চ জ্বরের সাথে হাত-পায়ের সন্ধি বা গিঁটে তীব্র ও দীর্ঘমেয়াদী পঙ্গুত্বকারী ব্যথা।",
+    "overview_en": "An arboviral infection transmitted by Aedes mosquitoes characterized by acute high fever followed by debilitating, excruciating polyarthralgia.",
+    "causes_bn": [
+      "এডিস মশার (Aedes aegypti ও Aedes albopictus) কামড়",
+      "চিকুনগুনিয়া ভাইরাস (Togaviridae family) রক্তে সংক্রমণ",
+      "শহরের জমাটবদ্ধ পরিষ্কার পানিতে মশার বংশবৃদ্ধি"
+    ],
+    "causes_en": [
+      "Bite of infected day-biting female Aedes aegypti or A. albopictus mosquitoes",
+      "Chikungunya Alphavirus replication in synovial and muscle tissue",
+      "Rainwater accumulation in discarded tyres, pots, and rooftops"
+    ],
+    "risk_factors_bn": [
+      "ঢাকা ও অন্যান্য নগর এলাকায় বর্ষাকালে বসবাস",
+      "দিনে ঘুমানোর সময় মশারি ব্যবহার না করা",
+      "বাসার ছাদে বা বারান্দায় ফুলের টবে জমে থাকা পানি"
+    ],
+    "risk_factors_en": [
+      "Urban residency in Dhaka/monsoon-prone cities in Bangladesh",
+      "Daytime rest without window screens or repellents",
+      "Unattended water reservoirs in building construction sites"
+    ],
+    "symptoms_bn": [
+      "হঠাৎ ১০৩-১০৪ ডিগ্রি ফারেনহাইটের তীব্র জ্বর",
+      "হাত, পা, কবজি ও গোড়ালির গিঁটে অসহ্য ব্যথা ও ফুলে যাওয়া",
+      "ব্যথার কারণে সোজা হয়ে দাঁড়াতে বা হাঁটতে না পারা",
+      "ত্বকে লালচে র‍্যাশ ও চুলকানি",
+      "জ্বর সেরে যাওয়ার পরও কয়েক মাস ধরে গিঁটে ব্যথা অব্যাহত থাকা"
+    ],
+    "symptoms_en": [
+      "Sudden high-grade fever (>103 deg F) with chills",
+      "Severe debilitating polyarthralgia and periarticular joint swelling",
+      "Stooped posture due to unbearable joint pain upon walking",
+      "Maculopapular rash on trunk and limbs",
+      "Post-viral chronic inflammatory arthritis persisting for months"
+    ],
+    "diagnostic_tests": [
+      "Chikungunya RT-PCR (Best in days 1-5 of fever)",
+      "Anti-Chikungunya IgM & IgG Antibody ELISA",
+      "Complete Blood Count (CBC showing lymphopenia)",
+      "Serum CRP and ESR (Markedly elevated)"
+    ],
+    "medicines": [
+      {
+        "generic": "Paracetamol",
+        "class": "Analgesic & Antipyretic",
+        "usage_bn": "জ্বর ও হালকা ব্যথায় ৫০০-১০০০ মিগ্রা প্রতি ৬-৮ ঘণ্টা পর পর (দৈনিক সর্বোচ্চ ৪ গ্রাম)",
+        "usage_en": "500-1000 mg every 6-8 hours for fever and acute pain control",
+        "top_brands": [
+          "Napa (Beximco)",
+          "Ace (Square)",
+          "Fast (Acme)",
+          "Reset (Incepta)"
+        ]
+      },
+      {
+        "generic": "Naproxen Sodium",
+        "class": "NSAID (After Dengue Ruled Out)",
+        "usage_bn": "ডেঙ্গু নেগেটিভ নিশ্চিত হওয়ার পর গিঁটের তীব্র ব্যথায় ২৫০-৫০০ মিগ্রা ভরাপেটে গ্যাস্ট্রিকের ওষুধসহ",
+        "usage_en": "250-500 mg BD with food and PPI strictly after excluding dengue fever",
+        "top_brands": [
+          "Napryn (Square)",
+          "Anaprox (Incepta)",
+          "Naprox (Beximco)"
+        ]
+      },
+      {
+        "generic": "Cold Compress Gel",
+        "class": "Topical Cryotherapy",
+        "usage_bn": "ফুলে যাওয়া গিঁটে দিনে ৩-৪ বার ঠান্ডা সেঁক দিলে দ্রুত ফোলা ও জ্বালাপোড়া কমে",
+        "usage_en": "Cold pack ice application for 15-20 minutes thrice daily to reduce synovitis",
+        "top_brands": [
+          "Ice Pack Gel",
+          "Cooling Pad"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "ব্যথা থাকা অবস্থায় পর্যাপ্ত বিশ্রাম নিন, কোনো ভারী কাজ করবেন না।",
+      "প্রচুর পানি, স্যালাইন, ডাবের পানি ও তরল খাদ্য গ্রহণ করুন।",
+      "ডেঙ্গু সম্পূর্ণ নাকচ হওয়ার আগে অ্যাসপিরিন বা ডাইক্লোফেনাক সেবন করবেন না।",
+      "বাসার আশপাশের পানি জমার পাত্র প্রতি সপ্তাহে অন্তত একবার পরিষ্কার করুন।"
+    ],
+    "lifestyle_diet_en": [
+      "Strict physical rest during the acute viremic and inflammatory phase.",
+      "Abundant hydration: electrolytes, coconut water, fresh fruit juices.",
+      "Avoid aspirin or non-selective NSAIDs until dengue hemorrhagic fever is definitively excluded.",
+      "Eliminate stagnant freshwater breeding grounds weekly (3-day rule)."
+    ],
+    "emergency_warning_bn": "বয়স্ক বা হৃদরোগীদের অতিরিক্ত দুর্বলতা, পানিশূন্যতা বা বিভ্রান্তি দেখা দিলে দ্রুত হাসপাতালে ভর্তি করান।",
+    "emergency_warning_en": "Elderly patients exhibiting profound dehydration, hemodynamic instability, or delirium need emergency hospital care."
+  },
+  {
+    "id": "kala-azar",
+    "name_en": "Kala-Azar (Visceral Leishmaniasis)",
+    "name_bn": "কালাজ্বর ও ভিসারাল লেইশম্যানিয়াসিস",
+    "icd10": "B55.0",
+    "system": "infectious",
+    "system_bn": "সংক্রামক ব্যাধি",
+    "organ": "Spleen, Liver & Bone Marrow",
+    "organ_icon": "🫀",
+    "severity": "Critical",
+    "overview_bn": "বেলেমাছির (Sandfly) কামড়ে ছড়ানো লেইশম্যানিয়া ডনোভানি পরজীবীঘটিত মারাত্মক ব্যাধি। চিকিৎসার অভাবে এতে প্লীহা ও যকৃৎ বিশাল আকার ধারণ করে এবং মৃত্যুঝুঁকি তৈরি হয়। ময়মনসিংহ, দিনাজপুর ও পাবনায় একসময় এর উচ্চ প্রকোপ ছিল।",
+    "overview_en": "A life-threatening protozoan infection caused by Leishmania donovani and transmitted by Phlebotomus sandflies, targeted for national elimination in Bangladesh.",
+    "causes_bn": [
+      "সংক্রমিত স্ত্রী বেলেমাছি বা স্যান্ডফ্লাইয়ের (Phlebotomus argentipes) কামড়",
+      "লেইশম্যানিয়া ডনোভানি পরজীবী রক্তকণিকা ও রেটিকুলোএন্ডোথেলিয়াল সিস্টেমে আক্রমণ",
+      "কাঁচা মাটির ঘর, স্যাঁতসেঁতে মেঝের ফাটলে বেলেমাছির বংশবিস্তার"
+    ],
+    "causes_en": [
+      "Bite of female Phlebotomus argentipes sandfly",
+      "Intracellular parasitism of macrophages by Leishmania donovani amastigotes",
+      "Mud houses, cracked earthen floors, and proximity to cattle sheds"
+    ],
+    "risk_factors_bn": [
+      "ময়মনসিংহ, ত্রিশাল, ভালুকা, দিনাজপুর ও উত্তরাঞ্চলের গ্রামীণ এলাকায় বসবাস",
+      "কাঁচা মাটির স্যাঁতসেঁতে ঘরে বাস করা",
+      "পশু-পাখির খামারের কাছাকাছি থাকা"
+    ],
+    "risk_factors_en": [
+      "Residing in endemic alluvial plains (Mymensingh, Dinajpur, Rajshahi belts)",
+      "Earthen cracked walls and mud flooring providing sandfly microhabitats",
+      "Malnutrition and immunosuppression"
+    ],
+    "symptoms_bn": [
+      "২ সপ্তাহের বেশি সময় ধরে অনিয়মিত ও অবিরাম জ্বর",
+      "পেটের বাঁপাশে বিশাল প্লীহা ফুলে ওঠা (Massive Splenomegaly)",
+      "চরম দুর্বলতা, ক্ষুধামান্দ্য ও দ্রুত ওজন হ্রাস",
+      "ত্বকের রঙ অস্বাভাবিক কালচে হয়ে যাওয়া (এ কারণেই নাম 'কালাজ্বর')",
+      "মারাত্মক রক্তস্বল্পতা ও দাঁতের মাড়ি বা নাক দিয়ে রক্তক্ষরণ"
+    ],
+    "symptoms_en": [
+      "Protracted irregular fever with double daily peaks",
+      "Massive progressive enlargement of the spleen (Splenomegaly)",
+      "Profound wasting, cachexia, and anorexia",
+      "Greyish-black hyperpigmentation of skin (hands, feet, abdomen)",
+      "Severe pancytopenia, bleeding tendency, and secondary bacterial infections"
+    ],
+    "diagnostic_tests": [
+      "rK39 Dipstick Rapid Diagnostic Test (Finger-prick blood)",
+      "Bone Marrow or Splenic Aspiration for LD Bodies (Gold standard)",
+      "Complete Blood Count (Pancytopenia: low RBC, low WBC, low Platelets)",
+      "Direct Agglutination Test (DAT)"
+    ],
+    "medicines": [
+      {
+        "generic": "Liposomal Amphotericin B",
+        "class": "Single-Dose Antileishmanial Polyene (First-line)",
+        "usage_bn": "জাতীয় কালাজ্বর নির্মূল কর্মসূচির অধীনে সরকারি হাসপাতালে একক ডোজ ১০ মিগ্রা/কেজি শিরার মাধ্যমে সম্পূর্ণ বিনামূল্যে প্রয়োগ",
+        "usage_en": "10 mg/kg single-dose IV infusion under national elimination protocol (curative >95%)",
+        "top_brands": [
+          "AmBisome (Gilead)",
+          "Fungisome (Life Care)"
+        ]
+      },
+      {
+        "generic": "Miltefosine",
+        "class": "Oral Antileishmanial Agent",
+        "usage_bn": "মুখে সেবনযোগ্য ওষুধ—দৈনিক ৫০-১০০ মিগ্রা ভরাপেটে টানা ২৮ দিন (গর্ভবতীদের ক্ষেত্রে সম্পূর্ণ নিষিদ্ধ)",
+        "usage_en": "50 mg capsules twice daily with meals for 28 days (strictly teratogenic)",
+        "top_brands": [
+          "Impavido (Knight)"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "কাঁচা ঘরের মাটির ফাটল সিমেন্ট বা মাটি দিয়ে নিয়মিত বন্ধ করুন।",
+      "ঘরের ভেতরে কীটনাশক স্প্রে (IRS) কার্যক্রমে স্বাস্থ্যকর্মীদের পূর্ণ সহযোগিতা করুন।",
+      "উচ্চ ক্যালোরি ও উচ্চ প্রোটিনযুক্ত খাবার বেশি করে খান।",
+      "জ্বর ২ সপ্তাহের বেশি স্থায়ী হলে সরকারি হাসপাতালে বিনামূল্যে rK39 পরীক্ষা করান।"
+    ],
+    "lifestyle_diet_en": [
+      "Plaster cracked earthen walls and floors with lime/cement to destroy sandfly breeding.",
+      "Support indoor residual spraying (IRS) with insecticides conducted by DGHS.",
+      "High-protein, micronutrient-dense nutritional rehabilitation.",
+      "Avail free rK39 testing at Upazila Health Complexes across Bangladesh."
+    ],
+    "emergency_warning_bn": "তীব্র রক্তক্ষরণ, চরম শ্বাসকষ্ট বা গুরুতর ব্যাকটেরিয়ার সংক্রমণ দেখা দিলে রোগীকে তাৎক্ষণিক টারশিয়ারি মেডিকেল কলেজ হাসপাতালে স্থানান্তর করুন।",
+    "emergency_warning_en": "Severe mucosal hemorrhage, agranulocytosis, or secondary septic shock requires immediate tertiary medical center admission."
+  },
+  {
+    "id": "arsenicosis",
+    "name_en": "Chronic Arsenicosis (Groundwater Poisoning)",
+    "name_bn": "আর্সেনিকোসিস ও ভূগর্ভস্থ আর্সেনিক বিষক্রিয়া",
+    "icd10": "T57.0",
+    "system": "dermatology",
+    "system_bn": "ত্বক ও চর্মরোগ",
+    "organ": "Skin, Liver & Blood Vessels",
+    "organ_icon": "🩹",
+    "severity": "High",
+    "overview_bn": "পানীয় জলে সহনশীল মাত্রার অতিরিক্ত (৫০ পিপিবি এর বেশি) আর্সেনিকযুক্ত নলকূপের পানি দীর্ঘদিন পান করার ফলে সৃষ্ট দীর্ঘমেয়াদী বিষক্রিয়া। ত্বক, ফুসফুস ও মূত্রথলির ক্যান্সারের অন্যতম প্রধান কারণ।",
+    "overview_en": "Chronic systemic toxicity resulting from prolonged ingestion of groundwater containing arsenic above national safety levels (>50 ppb), widely affecting rural Bangladesh.",
+    "causes_bn": [
+      "ভূগর্ভস্থ পানিতে অতিরিক্ত প্রাকৃতিক অজৈব আর্সেনিক মিশ্রিত থাকা",
+      "লাল চিহ্নিত বিপদজনক আর্সেনিকযুক্ত অগভীর নলকূপের পানি নিয়মিত পান ও রান্নায় ব্যবহার",
+      "শরীরে দীর্ঘদিন ধরে বিষাক্ত আর্সেনিক জমে থাকা (কেরাটিনসমৃদ্ধ ত্বক ও নখে জমা)"
+    ],
+    "causes_en": [
+      "Long-term ingestion of groundwater contaminated with natural inorganic arsenic",
+      "Using red-marked tube-wells for drinking and household cooking",
+      "Accumulation of trivalent/pentavalent arsenite in keratinized tissues"
+    ],
+    "risk_factors_bn": [
+      "চাঁদপুর, কুমিল্লা, ফরিদপুর, গোপালগঞ্জ, নোয়াখালী ও বাগেরহাটের মতো উচ্চ ঝুঁকিপূর্ণ জেলায় বসবাস",
+      "অগভীর নলকূপের পানি পরীক্ষা না করে পান করা",
+      "দরিদ্র ও অপুষ্টিতে ভোগা গ্রামীণ জনগোষ্ঠী"
+    ],
+    "risk_factors_en": [
+      "Residency in severely affected river basin districts (Chandpur, Noakhali, Gopalganj)",
+      "Drinking water from untested or red-painted tube-wells",
+      "Protein and micronutrient malnutrition enhancing toxicity"
+    ],
+    "symptoms_bn": [
+      "ত্বকে বৃষ্টির ফোঁটার মতো কালো ও সাদা ছোট ছোট দাগ (Raindrop melanosis)",
+      "হাতের তালু ও পায়ের তলায় চামড়া শক্ত হয়ে খসখসে গুটি হওয়া (Keratosis)",
+      "হাত ও পায়ের চামড়া ফেটে ঘা ও চুলকানি হওয়া",
+      "দীর্ঘমেয়াদে গ্যাংগ্রিন (Blackfoot disease) ও চর্ম ক্যান্সার (Bowen's disease)"
+    ],
+    "symptoms_en": [
+      "Raindrop macular hyperpigmentation interspersed with white depigmented spots",
+      "Rough, nodular palmoplantar keratosis on soles and palms",
+      "Fissuring, chronic ulceration, and paresthesias in extremities",
+      "Long-term risks: peripheral vascular gangrene (Blackfoot disease) and skin squamous cell cancer"
+    ],
+    "diagnostic_tests": [
+      "Water Arsenic Field Test Kit / Atomic Absorption Spectrophotometry",
+      "Nail and Hair Arsenic Concentration (> 1 mg/kg)",
+      "Spot Urinary Arsenic Level",
+      "Skin Lesion Biopsy & Histopathology"
+    ],
+    "medicines": [
+      {
+        "generic": "Antioxidant Multivitamins (Vit A, C, E, Selenium)",
+        "class": "Free-Radical Scavenging & Cellular Defense",
+        "usage_bn": "আর্সেনিকের বিষক্রিয়া প্রশমিত করতে দৈনিক ১টি ট্যাবলেট টানা কয়েক মাস",
+        "usage_en": "Daily formulation of Vitamin A (Beta-carotene), Vit C 500 mg, Vit E 400 IU, and Selenium 100 mcg",
+        "top_brands": [
+          "Selenium-ACE",
+          "Arovit (Square)",
+          "Nutrum-50 (Incepta)",
+          "E-Gel (Beximco)"
+        ]
+      },
+      {
+        "generic": "Salicylic Acid 5-10% in White Petrolatum",
+        "class": "Topical Keratolytic Ointment",
+        "usage_bn": "হাতের তালু ও পায়ের তলার শক্ত চামড়া নরম করতে রাতে শোয়ার পূর্বে মালিশ",
+        "usage_en": "Topical keratolytic applied nightly to soften hyperkeratotic plaques and fissures",
+        "top_brands": [
+          "Salicyl Ointment",
+          "Dermasal",
+          "Salicylic Acid 10%"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "সবচেয়ে প্রধান চিকিৎসা: আর্সেনিকযুক্ত নলকূপের পানি পান ও রান্নায় ব্যবহার তাৎক্ষণিক বন্ধ করুন।",
+      "সবুজ চিহ্নিত নিরাপদ নলকূপ, গভীর নলকূপ বা বৃষ্টির ফিল্টার করা পানি পান করুন।",
+      "প্রচুর শাকসবজি, ডিম, দুধ ও অ্যান্টিঅক্সিডেন্টসমৃদ্ধ খাবার খান।",
+      "হাতের ও পায়ের তালু সবসময় পরিষ্কার ও ময়েশ্চারাইজড রাখুন।"
+    ],
+    "lifestyle_diet_en": [
+      "Primary treatment: Immediately switch to arsenic-free green-marked or deep tube-well water.",
+      "Utilize rainwater harvesting and community arsenic-iron removal filters (AIRP).",
+      "High-protein and antioxidant-rich diet: green leafy vegetables, eggs, seasonal fruits.",
+      "Regular dermatological follow-up to detect malignant transformation early."
+    ],
+    "emergency_warning_bn": "ত্বকের কোনো ঘা যদি দীর্ঘদিন না শুকায়, রক্তক্ষরণ হয় বা কালো হয়ে পচে যায়, তবে তা ক্যান্সারের রূপ নিতে পারে—দ্রুত চর্মরোগ ও অনকোলজি বিশেষজ্ঞের পরামর্শ নিন।",
+    "emergency_warning_en": "Non-healing ulcerating keratotic nodules or non-pigmented fungating lesions indicate malignant skin cancer. Urgent oncological evaluation needed."
+  },
+  {
+    "id": "tinea-fungal-infection",
+    "name_en": "Dermatophytosis & Tinea (Ringworm)",
+    "name_bn": "দাদ ও ছত্রাকজনিত চর্মরোগ",
+    "icd10": "B35",
+    "system": "dermatology",
+    "system_bn": "ত্বক ও চর্মরোগ",
+    "organ": "Skin, Groin & Nails",
+    "organ_icon": "🩹",
+    "severity": "Low",
+    "overview_bn": "ডার্মাটোফাইট ছত্রাকঘটিত সাধারণ চর্মরোগ। বর্ষাকালে গরম ও ঘামের কারণে কুচকি (দাদ), মাথা ও শরীরের ভাঁজে বৃত্তাকার চুলকানিযুক্ত চাকা তৈরি হয়। স্টেরয়েড মলম ব্যবহারের কারণে বাংলাদেশে এটি জটিল আকার ধারণ করছে।",
+    "overview_en": "Superficial fungal infection of keratinized tissue caused by dermatophytes (Trichophyton, Microsporum), producing pruritic annular lesions with active scaly borders.",
+    "causes_bn": [
+      "ট্রাইকোফাইটন ও মাইক্রোস্পোরাম ছত্রাকের সংক্রমণ",
+      "অতিরিক্ত ঘাম ও দীর্ঘসময় ভেজা অন্তর্বাস বা স্যাঁতসেঁতে কাপড় পরা",
+      "আক্রান্ত ব্যক্তির তোয়ালে, চিরুনি বা পোশাক ব্যবহার",
+      "অনিয়ন্ত্রিতভাবে স্টেরয়েডযুক্ত মিশ্র মলম (ডার্মোমিক্স, পেভিসন ইত্যাদি) ব্যবহার"
+    ],
+    "causes_en": [
+      "Trichophyton rubrum and T. mentagrophytes dermatophyte colonization",
+      "Maceration from excess perspiration, synthetic unbreathable tight clothes",
+      "Fomite transmission via towels, innerwear, bedsheets, razors",
+      "Widespread misuse of over-the-counter topical steroid combinations"
+    ],
+    "risk_factors_bn": [
+      "বাংলাদেশের উষ্ণ ও আর্দ্র আবহাওয়া",
+      "ডায়াবেটিস ও স্থূলতা",
+      "নিয়মিত গোসল না করা বা ভেজা শরীর ভালোভাবে না মোছা"
+    ],
+    "risk_factors_en": [
+      "Tropical humid monsoon environment in Bangladesh",
+      "Diabetes mellitus, obesity, immune suppression",
+      "Inadequate drying of skin folds after bathing"
+    ],
+    "symptoms_bn": [
+      "গোলাকার আংটির মতো চাকা যার কিনারাগুলো লালচে, উঁচু ও আঁশযুক্ত",
+      "তীব্র চুলকানি ও ত্বক জ্বালাপোড়া করা",
+      "কুচকি, ঊরু, বুক, পিঠ ও পায়ের আঙুলের ফাঁকে লাল ফুসকুড়ি",
+      "আক্রান্ত স্থানের ত্বক কালচে হয়ে যাওয়া"
+    ],
+    "symptoms_en": [
+      "Annular ring-shaped erythematous plaques with elevated active scaly borders",
+      "Intense burning pruritus exacerbated by sweating",
+      "Maceration in interdigital spaces and groin (Tinea cruris / pedis)",
+      "Post-inflammatory dark hyperpigmentation"
+    ],
+    "diagnostic_tests": [
+      "Potassium Hydroxide (KOH 10-20%) Mount Microscopy",
+      "Wood's Lamp Ultraviolet Examination",
+      "Fungal Culture on Sabouraud Dextrose Agar (SDA)",
+      "Dermoscopy of cutaneous border"
+    ],
+    "medicines": [
+      {
+        "generic": "Terbinafine Hydrochloride",
+        "class": "Allylamine Antifungal (Topical & Oral)",
+        "usage_bn": "মলম: দিনে ১-২ বার আক্রান্ত স্থানের চেয়ে ২ সেমি বাইরে পর্যন্ত লাগাতে হবে টানা ২-৪ সপ্তাহ; মুখে: ২৫০ মিগ্রা দৈনিক ১টি",
+        "usage_en": "Topical cream 1% applied BD extending 2 cm beyond border for 2-4 weeks; 250 mg oral OD for extensive cases",
+        "top_brands": [
+          "Terbifin (Square)",
+          "Tinasil (Incepta)",
+          "Terbex (Beximco)",
+          "Lamisil (Novartis)"
+        ]
+      },
+      {
+        "generic": "Itraconazole",
+        "class": "Broad-Spectrum Oral Triazole Antifungal",
+        "usage_bn": "পুরনো ও জটিল দাদে দৈনিক ১০০-২০০ মিগ্রা ভরাপেটে টানা ১৫-২৮ দিন",
+        "usage_en": "100-200 mg once or twice daily with high-fat meals for refractory dermatophytosis",
+        "top_brands": [
+          "Itra (Incepta)",
+          "Itracon (Square)",
+          "Sporanox (Janssen)",
+          "Micoral (Beximco)"
+        ]
+      },
+      {
+        "generic": "Clotrimazole / Luliconazole Cream",
+        "class": "Topical Imidazole Antifungal",
+        "usage_bn": "আক্রান্ত স্থানে পাতলা প্রলেপ দিয়ে দিনে ২ বার ব্যবহার করতে হবে",
+        "usage_en": "Apply thin layer to affected area twice daily for 2 weeks",
+        "top_brands": [
+          "Luliderm (Square)",
+          "Candid (Glenmark)",
+          "Lulifast (Incepta)",
+          "Cloben (Beximco)"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "কখনোই ফার্মেসি থেকে স্টেরয়েড বা মিশ্র মলম (Betamethasone/Clobetasol) কিনে দাদে লাগাবেন না।",
+      "সুতি ঢিলেঢালা পোশাক ও অন্তর্বাস পরুন এবং প্রতিদিন রোদে শুকানো পরিষ্কার অন্তর্বাস পরিবর্তন করুন।",
+      "গোসলের পর শরীরের প্রতিটি ভাঁজ শুকনো তোয়ালে দিয়ে ভালোভাবে মুছে সম্পূর্ণ শুকিয়ে নিন।",
+      "চুলকানি সেরে যাওয়ার পরও চিকিৎসকের পরামর্শমতো অন্তত ১ সপ্তাহ মলম লাগানো চালিয়ে যান।"
+    ],
+    "lifestyle_diet_en": [
+      "Strictly avoid OTC steroid combination creams (causes Tinea incognito and recurrence).",
+      "Wear loose 100% cotton clothing and change innerwear daily after sun-drying.",
+      "Thoroughly dry intertriginous skin folds with clean towels after every shower.",
+      "Continue antifungal application for 1-2 weeks past complete visual clearance."
+    ],
+    "emergency_warning_bn": "ত্বক লাল হয়ে ফুলে ভীষণ ব্যথা হলে ও পুঁজ বের হলে দ্বিতীয় পর্যায়ের ব্যাকটেরিয়ার সংক্রমণ হয়েছে—অবিলম্বে অ্যান্টিবায়োটিকের জন্য ডাক্তার দেখান।",
+    "emergency_warning_en": "Severe swelling, radiating cellulitis, or purulent drainage requires immediate systemic antibacterial treatment."
+  },
+  {
+    "id": "intestinal-worms",
+    "name_en": "Helminthiasis & Intestinal Worms",
+    "name_bn": "কৃমি সংক্রমণ (গোলকৃমি ও বক্রকৃমি)",
+    "icd10": "B82",
+    "system": "gastrointestinal",
+    "system_bn": "পরিপাকতন্ত্র ও পেট",
+    "organ": "Intestinal Tract",
+    "organ_icon": "🥣",
+    "severity": "Low",
+    "overview_bn": "অন্ত্রে পরজীবী কৃমির (যেমন গোলকৃমি, বক্রকৃমি, সুতাকৃমি) সংক্রমণ। বাংলাদেশের শিশুদের অপুষ্টি, রক্তস্বল্পতা ও শারীরিক বৃদ্ধি বাধাগ্রস্ত হওয়ার অন্যতম কারণ। জাতীয় কৃমি নিয়ন্ত্রণ সপ্তাহ প্রতি বছর এ কারণেই পরিচালিত হয়।",
+    "overview_en": "Soil-transmitted helminth (STH) infestations including Ascaris, Hookworm, and Trichuris, targeted by nationwide biannual school deworming campaigns in Bangladesh.",
+    "causes_bn": [
+      "মাটিতে খালি পায়ে চলাফেরা (হুকওয়ার্মের লার্ভা ত্বকের ভেতর দিয়ে ঢোকে)",
+      "খাওয়ার আগে সাবান দিয়ে হাত না ধোয়া ও অপরিচ্ছন্ন নখ",
+      "অসিদ্ধ শাকসবজি ও অপরিশোধিত পানি পান",
+      "উন্মুক্ত স্থানে মলত্যাগ ও অস্বাস্থ্যকর শৌচাগার"
+    ],
+    "causes_en": [
+      "Percutaneous penetration of hookworm larvae while walking barefoot",
+      "Fecal-oral ingestion of Ascaris/Trichuris eggs via unwashed hands and soil",
+      "Consuming unwashed vegetables and raw irrigation water",
+      "Inadequate sanitation and unpaved latrines"
+    ],
+    "risk_factors_bn": [
+      "স্কুলগামী শিশু ও কিশোর-কিশোরী",
+      "গ্রামীণ কৃষিশ্রমিক ও খালি পায়ে চলাচলকারী ব্যক্তি",
+      "পরিবারে ৬ মাস অন্তর কৃমির ওষুধ না খাওয়ার অভ্যাস"
+    ],
+    "risk_factors_en": [
+      "Primary school children playing in rural soil",
+      "Agricultural laborers and gardeners without footwear",
+      "Household failure to undergo regular biannual deworming"
+    ],
+    "symptoms_bn": [
+      "নাভির চারপাশে ও পেটে ঘন ঘন হালকা বা মোচড়ানো ব্যথা",
+      "ক্ষুধামান্দ্য বা অতিরিক্ত খাওয়া সত্ত্বেও ওজন না বাড়া",
+      "মলদ্বারের মুখে তীব্র চুলকানি (বিশেষ করে রাতে সুতাকৃমির ক্ষেত্রে)",
+      "রক্তস্বল্পতা ও শারীরিক দুর্বলতা",
+      "মুখে অতিরিক্ত লালা ঝরা ও ঘুমের মধ্যে দাঁত কিড়মিড় করা"
+    ],
+    "symptoms_en": [
+      "Recurrent periumbilical colicky abdominal discomfort",
+      "Impaired growth, failure to thrive, and poor cognitive performance",
+      "Pruritus ani (intense nocturnal perianal itching from Enterobius pinworms)",
+      "Chronic microcytic hypochromic anemia (hookworm)",
+      "Excessive ptyalism and nocturnal bruxism (teeth grinding)"
+    ],
+    "diagnostic_tests": [
+      "Stool Routine Examination (R/M/E for Ova, Cysts, and Parasites)",
+      "Scotch Adhesive Tape Test (For Pinworm eggs)",
+      "Complete Blood Count (Elevated absolute eosinophil count - Eosinophilia)"
+    ],
+    "medicines": [
+      {
+        "generic": "Albendazole",
+        "class": "Broad-Spectrum Benzimidazole Anthelmintic",
+        "usage_bn": "২ বছর বা তদূর্ধ্বদের জন্য ৪০০ মিগ্রা ১টি ট্যাবলেট একক মাত্রায় চিবিয়ে খেতে হবে (৬ মাস পর আবার)",
+        "usage_en": "400 mg single chewable tablet for adults and children > 2 years (200 mg for age 1-2)",
+        "top_brands": [
+          "Almex (Square)",
+          "Alben (Incepta)",
+          "Solas (Beximco)",
+          "Albend (Renata)"
+        ]
+      },
+      {
+        "generic": "Mebendazole",
+        "class": "Anthelmintic Agent",
+        "usage_bn": "১০০ মিগ্রা ট্যাবলেট দিনে ২ বার করে টানা ৩ দিন চিবিয়ে সেব্য",
+        "usage_en": "100 mg twice daily for 3 consecutive days for heavy mixed worm loads",
+        "top_brands": [
+          "Vermox (Janssen)",
+          "Meben (Square)",
+          "Mebex (Incepta)"
+        ]
+      },
+      {
+        "generic": "Pyrantel Pamoate",
+        "class": "Depolarizing Neuromuscular Blocker",
+        "usage_bn": "সুতাকৃমির চিকিৎসায় ১১ মিগ্রা/কেজি একক মাত্রায়, ২ সপ্তাহ পর দ্বিতীয় ডোজ",
+        "usage_en": "11 mg/kg single dose, repeated in 2 weeks for persistent pinworms",
+        "top_brands": [
+          "Melphin (Square)",
+          "Antiworm"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "পরিবারের সকল সদস্যকে প্রতি ৬ মাস পরপর একসাথে কৃমির ওষুধ খেতে হবে।",
+      "খাওয়ার আগে এবং টয়লেটের পর সাবান দিয়ে ভালো করে হাত ধোয়ার অভ্যাস গড়ে তুলুন।",
+      "শিশুদের হাতের নখ নিয়মিত কেটে ছোট রাখুন যাতে নখের নিচে ডিম না জমে।",
+      "বাড়ির বাইরে সব সময় জুতো বা স্যান্ডেল পরে হাঁটার অভ্যাস করুন।"
+    ],
+    "lifestyle_diet_en": [
+      "Administer mass deworming to all family members concurrently every 6 months.",
+      "Teach rigorous handwashing with soap before every meal and after toilet visits.",
+      "Keep children's fingernails clipped short and clean to eliminate ovum harbor.",
+      "Always wear shoes/slippers outdoors in rural soil."
+    ],
+    "emergency_warning_bn": "অতিরিক্ত কৃমির কারণে শিশুর পেট ফুলে শক্ত হয়ে গেলে, বমি হলে বা মল-বায়ু চলাচল বন্ধ হলে (Intestinal Obstruction) তাৎক্ষণিক শিশু সার্জারি বিভাগে নিন।",
+    "emergency_warning_en": "Acute bowel obstruction from an Ascaris bolus presenting with abdominal distension and bilious vomiting requires urgent surgical intervention."
+  },
+  {
+    "id": "h-pylori-gastritis",
+    "name_en": "Helicobacter Pylori Gastritis",
+    "name_bn": "এইচ. পাইলোরি পাকস্থলী সংক্রমণ ও তীব্র গ্যাস্ট্রিক",
+    "icd10": "K29.5",
+    "system": "gastrointestinal",
+    "system_bn": "পরিপাকতন্ত্র ও পেট",
+    "organ": "Stomach Lining",
+    "organ_icon": "🥣",
+    "severity": "Medium",
+    "overview_bn": "পাকস্থলীর শ্লৈষ্মিক ঝিল্লিতে হেলিকোব্যাক্টার পাইলোরি ব্যাক্টেরিয়ার দীর্ঘস্থায়ী সংক্রমণ। বাংলাদেশের সাধারণ গ্যাস্ট্রিক, পেপটিক আলসার ও দীর্ঘমেয়াদী এসিডিটির অন্যতম প্রধান অনুঘটক।",
+    "overview_en": "Chronic bacterial infection of the gastric mucosa by Helicobacter pylori, highly endemic in Bangladesh and the major cause of recurrent peptic ulcers and gastric MALToma.",
+    "causes_bn": [
+      "দূষিত খাবার ও পানির মাধ্যমে এইচ. পাইলোরি ব্যাক্টেরিয়া মুখে প্রবেশ",
+      "পাকস্থলীর অ্যাসিড প্রতিরোধী ইউরিয়েজ এনজাইমের সাহায্যে ব্যাক্টেরিয়া প্রাচীরে টিকে থাকা",
+      "একই পাত্রে ভাগাভাগি করে খাওয়া ও অস্বাস্থ্যকর পানীয় জল"
+    ],
+    "causes_en": [
+      "Fecal-oral or oral-oral transmission via contaminated food and water supplies",
+      "Bacterial urease neutralizing gastric acid to colonize epithelial lining",
+      "Shared dining utensils in crowded households"
+    ],
+    "risk_factors_bn": [
+      "অনিরাপদ রাস্তার খাবার ও ফুটানো ছাড়া পানি পান",
+      "দীর্ঘদিন ধরে পেটের গ্যাস বা বুকজ্বালার সমস্যায় ভোগা",
+      "ধূমপান ও অতিরিক্ত মসলাযুক্ত খাবার"
+    ],
+    "risk_factors_en": [
+      "Consumption of untreated municipal/well water in Bangladesh",
+      "Chronic non-responsive dyspeptic symptoms despite standard PPI therapy",
+      "Tobacco smoking promoting mucosal vulnerability"
+    ],
+    "symptoms_bn": [
+      "পেটের ওপরের মাঝখানে জ্বালাপোড়া বা কামড়ানো ব্যথা (খালি পেটে বাড়ে)",
+      "খাওয়ার পর পেট অতিরিক্ত ফাঁপা ও ভারী বোধ হওয়া",
+      "ঘন ঘন টক ঢেঁকুর ওঠা ও বমি ভাব",
+      "অল্প খাবার খেলেই পেট ভরে গেছে মনে হওয়া (Early satiety)"
+    ],
+    "symptoms_en": [
+      "Gnawing or burning epigastric pain, worse on empty stomach or at night",
+      "Postprandial bloating, early satiety, and belching",
+      "Nausea, sour regurgitation, and episodic vomiting",
+      "Unintended weight loss and iron deficiency anemia"
+    ],
+    "diagnostic_tests": [
+      "Stool H. Pylori Antigen Test (HpSA - High sensitivity non-invasive)",
+      "14C/13C Urea Breath Test (UBT - Gold Standard for active infection & cure)",
+      "Upper GI Endoscopy with Rapid Urease Test (RUT / CLO test)",
+      "Gastric Mucosal Histopathology"
+    ],
+    "medicines": [
+      {
+        "generic": "Standard Triple Therapy Pack (Esomeprazole + Clarithromycin + Amoxicillin)",
+        "class": "14-Day Eradication Regimen",
+        "usage_bn": "ইসোমিপ্রাজল ৪০ মিগ্রা + ক্ল্যারিথ্রোমাইসিন ৫০০ মিগ্রা + এমোক্সিসিলিন ১০০০ মিগ্রা দিনে ২ বার করে টানা ১৪ দিন",
+        "usage_en": "Standard 14-day triple therapy: PPI 40 mg BD + Clarithromycin 500 mg BD + Amoxicillin 1 g BD",
+        "top_brands": [
+          "Pylotrip (Square)",
+          "Triokit (Incepta)",
+          "HP Kit (Beximco)",
+          "Helico-Kit (Renata)"
+        ]
+      },
+      {
+        "generic": "Bismuth Subsalicylate Quadruple Pack",
+        "class": "Second-Line Bismuth Quadruple Regimen",
+        "usage_bn": "ক্ল্যারিথ্রোমাইসিন রেজিস্ট্যান্স হলে বিসমাথ + মেট্রোনিডাজল + টেট্রাসাইক্লিন + পিপিআই টানা ১৪ দিন",
+        "usage_en": "Bismuth subsalicylate + Metronidazole + Tetracycline + PPI for 14 days in resistant cases",
+        "top_brands": [
+          "De-Nol",
+          "Bismo (Incepta)",
+          "Pepto-Bismol"
+        ]
+      }
+    ],
+    "lifestyle_diet_bn": [
+      "ওষুধের ১৪ দিনের পুরো কোর্স শতভাগ নিয়ম মেনে শেষ করুন, মাঝপথে কখনো বন্ধ করবেন না।",
+      "পানি সব সময় ফুটিয়ে পান করুন এবং বাইরের খোলা খাবার ও মিষ্টির দোকানে অপরিচ্ছন্ন পানি বর্জন করুন।",
+      "অতিরিক্ত তেল, ঝাল, ভাজাভুজি ও ক্যাফেইনযুক্ত পানীয় পরিহার করুন।",
+      "একবারে বেশি না খেয়ে অল্প অল্প করে দিনে কয়েকবার আহার গ্রহণ করুন।"
+    ],
+    "lifestyle_diet_en": [
+      "Adhere strictly to the complete 14-day antibiotic regimen to prevent drug resistance.",
+      "Strict water purification by boiling or UV filtration; avoid street-vended drinks.",
+      "Limit spicy, oily fried foods, tobacco, and high caffeine consumption.",
+      "Confirm eradication using Stool Antigen or Urea Breath Test 4-6 weeks after therapy."
+    ],
+    "emergency_warning_bn": "কালো আলকাতরার মতো পায়খানা হলে বা কফির গুঁড়োর মতো বমি হলে আলসার থেকে রক্তপাত শুরু হয়েছে—তাৎক্ষণিক হাসপাতালের ইমার্জেন্সিতে যান।",
+    "emergency_warning_en": "Coffee-ground vomiting or pitch-black tarry stools (melena) indicates upper GI bleeding. Rush to hospital emergency immediately."
   }
 ];
