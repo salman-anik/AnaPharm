@@ -5,12 +5,11 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Model3DView from '../components/Model3DView';
 import OrganDetailModal from './OrganDetailModal';
-import { ANATOMY_DATA, SYSTEMS } from '../data/anatomyData';
+import { ANATOMY_DATA } from '../data/anatomyData';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { getOrganIcon } from '../components/HealthIcon';
 
@@ -22,6 +21,7 @@ export default function ModelScreen({
   xrayMode,
   setXrayMode,
   theme = 'dark',
+  setTheme,
   fontSize = 'medium',
   language = 'bn',
 }) {
@@ -60,7 +60,7 @@ export default function ModelScreen({
       edges={['top']}
       style={[styles.container, { backgroundColor: t.bg }]}
     >
-      {/* 3D Viewport Area - Fullscreen immersion, no top bar */}
+      {/* 3D Viewport Area - Fullscreen immersion */}
       <View style={styles.viewport}>
         <Model3DView
           onSelectOrgan={handleSelectOrgan}
@@ -107,6 +107,34 @@ export default function ModelScreen({
 
         {/* Floating Viewport Action FABs */}
         <View style={styles.fabColumn}>
+          {/* 1-Tap Direct Theme Switcher (Dark / Light) */}
+          <TouchableOpacity
+            style={[
+              styles.actionFab,
+              {
+                backgroundColor: t.glassBg,
+                borderColor: t.glassBorder,
+                shadowColor: t.shadowColor,
+              },
+            ]}
+            onPress={() => {
+              if (setTheme) {
+                setTheme(theme === 'dark' ? 'light' : 'dark');
+              }
+            }}
+            activeOpacity={0.8}
+          >
+            <HealthIcon
+              name={theme === 'dark' ? 'bodyOutline' : 'bodyFilled'}
+              size={20}
+              color={t.text}
+            />
+            <Text style={[styles.fabLabel, { color: t.text }]}>
+              {theme === 'dark' ? 'Light' : 'Dark'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Auto Rotate 360 */}
           <TouchableOpacity
             style={[
               styles.actionFab,
@@ -125,6 +153,7 @@ export default function ModelScreen({
             </Text>
           </TouchableOpacity>
 
+          {/* X-Ray Mode */}
           <TouchableOpacity
             style={[
               styles.actionFab,
@@ -143,6 +172,7 @@ export default function ModelScreen({
             </Text>
           </TouchableOpacity>
 
+          {/* Reset Camera */}
           <TouchableOpacity
             style={[
               styles.actionFab,
@@ -274,9 +304,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  vitalIcon: {
-    fontSize: 16,
-  },
   vitalValue: {
     fontSize: 15,
     fontWeight: '800',
@@ -308,9 +335,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 6,
-  },
-  fabIcon: {
-    fontSize: 18,
   },
   fabLabel: {
     fontSize: 9,
@@ -347,9 +371,6 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     borderRadius: 14,
     borderWidth: 1,
-  },
-  organPillIcon: {
-    fontSize: 16,
   },
   organPillName: {
     fontSize: 12,

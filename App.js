@@ -127,11 +127,12 @@ export default function App() {
         xrayMode={xrayMode}
         setXrayMode={setXrayMode}
         theme={theme}
+        setTheme={setTheme}
         fontSize={fontSize}
         language={language}
       />
     ),
-    [bpm, respRate, autoRotate, setAutoRotate, xrayMode, setXrayMode, theme, fontSize, language]
+    [bpm, respRate, autoRotate, setAutoRotate, xrayMode, setXrayMode, theme, setTheme, fontSize, language]
   );
 
   const systemsScreenComponent = useMemo(

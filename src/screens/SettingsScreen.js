@@ -833,6 +833,10 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '700',
   },
+  themeOptionSub: {
+    fontSize: 10,
+    marginTop: 2,
+  },
   fontSizeRow: {
     flexDirection: 'row',
     borderRadius: 14,

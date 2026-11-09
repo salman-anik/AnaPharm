@@ -311,74 +311,34 @@ export default function MedicineScreen({
     return getSemanticMatches(deferredSearchQuery);
   }, [deferredSearchQuery]);
 
-  // WHILE TYPING: Intelligent Search Suggestions (Medicines, Symptoms, Pharma)
+  // WHILE TYPING: Search Suggestions - ONLY Pharma Company names as requested
   const searchSuggestions = useMemo(() => {
     try {
       const q = (searchQuery || '').toLowerCase().trim();
-      if (q.length < 2) return [];
+      if (q.length < 1) return [];
 
       const suggestions = [];
 
-      // 1. Symptom / Concept Suggestions
-      const currentSemantic = getSemanticMatches(q);
-      if (currentSemantic && Array.isArray(currentSemantic.concepts)) {
-        currentSemantic.concepts.slice(0, 2).forEach((c, idx) => {
-          if (c) {
-            suggestions.push({
-              key: `concept_${c.id || idx}_${idx}`,
-              type: 'concept',
-              label: String(globalLang === 'bn' ? (c.label_bn || c.label_en) : c.label_en),
-              query: c.label_en || '',
-              iconName: 'medicines',
-            });
-          }
-        });
-      }
-
-      // 2. Matching Medicine Brands & Generics
-      for (let i = 0; i < INDEXED_MEDICINES.length; i++) {
-        const med = INDEXED_MEDICINES[i];
-        if (!med) continue;
-        const name = (med.name_en || '').toLowerCase();
-        const gen = (med.generic || '').toLowerCase();
-        const brands = (med.brands || '').toLowerCase();
-
-        if (name.includes(q) || gen.includes(q) || (brands && brands.includes(q))) {
-          let label = med.name_en || 'Medicine';
-          if (brands && brands.includes(q) && typeof med.brands === 'string') {
-            const matchedBrand = med.brands
-              .split(',')
-              .map((b) => b.trim())
-              .find((b) => b.toLowerCase().includes(q));
-            if (matchedBrand) {
-              label = `${matchedBrand} (${med.name_en})`;
-            }
-          }
-          suggestions.push({
-            key: `med_${med.id || i}_${i}`,
-            type: 'medicine',
-            label: String(label),
-            med,
-            iconName: 'pills',
-          });
-          if (suggestions.length >= 4) break;
-        }
-      }
-
-      // 3. Matching Pharma Companies
+      // Matching Pharma Companies ONLY
       const matchedComps = MEDICINE_COMPANIES.filter((comp) => {
-        if (!comp || comp.id === 'all' || comp.id === selectedCompany) return false;
+        if (!comp || comp.id === 'all') return false;
         const s = (comp.short_name || '').toLowerCase();
         const f = (comp.name_en || '').toLowerCase();
-        return s.includes(q) || f.includes(q);
-      }).slice(0, 2);
+        const b = (comp.name_bn || '').toLowerCase();
+        const sb = (comp.short_name_bn || '').toLowerCase();
+        return s.includes(q) || f.includes(q) || b.includes(q) || sb.includes(q);
+      }).slice(0, 8);
 
       matchedComps.forEach((comp, cIdx) => {
         suggestions.push({
           key: `comp_${comp.id || cIdx}_${cIdx}`,
           type: 'company',
           id: comp.id,
-          label: String(comp.short_name || comp.name_en),
+          label: String(
+            globalLang === 'bn'
+              ? (comp.short_name_bn || comp.name_bn || comp.short_name || comp.name_en)
+              : (comp.short_name || comp.name_en)
+          ),
           iconName: 'pharmacy',
         });
       });
@@ -387,7 +347,7 @@ export default function MedicineScreen({
     } catch (e) {
       return [];
     }
-  }, [globalLang, searchQuery, selectedCompany]);
+  }, [globalLang, searchQuery]);
 
   const handleSelectSuggestion = useCallback(
     (sug) => {
@@ -659,7 +619,7 @@ export default function MedicineScreen({
         {searchSuggestions.length > 0 && (
           <View style={styles.matchingCompanyBar}>
             <Text style={[styles.matchingCompanyHint, { color: t.textMuted, fontSize: t.fs(11) }]}>
-              {globalLang === 'bn' ? 'পরামর্শ:' : 'Suggestions:'}
+              {globalLang === 'bn' ? 'ফার্মা কোম্পানি:' : 'Pharma:'}
             </Text>
             <ScrollView
               style={styles.suggestionScrollView}

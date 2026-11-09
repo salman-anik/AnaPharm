@@ -5,7 +5,6 @@ export const THEMES = {
   dark: {
     id: 'dark',
     label: 'Dark Mode',
-    subLabel: 'Pure OLED Black & Minimal Glass',
     icon: '🌙',
     isDark: true,
     bg: '#000000',
@@ -34,12 +33,15 @@ export const THEMES = {
     shadowColor: '#000000',
     statusBarStyle: 'light-content',
     modelBgHex: '0x000000',
+    modelBgCss: '#000000',
     modelAmbIntensity: 0.95,
+    modelToneExposure: 1.15,
+    modelRimColor: '0x38bdf8',
+    modelGridColor: '0x1e293b',
   },
   light: {
     id: 'light',
     label: 'Light Mode',
-    subLabel: 'Crisp Daylight Clean',
     icon: '☀️',
     isDark: false,
     bg: '#ffffff',
@@ -68,7 +70,11 @@ export const THEMES = {
     shadowColor: '#a1a1aa',
     statusBarStyle: 'dark-content',
     modelBgHex: '0xe4e4e7',
-    modelAmbIntensity: 0.80,
+    modelBgCss: '#e4e4e7',
+    modelAmbIntensity: 0.85,
+    modelToneExposure: 1.05,
+    modelRimColor: '0x0284c7',
+    modelGridColor: '0xcfd8dc',
   },
 };
 

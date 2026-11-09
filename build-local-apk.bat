@@ -30,11 +30,12 @@ if %BUILD_STATUS% equ 0 (
     echo [4/4] Exporting signed release APK to AnaPharm\apk...
     if not exist "P:\apk" mkdir "P:\apk"
     if exist "P:\android\app\build\outputs\apk\release\app-release.apk" (
+        copy /y "P:\android\app\build\outputs\apk\release\app-release.apk" "P:\apk\AnaPharm-v3.0.0.apk" >nul
         copy /y "P:\android\app\build\outputs\apk\release\app-release.apk" "P:\apk\AnaPharm-v1.0.0.apk" >nul
         echo.
         echo ========================================================
         echo [SUCCESS] Official Signed Release APK created successfully!
-        echo Output Location: %~dp0apk\AnaPharm-v1.0.0.apk
+        echo Output Location: %~dp0apk\AnaPharm-v3.0.0.apk
         echo Security Doc:    %~dp0apk\INSTALLATION_SECURITY_GUIDE.md
         echo ========================================================
     ) else (
