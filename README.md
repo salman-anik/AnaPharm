@@ -14,7 +14,9 @@
   <img src="https://img.shields.io/badge/Platform-Android-brightgreen?style=for-the-badge&logo=android" />
   <img src="https://img.shields.io/badge/React_Native-0.88.1-blue?style=for-the-badge&logo=react" />
   <img src="https://img.shields.io/badge/Expo-58-black?style=for-the-badge&logo=expo" />
-  <img src="https://img.shields.io/badge/Version-2.5.0-blueviolet?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Version-1.0.0-blueviolet?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Release-v3.5-teal?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Typography-Hind_Siliguri-purple?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Language-Bangla%20%7C%20English-orange?style=for-the-badge" />
 </p>
 
@@ -43,8 +45,11 @@ Instead of using separate applications for anatomy exploration and medicine refe
 - Human body systems and disease information.
 - Extensive pharmaceutical database.
 - Bangladesh commercial medicine brand database.
-- Bangla and English language support.
-- Dark mode and light mode.
+- Bangla and English language support with Hind Siliguri typography.
+- Endemic and common clinical diseases of Bangladesh with brand treatments.
+- Opening screen with instant Medicine & Brand search and English Pharma suggestions.
+- Light mode default with persistent settings across app restarts.
+- Standalone offline Android Release APK.
 
 ---
 
@@ -221,7 +226,11 @@ AnaPharm/
 
 ## Android APK
 
-You can find available Android builds in the repository's Releases section.
+Official standalone offline Android Release APK is available directly in the repository:
+
+- **APK File:** [`apk/AnaPharm-v1.0.0.apk`](apk/AnaPharm-v1.0.0.apk) (~85.4 MB)
+- **Version:** 1.0.0 (Release 3.5)
+- **Engine:** Hermes Bytecode + React Native 0.88 + Expo 58
 
 **Download:** [AnaPharm Releases](https://github.com/salman-anik/AnaPharm/releases)
 
