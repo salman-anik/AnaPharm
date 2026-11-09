@@ -9,6 +9,7 @@ import {
   FlatList,
   Image,
   Animated,
+  Easing,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MEDICINE_DATABASE, MEDICINE_CATEGORIES } from '../data/medicineData';
@@ -544,7 +545,8 @@ export default function MedicineScreen({
       isHeaderHidden.current = false;
       Animated.timing(headerY, {
         toValue: 0,
-        duration: 200,
+        duration: 350,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
     }
@@ -555,7 +557,8 @@ export default function MedicineScreen({
       isHeaderHidden.current = true;
       Animated.timing(headerY, {
         toValue: -headerHeight,
-        duration: 220,
+        duration: 420,
+        easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
       }).start();
     }
@@ -566,11 +569,11 @@ export default function MedicineScreen({
       const currentY = event.nativeEvent.contentOffset.y;
       const diff = currentY - lastScrollY.current;
 
-      if (currentY <= 15) {
+      if (currentY <= 30) {
         showHeader();
-      } else if (diff > 10 && currentY > 40) {
+      } else if (diff > 25 && currentY > 120) {
         hideHeader();
-      } else if (diff < -10) {
+      } else if (diff < -20) {
         showHeader();
       }
 
@@ -657,8 +660,9 @@ export default function MedicineScreen({
         style={[
           styles.topHeader,
           {
-            backgroundColor: t.headerBg,
-            borderBottomColor: t.glassBorder,
+            backgroundColor: t.isDark ? '#09090b' : '#ffffff',
+            borderBottomColor: t.isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
+            borderTopColor: t.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
             transform: [{ translateY: headerY }],
           },
         ]}
@@ -943,8 +947,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 8,
-    borderBottomWidth: 1,
-    elevation: 6,
+    borderBottomWidth: 1.5,
+    borderTopWidth: 1,
+    elevation: 8,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
   },
   searchRowWithLang: {
     flexDirection: 'row',

@@ -176,7 +176,7 @@ export default function App() {
       <View style={[styles.appContainer, { backgroundColor: t.bg }]}>
         <StatusBar
           barStyle={t.statusBarStyle}
-          backgroundColor={t.headerBg}
+          backgroundColor={t.isDark ? '#000000' : '#ffffff'}
           translucent={false}
         />
 
