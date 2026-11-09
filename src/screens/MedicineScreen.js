@@ -23,7 +23,6 @@ import HealthIcon, { HEALTH_ICONS, getMedicineCategoryIcon } from '../components
 export { MEDICINE_COMPANIES };
 
 // Pre-index the entire medicine database ONCE at startup!
-// Maps each medicine to its manufacturer company from the complete 8-page MedEx dataset
 const nonAllCompanies = MEDICINE_COMPANIES.filter((c) => c.id !== 'all');
 
 // Build weighted pool for deterministic company mapping of medicines without specific brand patterns
@@ -87,7 +86,6 @@ const INDEXED_MEDICINES = MEDICINE_DATABASE.map((med) => {
 });
 
 // Lightweight Memoized Card Component for 60fps scrolling
-// Tapping opens the dedicated full-screen Medicine Detail Page!
 const MedicineCardItem = React.memo(
   function MedicineCardItem({
     item,
@@ -236,6 +234,8 @@ export default function MedicineScreen({
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
+  // Modern clean filter state: single-row segmented scope
+  const [filterMode, setFilterMode] = useState('system'); // 'system' | 'company'
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [selectedMedicine, setSelectedMedicine] = useState(null);
@@ -244,12 +244,12 @@ export default function MedicineScreen({
   const globalLang = language || 'bn';
 
   const flatListRef = useRef(null);
-  const companyListRef = useRef(null);
+  const filterListRef = useRef(null);
   const t = getTheme(theme, fontSize);
   const insets = useSafeAreaInsets();
 
   // Auto-hiding Collapsible Header Animation
-  const [headerHeight, setHeaderHeight] = useState(210);
+  const [headerHeight, setHeaderHeight] = useState(150);
   const headerY = useRef(new Animated.Value(0)).current;
   const lastScrollY = useRef(0);
   const isHeaderHidden = useRef(false);
@@ -305,7 +305,7 @@ export default function MedicineScreen({
     return getSemanticMatches(deferredSearchQuery);
   }, [deferredSearchQuery]);
 
-  // WHILE TYPING: Find matching pharmaceutical companies to suggest as instant filter
+  // WHILE TYPING: Compact, high-relevance matching pharmaceutical companies (max 3 for clean UI)
   const matchingCompanies = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     if (q.length < 2) return [];
@@ -325,7 +325,7 @@ export default function MedicineScreen({
         bnName.includes(q) ||
         slug.includes(q)
       );
-    }).slice(0, 8); // Top 8 matching companies
+    }).slice(0, 3); // Clean limit of 3 to avoid visual clutter
   }, [searchQuery, selectedCompany]);
 
   // COMBINED FILTER: Semantic Search + Company + Category over pre-indexed dataset!
@@ -348,11 +348,9 @@ export default function MedicineScreen({
 
       // 3. Search Query (Exact search OR Semantic concept expansion)
       if (hasQuery) {
-        // Direct match in search blob
         const directMatch = med._search.includes(q);
         if (directMatch) return true;
 
-        // Semantic concepts match in indications / action
         if (hasSemanticTerms) {
           const semanticMatch = expansionTerms.some((term) => med._search.includes(term));
           if (semanticMatch) return true;
@@ -386,6 +384,7 @@ export default function MedicineScreen({
 
   const handleSelectCompany = useCallback((id) => {
     setSelectedCompany(id);
+    setFilterMode('company');
     setRenderLimit(30);
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
     showHeader();
@@ -393,6 +392,7 @@ export default function MedicineScreen({
 
   const handleSelectCategory = useCallback((id) => {
     setSelectedCategory(id);
+    setFilterMode('system');
     setRenderLimit(30);
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
     showHeader();
@@ -422,14 +422,16 @@ export default function MedicineScreen({
   );
 
   const keyExtractor = useCallback((item) => item.id, []);
-  const companyKeyExtractor = useCallback((item) => item.id, []);
-  const categoryKeyExtractor = useCallback((item) => item.id, []);
 
-  // Render company chip for virtualized horizontal FlatList
-  const renderCompanyChip = useCallback(
-    ({ item: comp }) => {
-      const active = selectedCompany === comp.id;
-      const compIconColor = active ? (t.isDark ? '#000000' : '#ffffff') : t.text;
+  // Single unified renderItem for the active filter mode
+  const renderFilterChip = useCallback(
+    ({ item }) => {
+      const isCompanyMode = filterMode === 'company';
+      const active = isCompanyMode
+        ? selectedCompany === item.id
+        : selectedCategory === item.id;
+      const chipIconColor = active ? (t.isDark ? '#000000' : '#ffffff') : t.text;
+
       return (
         <TouchableOpacity
           style={[
@@ -443,13 +445,25 @@ export default function MedicineScreen({
               borderColor: active ? t.text : t.chipBorder,
             },
           ]}
-          onPress={() => handleSelectCompany(comp.id)}
+          onPress={() => {
+            if (isCompanyMode) {
+              handleSelectCompany(item.id);
+            } else {
+              handleSelectCategory(item.id);
+            }
+          }}
           activeOpacity={0.7}
         >
           <HealthIcon
-            name="pharmacy"
-            size={13}
-            color={compIconColor}
+            source={
+              isCompanyMode
+                ? HEALTH_ICONS.pharmacy
+                : item.id === 'all'
+                ? HEALTH_ICONS.medicines
+                : getMedicineCategoryIcon(item.id)
+            }
+            size={12}
+            color={chipIconColor}
             style={{ marginRight: 5 }}
           />
           <Text
@@ -466,62 +480,22 @@ export default function MedicineScreen({
             ]}
             numberOfLines={1}
           >
-            {comp.short_name}
+            {isCompanyMode
+              ? item.short_name
+              : globalLang === 'bn'
+              ? item.label_bn
+              : item.label_en || item.label_bn}
           </Text>
         </TouchableOpacity>
       );
     },
-    [handleSelectCompany, selectedCompany, t]
+    [filterMode, globalLang, handleSelectCategory, handleSelectCompany, selectedCategory, selectedCompany, t]
   );
 
-  // Render category chip for virtualized horizontal FlatList
-  const renderCategoryChip = useCallback(
-    ({ item: cat }) => {
-      const active = selectedCategory === cat.id;
-      const catIconColor = active ? (t.isDark ? '#000000' : '#ffffff') : t.text;
-      return (
-        <TouchableOpacity
-          style={[
-            styles.chip,
-            {
-              backgroundColor: active
-                ? t.isDark
-                  ? '#ffffff'
-                  : '#000000'
-                : t.chipBg,
-              borderColor: active ? t.text : t.chipBorder,
-            },
-          ]}
-          onPress={() => handleSelectCategory(cat.id)}
-          activeOpacity={0.7}
-        >
-          <HealthIcon
-            source={cat.id === 'all' ? HEALTH_ICONS.medicines : getMedicineCategoryIcon(cat.id)}
-            size={13}
-            color={catIconColor}
-            style={{ marginRight: 5 }}
-          />
-          <Text
-            style={[
-              styles.chipLabel,
-              {
-                color: active
-                  ? t.isDark
-                    ? '#000000'
-                    : '#ffffff'
-                  : t.text,
-                fontWeight: active ? '800' : '600',
-              },
-            ]}
-            numberOfLines={1}
-          >
-            {globalLang === 'bn' ? cat.label_bn : cat.label_en || cat.label_bn}
-          </Text>
-        </TouchableOpacity>
-      );
-    },
-    [globalLang, handleSelectCategory, selectedCategory, t]
-  );
+  // Active dataset for the single filter row
+  const currentFilterData = useMemo(() => {
+    return filterMode === 'company' ? MEDICINE_COMPANIES : MEDICINE_CATEGORIES;
+  }, [filterMode]);
 
   return (
     <View style={[styles.container, { backgroundColor: t.bg }]}>
@@ -544,12 +518,12 @@ export default function MedicineScreen({
       >
         {/* Page Title - Center Top in English */}
         <View style={styles.headerTitleRow}>
-          <Text style={[styles.pageTitle, { color: t.text, fontSize: t.fs(26) }]}>
+          <Text style={[styles.pageTitle, { color: t.text, fontSize: t.fs(24) }]}>
             Medicines & Brands
           </Text>
         </View>
 
-        {/* Full-width Search Bar with Semantic Search */}
+        {/* Search Bar with Inline Clear */}
         <View
           style={[
             styles.searchBar,
@@ -560,13 +534,13 @@ export default function MedicineScreen({
           ]}
           onTouchStart={() => onScrollLock?.(true)}
         >
-          <HealthIcon name="magnifyingGlass" size={16} color={t.textMuted} style={{ marginRight: 8 }} />
+          <HealthIcon name="magnifyingGlass" size={15} color={t.textMuted} style={{ marginRight: 8 }} />
           <TextInput
             style={[styles.searchInput, { color: t.text }]}
             placeholder={
               globalLang === 'bn'
                 ? 'লক্ষণ (মাথা ব্যথা, জ্বর), ওষুধ বা কোম্পানি খুঁজুন...'
-                : 'Search symptoms (headache, fever), brands & pharma...'
+                : 'Search symptoms, medicines, companies...'
             }
             placeholderTextColor={t.textMuted}
             value={searchQuery}
@@ -599,76 +573,158 @@ export default function MedicineScreen({
           )}
         </View>
 
-        {/* WHILE TYPING: SUGGESTED MATCHING COMPANIES AS QUICK FILTER */}
+        {/* WHILE TYPING: Sleek, compact 1-line matching company suggestions */}
         {matchingCompanies.length > 0 && (
-          <View style={[styles.companySuggestionsBox, { backgroundColor: t.surfaceSecondary, borderColor: t.border }]}>
-            <View style={styles.suggestionTitleRow}>
-              <HealthIcon name="pharmacy" size={12} color={t.text} style={{ marginRight: 5 }} />
-              <Text style={[styles.suggestionTitle, { color: t.text }]}>
-                {globalLang === 'bn' ? 'কোম্পানি ফিল্টার বেছে নিন:' : 'Filter by Matching Company:'}
-              </Text>
-            </View>
-            <View style={styles.suggestionChipsWrap}>
-              {matchingCompanies.map((comp) => (
-                <TouchableOpacity
-                  key={comp.id}
-                  style={[
-                    styles.suggestionChip,
-                    {
-                      backgroundColor: t.isDark ? '#27272a' : '#e4e4e7',
-                      borderColor: t.cardBorder,
-                    },
-                  ]}
-                  onPress={() => {
-                    handleSelectCompany(comp.id);
-                    setSearchQuery('');
-                    Keyboard.dismiss();
-                    onScrollLock?.(false);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={[styles.suggestionChipText, { color: t.text }]}>
-                    + {comp.short_name} ({comp.brands_count.toLocaleString()})
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {/* SEMANTIC SEARCH CONCEPT DETECTED INDICATOR */}
-        {semanticData.concepts.length > 0 && (
-          <View style={[styles.semanticBadgeBar, { backgroundColor: t.surfaceSecondary, borderColor: t.border }]}>
-            <HealthIcon name="medicines" size={12} color={t.text} style={{ marginRight: 6 }} />
-            <Text style={[styles.semanticBadgeText, { color: t.text }]} numberOfLines={1}>
-              {globalLang === 'bn' ? 'সেমান্টিক লক্ষণ মিল: ' : 'Semantic Symptom Match: '}
-              <Text style={{ fontWeight: '800' }}>
-                {semanticData.concepts.map((c) => (globalLang === 'bn' ? c.label_bn : c.label_en)).join(', ')}
-              </Text>
+          <View style={styles.matchingCompanyBar}>
+            <Text style={[styles.matchingCompanyHint, { color: t.textMuted }]}>
+              {globalLang === 'bn' ? 'কোম্পানি ফিল্টার:' : 'Filter Company:'}
             </Text>
+            {matchingCompanies.map((comp) => (
+              <TouchableOpacity
+                key={comp.id}
+                style={[
+                  styles.matchingCompanyPill,
+                  {
+                    backgroundColor: t.surfaceSecondary,
+                    borderColor: t.cardBorder,
+                  },
+                ]}
+                onPress={() => {
+                  handleSelectCompany(comp.id);
+                  setSearchQuery('');
+                  Keyboard.dismiss();
+                  onScrollLock?.(false);
+                }}
+                activeOpacity={0.7}
+              >
+                <Text style={[styles.matchingCompanyPillText, { color: t.text }]}>
+                  + {comp.short_name}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
         )}
 
-        {/* ROW 1: PHARMACEUTICAL COMPANY FILTER (225 MedEx Companies) */}
+        {/* SINGLE UNIFIED FILTER TOOLBAR (Cuts header height by 50% and removes clutter) */}
         <View
-          style={styles.filterSectionRow}
+          style={styles.unifiedFilterRow}
           onTouchStart={() => onScrollLock?.(true)}
           onTouchEnd={() => onScrollLock?.(false)}
           onTouchCancel={() => onScrollLock?.(false)}
         >
-          <Text style={[styles.filterSectionLabel, { color: t.textMuted }]}>
-            Company:
-          </Text>
+          {/* Segmented Scope Switcher: System vs Company */}
+          <View
+            style={[
+              styles.scopeSwitchContainer,
+              {
+                backgroundColor: t.surfaceSecondary,
+                borderColor: t.border,
+              },
+            ]}
+          >
+            {/* System Tab */}
+            <TouchableOpacity
+              style={[
+                styles.scopeTabBtn,
+                filterMode === 'system' && {
+                  backgroundColor: t.isDark ? '#ffffff' : '#000000',
+                },
+              ]}
+              onPress={() => setFilterMode('system')}
+              activeOpacity={0.8}
+            >
+              <HealthIcon
+                name="bodyOutline"
+                size={11}
+                color={
+                  filterMode === 'system'
+                    ? t.isDark
+                      ? '#000000'
+                      : '#ffffff'
+                    : t.textMuted
+                }
+                style={{ marginRight: 3 }}
+              />
+              <Text
+                style={[
+                  styles.scopeTabText,
+                  {
+                    color:
+                      filterMode === 'system'
+                        ? t.isDark
+                          ? '#000000'
+                          : '#ffffff'
+                        : t.textMuted,
+                    fontWeight: filterMode === 'system' ? '800' : '600',
+                  },
+                ]}
+              >
+                {globalLang === 'bn' ? 'সিস্টেম' : 'Systems'}
+              </Text>
+              {selectedCategory !== 'all' && (
+                <View style={[styles.activeDot, { backgroundColor: t.isDark ? '#000000' : '#ffffff' }]} />
+              )}
+            </TouchableOpacity>
+
+            {/* Company Tab */}
+            <TouchableOpacity
+              style={[
+                styles.scopeTabBtn,
+                filterMode === 'company' && {
+                  backgroundColor: t.isDark ? '#ffffff' : '#000000',
+                },
+              ]}
+              onPress={() => setFilterMode('company')}
+              activeOpacity={0.8}
+            >
+              <HealthIcon
+                name="pharmacy"
+                size={11}
+                color={
+                  filterMode === 'company'
+                    ? t.isDark
+                      ? '#000000'
+                      : '#ffffff'
+                    : t.textMuted
+                }
+                style={{ marginRight: 3 }}
+              />
+              <Text
+                style={[
+                  styles.scopeTabText,
+                  {
+                    color:
+                      filterMode === 'company'
+                        ? t.isDark
+                          ? '#000000'
+                          : '#ffffff'
+                        : t.textMuted,
+                    fontWeight: filterMode === 'company' ? '800' : '600',
+                  },
+                ]}
+              >
+                {globalLang === 'bn' ? 'ফার্মা' : 'Pharma'}
+              </Text>
+              {selectedCompany !== 'all' && (
+                <View style={[styles.activeDot, { backgroundColor: t.isDark ? '#000000' : '#ffffff' }]} />
+              )}
+            </TouchableOpacity>
+          </View>
+
+          {/* Divider */}
+          <View style={[styles.scopeDivider, { backgroundColor: t.border }]} />
+
+          {/* Single Virtualized Filter Chips Carousel */}
           <FlatList
-            ref={companyListRef}
+            ref={filterListRef}
             horizontal
             showsHorizontalScrollIndicator={false}
             nestedScrollEnabled={true}
-            data={MEDICINE_COMPANIES}
-            keyExtractor={companyKeyExtractor}
-            renderItem={renderCompanyChip}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
+            data={currentFilterData}
+            keyExtractor={keyExtractor}
+            renderItem={renderFilterChip}
+            initialNumToRender={8}
+            maxToRenderPerBatch={8}
             windowSize={3}
             removeClippedSubviews={Platform.OS === 'android'}
             contentContainerStyle={styles.chipsScroll}
@@ -678,97 +734,65 @@ export default function MedicineScreen({
           />
         </View>
 
-        {/* ROW 2: SYSTEM CATEGORY FILTER */}
-        <View
-          style={styles.filterSectionRow}
-          onTouchStart={() => onScrollLock?.(true)}
-          onTouchEnd={() => onScrollLock?.(false)}
-          onTouchCancel={() => onScrollLock?.(false)}
-        >
-          <Text style={[styles.filterSectionLabel, { color: t.textMuted }]}>
-            {globalLang === 'bn' ? 'সিস্টেম:' : 'System:'}
-          </Text>
-          <FlatList
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            nestedScrollEnabled={true}
-            data={MEDICINE_CATEGORIES}
-            keyExtractor={categoryKeyExtractor}
-            renderItem={renderCategoryChip}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={3}
-            removeClippedSubviews={Platform.OS === 'android'}
-            contentContainerStyle={styles.chipsScroll}
-            onScrollBeginDrag={() => onScrollLock?.(true)}
-            onScrollEndDrag={() => onScrollLock?.(false)}
-            onMomentumScrollEnd={() => onScrollLock?.(false)}
-          />
-        </View>
-
-        {/* Combined Filter Active Indicator & Quick Reset */}
+        {/* Clean Active Filter Strip (Shown ONLY when a filter is applied) */}
         {(selectedCompany !== 'all' || selectedCategory !== 'all' || searchQuery.trim().length > 0) && (
-          <View style={styles.activeFilterBar}>
+          <View style={styles.activeFilterStrip}>
             {selectedCompany !== 'all' && (
               <TouchableOpacity
                 style={[
-                  styles.filterTag,
+                  styles.compactFilterTag,
                   {
-                    backgroundColor: t.isDark ? '#27272a' : '#e4e4e7',
+                    backgroundColor: t.surfaceSecondary,
                     borderColor: t.cardBorder,
                   },
                 ]}
                 onPress={() => handleSelectCompany('all')}
               >
-                <Text style={[styles.filterTagText, { color: t.text }]}>
+                <Text style={[styles.compactFilterTagText, { color: t.text }]}>
                   {selectedCompanyObj.short_name || selectedCompanyObj.name_en} ✕
                 </Text>
               </TouchableOpacity>
             )}
+
             {selectedCategory !== 'all' && (
               <TouchableOpacity
                 style={[
-                  styles.filterTag,
+                  styles.compactFilterTag,
                   {
-                    backgroundColor: t.isDark ? '#27272a' : '#e4e4e7',
+                    backgroundColor: t.surfaceSecondary,
                     borderColor: t.cardBorder,
                   },
                 ]}
                 onPress={() => handleSelectCategory('all')}
               >
-                <Text style={[styles.filterTagText, { color: t.text }]}>
+                <Text style={[styles.compactFilterTagText, { color: t.text }]}>
                   {MEDICINE_CATEGORIES.find((c) => c.id === selectedCategory)?.label_bn || selectedCategory} ✕
                 </Text>
               </TouchableOpacity>
             )}
-            {searchQuery.trim().length > 0 && (
-              <TouchableOpacity
+
+            {semanticData.concepts.length > 0 && (
+              <View
                 style={[
-                  styles.filterTag,
+                  styles.compactFilterTag,
                   {
-                    backgroundColor: t.isDark ? '#27272a' : '#e4e4e7',
+                    backgroundColor: t.surfaceSecondary,
                     borderColor: t.cardBorder,
                   },
                 ]}
-                onPress={() => setSearchQuery('')}
               >
-                <Text style={[styles.filterTagText, { color: t.text }]}>
-                  "{searchQuery}" ✕
+                <Text style={[styles.compactFilterTagText, { color: t.textMuted }]}>
+                  💡 {semanticData.concepts[0]?.label_en}
                 </Text>
-              </TouchableOpacity>
+              </View>
             )}
+
             <TouchableOpacity
-              style={[
-                styles.resetAllBtn,
-                {
-                  backgroundColor: t.surfaceSecondary,
-                  borderColor: t.border,
-                },
-              ]}
+              style={styles.clearAllLink}
               onPress={handleResetFilters}
             >
-              <Text style={[styles.resetAllBtnText, { color: t.textMuted }]}>
-                {globalLang === 'bn' ? 'সব রিসেট' : 'Reset All'}
+              <Text style={[styles.clearAllLinkText, { color: t.textMuted }]}>
+                {globalLang === 'bn' ? 'সব মুছুন' : 'Clear All'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -861,9 +885,9 @@ export default function MedicineScreen({
           <View style={styles.emptyContainer}>
             <HealthIcon
               name="magnifyingGlass"
-              size={38}
+              size={36}
               color={t.textMuted}
-              style={{ marginBottom: 12 }}
+              style={{ marginBottom: 10 }}
             />
             <Text style={[styles.emptyText, { color: t.text }]}>
               {globalLang === 'bn'
@@ -900,16 +924,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderTopWidth: StyleSheet.hairlineWidth,
     paddingHorizontal: 16,
-    paddingBottom: 10,
+    paddingBottom: 8,
     elevation: 8,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.15,
-    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.12,
+    shadowRadius: 5,
   },
   headerTitleRow: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
     paddingTop: 2,
   },
   pageTitle: {
@@ -923,117 +947,116 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 12,
     paddingHorizontal: 12,
-    height: 44,
+    height: 42,
     marginBottom: 6,
   },
   searchInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 13,
     paddingVertical: 0,
   },
   clearBtnText: {
-    fontSize: 16,
+    fontSize: 15,
     paddingHorizontal: 4,
   },
-  companySuggestionsBox: {
-    borderWidth: 1,
-    borderRadius: 12,
-    padding: 8,
-    marginBottom: 6,
-  },
-  suggestionTitleRow: {
+  matchingCompanyBar: {
     flexDirection: 'row',
     alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
     marginBottom: 6,
   },
-  suggestionTitle: {
-    fontSize: 11,
+  matchingCompanyHint: {
+    fontSize: 10,
     fontWeight: '700',
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
   },
-  suggestionChipsWrap: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 5,
-  },
-  suggestionChip: {
+  matchingCompanyPill: {
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 10,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-  suggestionChipText: {
+  matchingCompanyPillText: {
     fontSize: 11,
     fontWeight: '600',
   },
-  semanticBadgeBar: {
+  unifiedFilterRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 2,
+  },
+  scopeSwitchContainer: {
+    flexDirection: 'row',
+    borderRadius: 12,
     borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    marginBottom: 6,
+    padding: 2,
+    flexShrink: 0,
   },
-  semanticBadgeText: {
-    fontSize: 11,
-    flex: 1,
-  },
-  filterSectionRow: {
+  scopeTabBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
   },
-  filterSectionLabel: {
+  scopeTabText: {
     fontSize: 11,
-    fontWeight: '700',
-    width: 62,
-    textTransform: 'uppercase',
-    letterSpacing: 0.3,
+  },
+  activeDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginLeft: 3,
+  },
+  scopeDivider: {
+    width: 1,
+    height: 20,
+    marginHorizontal: 8,
+    flexShrink: 0,
   },
   chipsScroll: {
     paddingVertical: 2,
-    paddingRight: 8,
+    paddingRight: 6,
   },
   chip: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderRadius: 18,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
+    borderRadius: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     marginRight: 6,
   },
   chipLabel: {
-    fontSize: 12,
+    fontSize: 11,
   },
-  activeFilterBar: {
+  activeFilterStrip: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    marginTop: 8,
     gap: 6,
+    marginTop: 6,
+    paddingTop: 4,
   },
-  filterTag: {
+  compactFilterTag: {
     borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
   },
-  filterTagText: {
-    fontSize: 11,
+  compactFilterTagText: {
+    fontSize: 10,
     fontWeight: '600',
   },
-  resetAllBtn: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+  clearAllLink: {
+    paddingHorizontal: 4,
+    paddingVertical: 2,
   },
-  resetAllBtnText: {
-    fontSize: 11,
-    fontWeight: '600',
+  clearAllLinkText: {
+    fontSize: 10,
+    fontWeight: '700',
+    textDecorationLine: 'underline',
   },
   listContent: {
     paddingHorizontal: 16,
