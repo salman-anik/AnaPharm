@@ -519,6 +519,7 @@ const MedicineCardItem = React.memo(function MedicineCardItem({
 export default function MedicineScreen({
   theme = 'dark',
   fontSize = 'medium',
+  language = 'bn',
   onNavigateToOrgan,
   onScrollLock,
 }) {
@@ -526,7 +527,7 @@ export default function MedicineScreen({
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [expandedId, setExpandedId] = useState(null);
-  const [globalLang, setGlobalLang] = useState('bn');
+  const globalLang = language || 'bn';
 
   const flatListRef = useRef(null);
   const t = getTheme(theme, fontSize);
@@ -611,65 +612,11 @@ export default function MedicineScreen({
           },
         ]}
       >
-        {/* Page Title & Language Toggle at Top Right */}
+        {/* Page Title - Center Top */}
         <View style={styles.headerTitleRow}>
           <Text style={[styles.pageTitle, { color: t.text, fontSize: t.fs(26) }]}>
             {globalLang === 'bn' ? 'ওষুধ ও ব্র্যান্ড' : 'Medicines'}
           </Text>
-
-          {/* Global Language Toggle at Top Right */}
-          <View
-            style={[
-              styles.langToggleWrap,
-              {
-                backgroundColor: t.chipBg,
-                borderColor: t.chipBorder,
-              },
-            ]}
-          >
-            <TouchableOpacity
-              style={[
-                styles.langTab,
-                globalLang === 'bn' && { backgroundColor: t.isDark ? '#ffffff' : '#000000' },
-              ]}
-              onPress={() => setGlobalLang('bn')}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={[
-                  styles.langTabText,
-                  {
-                    color: globalLang === 'bn'
-                      ? t.isDark ? '#000000' : '#ffffff'
-                      : t.text,
-                  },
-                ]}
-              >
-                বাংলা
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.langTab,
-                globalLang === 'en' && { backgroundColor: t.isDark ? '#ffffff' : '#000000' },
-              ]}
-              onPress={() => setGlobalLang('en')}
-              activeOpacity={0.8}
-            >
-              <Text
-                style={[
-                  styles.langTabText,
-                  {
-                    color: globalLang === 'en'
-                      ? t.isDark ? '#000000' : '#ffffff'
-                      : t.text,
-                  },
-                ]}
-              >
-                EN
-              </Text>
-            </TouchableOpacity>
-          </View>
         </View>
 
         {/* Full-width Search Bar */}
@@ -962,12 +909,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   headerTitleRow: {
-    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 10,
-    position: 'relative',
-    minHeight: 38,
   },
   pageTitle: {
     fontSize: 26,
@@ -980,23 +924,6 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     letterSpacing: -0.3,
     textAlign: 'center',
-  },
-  langToggleWrap: {
-    position: 'absolute',
-    right: 0,
-    flexDirection: 'row',
-    borderRadius: 14,
-    padding: 3,
-    borderWidth: 1,
-  },
-  langTab: {
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 10,
-  },
-  langTabText: {
-    fontSize: 11,
-    fontWeight: '700',
   },
   searchBar: {
     flexDirection: 'row',

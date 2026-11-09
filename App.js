@@ -28,6 +28,7 @@ export default function App() {
   // Shared state across the app - default to 'dark' (Pure OLED Black)
   const [theme, setTheme] = useState('dark');
   const [fontSize, setFontSize] = useState('medium');
+  const [language, setLanguage] = useState('bn');
   const [bpm, setBpm] = useState(72);
   const [respRate, setRespRate] = useState(16);
   const [autoRotate, setAutoRotate] = useState(false);
@@ -127,11 +128,12 @@ export default function App() {
       <DiseasesScreen
         theme={theme}
         fontSize={fontSize}
+        language={language}
         onSelectMedicine={() => handleTabPress('medicine')}
         onScrollLock={setScrollLocked}
       />
     ),
-    [theme, fontSize]
+    [theme, fontSize, language]
   );
 
   const medicineScreenComponent = useMemo(
@@ -139,11 +141,12 @@ export default function App() {
       <MedicineScreen
         theme={theme}
         fontSize={fontSize}
+        language={language}
         onNavigateToOrgan={() => handleTabPress('model')}
         onScrollLock={setScrollLocked}
       />
     ),
-    [theme, fontSize]
+    [theme, fontSize, language]
   );
 
   const settingsScreenComponent = useMemo(
@@ -153,6 +156,8 @@ export default function App() {
         setTheme={setTheme}
         fontSize={fontSize}
         setFontSize={setFontSize}
+        language={language}
+        setLanguage={setLanguage}
         autoRotate={autoRotate}
         setAutoRotate={setAutoRotate}
         xrayMode={xrayMode}
@@ -163,7 +168,7 @@ export default function App() {
         setRespRate={setRespRate}
       />
     ),
-    [theme, setTheme, fontSize, setFontSize, autoRotate, setAutoRotate, xrayMode, setXrayMode, bpm, setBpm, respRate, setRespRate]
+    [theme, setTheme, fontSize, setFontSize, language, setLanguage, autoRotate, setAutoRotate, xrayMode, setXrayMode, bpm, setBpm, respRate, setRespRate]
   );
 
   return (

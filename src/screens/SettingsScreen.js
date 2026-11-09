@@ -18,6 +18,8 @@ export default function SettingsScreen({
   setTheme,
   fontSize = 'medium',
   setFontSize,
+  language = 'bn',
+  setLanguage,
   autoRotate,
   setAutoRotate,
   xrayMode,
@@ -214,7 +216,68 @@ export default function SettingsScreen({
           </View>
         </View>
 
-        {/* CARD 3: 3D VIEW CONTROLS - Clean, No subtitles, No emoji */}
+        {/* CARD 3: LANGUAGE - Clean, No subtitles, No emoji */}
+        <View
+          style={[
+            styles.card,
+            {
+              backgroundColor: t.card,
+              borderColor: t.cardBorder,
+              shadowColor: t.shadowColor,
+            },
+          ]}
+        >
+          <View style={styles.cardHeader}>
+            <Text style={[styles.cardHeading, { color: t.text }]}>Language</Text>
+          </View>
+
+          <View
+            style={[
+              styles.fontSizeRow,
+              {
+                backgroundColor: t.surfaceSecondary,
+                borderColor: t.border,
+              },
+            ]}
+          >
+            {[
+              { id: 'bn', label: 'বাংলা' },
+              { id: 'en', label: 'English' },
+            ].map((opt) => {
+              const active = (language || 'bn') === opt.id;
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  style={[
+                    styles.fontSizeBtn,
+                    active && {
+                      backgroundColor: t.isDark ? '#ffffff' : '#000000',
+                    },
+                  ]}
+                  onPress={() => setLanguage && setLanguage(opt.id)}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.fontSizeBtnLabel,
+                      {
+                        color: active
+                          ? (t.isDark ? '#000000' : '#ffffff')
+                          : t.textMuted,
+                        fontWeight: active ? '800' : '600',
+                        fontSize: t.fs(13),
+                      },
+                    ]}
+                  >
+                    {opt.label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* CARD 4: 3D VIEW CONTROLS - Clean, No subtitles, No emoji */}
         <View
           style={[
             styles.card,

@@ -16,6 +16,7 @@ import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIco
 export default function DiseasesScreen({
   theme = 'dark',
   fontSize = 'medium',
+  language = 'bn',
   onSelectMedicine,
   onScrollLock,
 }) {
@@ -83,7 +84,7 @@ export default function DiseasesScreen({
 
   const renderDiseaseCard = ({ item }) => {
     const isExpanded = expandedId === item.id;
-    const cardLang = langMap[item.id] || 'bn';
+    const cardLang = langMap[item.id] || language || 'bn';
     const isBn = cardLang === 'bn';
 
     return (
