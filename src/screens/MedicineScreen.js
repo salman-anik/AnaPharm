@@ -1052,6 +1052,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
+    overflow: 'hidden',
   },
   companyHeaderTitle: {
     fontWeight: '800',
@@ -1111,6 +1113,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 10,
+    flexShrink: 0,
+    overflow: 'hidden',
   },
   medNameEn: {
     fontWeight: '700',

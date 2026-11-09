@@ -9,6 +9,9 @@ export const HEALTH_ICONS = Object.keys(HEALTH_ICON_DATA).reduce((acc, key) => {
   return acc;
 }, {});
 
+// Aliases for maximum safety and compatibility
+HEALTH_ICONS.anatomy = HEALTH_ICONS.bodyOutline;
+
 // Helper mapping from medicine category to HealthIcon
 export const getMedicineCategoryIcon = (category) => {
   const c = (category || '').toLowerCase().trim();
@@ -114,6 +117,7 @@ export default function HealthIcon({
           width: size,
           height: size,
           tintColor: color,
+          flexShrink: 0,
         },
         style,
       ]}
