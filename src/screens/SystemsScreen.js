@@ -8,13 +8,14 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SYSTEMS, ANATOMY_DATA } from '../data/anatomyData';
 import OrganDetailsSheet from '../components/OrganDetailsSheet';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIcon';
 
 export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
+  const insets = useSafeAreaInsets();
   const [selectedSystem, setSelectedSystem] = useState(null);
   const [selectedOrganData, setSelectedOrganData] = useState(null);
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -80,15 +81,13 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
   };
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      style={[styles.container, { backgroundColor: t.bg }]}
-    >
+    <View style={[styles.container, { backgroundColor: t.bg }]}>
       {/* Collapsible Header */}
       <Animated.View
         style={[
           styles.header,
           {
+            paddingTop: insets.top > 0 ? insets.top + 6 : 14,
             backgroundColor: t.isDark ? '#09090b' : '#ffffff',
             borderBottomColor: t.isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
             borderTopColor: t.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
@@ -252,7 +251,7 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
         theme={theme}
         fontSize={fontSize}
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -268,7 +267,6 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
     paddingHorizontal: 20,
-    paddingTop: 14,
     paddingBottom: 14,
     borderBottomWidth: 1.5,
     borderTopWidth: 1,

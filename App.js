@@ -176,8 +176,8 @@ export default function App() {
       <View style={[styles.appContainer, { backgroundColor: t.bg }]}>
         <StatusBar
           barStyle={t.statusBarStyle}
-          backgroundColor={t.isDark ? '#000000' : '#ffffff'}
-          translucent={false}
+          backgroundColor="transparent"
+          translucent={true}
         />
 
         {/* Screen Area: Persisted 3D Model View + Swipeable Pager for List Screens */}

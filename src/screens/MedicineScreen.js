@@ -11,7 +11,7 @@ import {
   Animated,
   Easing,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MEDICINE_DATABASE, MEDICINE_CATEGORIES } from '../data/medicineData';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { HEALTH_ICONS, getSystemIcon, getMedicineCategoryIcon } from '../components/HealthIcon';
@@ -533,6 +533,7 @@ export default function MedicineScreen({
 
   const flatListRef = useRef(null);
   const t = getTheme(theme, fontSize);
+  const insets = useSafeAreaInsets();
 
   // Auto-hiding Collapsible Header Animation
   const [headerHeight, setHeaderHeight] = useState(195);
@@ -651,15 +652,13 @@ export default function MedicineScreen({
   const keyExtractor = useCallback((item) => item.id, []);
 
   return (
-    <SafeAreaView
-      edges={['top']}
-      style={[styles.container, { backgroundColor: t.bg }]}
-    >
+    <View style={[styles.container, { backgroundColor: t.bg }]}>
       {/* Collapsible Top Header */}
       <Animated.View
         style={[
           styles.topHeader,
           {
+            paddingTop: insets.top > 0 ? insets.top + 6 : 14,
             backgroundColor: t.isDark ? '#09090b' : '#ffffff',
             borderBottomColor: t.isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
             borderTopColor: t.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
@@ -929,7 +928,7 @@ export default function MedicineScreen({
           </View>
         }
       />
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -945,7 +944,6 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 10,
     paddingHorizontal: 16,
-    paddingTop: 10,
     paddingBottom: 8,
     borderBottomWidth: 1.5,
     borderTopWidth: 1,
