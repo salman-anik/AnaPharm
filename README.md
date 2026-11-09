@@ -1,143 +1,276 @@
-# AnaPharm – Interactive 3D Human Anatomy & Medicine Database
-
-**AnaPharm** is an interactive 3D Human Anatomy and Clinical Pharmacopoeia mobile application developed using React Native, Expo, and Three.js. It combines 3D human body visualization, physiological simulations, anatomical dissection, and a comprehensive pharmaceutical database featuring generic medicines and commercial medicine brands available in Bangladesh.
-
-Explore human anatomy in 3D, understand basic physiological processes, and access structured medicine information in English and Bangla through one integrated educational platform.
-
-**Explore the human body. Understand anatomy. Discover medicines.**
+# AnaPharm – 3D Human Anatomy & Medicine Database
 
 <p align="center">
-  <b>3D Human Anatomy • Medical Education • Clinical Pharmacopoeia • Bangladesh Medicine Database</b>
+  <img src="assets/icon.png" alt="AnaPharm Logo" width="120" />
+</p>
+
+<h3 align="center">Explore Anatomy. Understand Physiology. Discover Medicine.</h3>
+
+<p align="center">
+  An interactive 3D human anatomy and pharmaceutical reference application featuring anatomical exploration, physiological simulations, disease information, and a comprehensive Bangladesh medicine database.
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Platform-Android-brightgreen?style=for-the-badge&logo=android" />
+  <img src="https://img.shields.io/badge/React_Native-0.88.1-blue?style=for-the-badge&logo=react" />
+  <img src="https://img.shields.io/badge/Expo-58-black?style=for-the-badge&logo=expo" />
+  <img src="https://img.shields.io/badge/Version-2.5.0-blueviolet?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Language-Bangla%20%7C%20English-orange?style=for-the-badge" />
+</p>
+
+<p align="center">
+  <a href="https://github.com/salman-anik/AnaPharm">GitHub Repository</a> •
+  <a href="https://github.com/salman-anik/AnaPharm/issues">Report an Issue</a> •
+  <a href="https://github.com/salman-anik/AnaPharm/releases">Releases</a>
 </p>
 
 ---
 
-## 🔍 About AnaPharm
+## Overview
 
-AnaPharm brings together two important areas of medical education:
+**AnaPharm** is a mobile educational application that combines interactive 3D human anatomy with pharmaceutical information in one platform.
 
-1. **3D Human Anatomy:** An interactive anatomical visualization experience with body exploration, physiological animations, and layered dissection.
-2. **Clinical Pharmacopoeia:** A structured medicine reference database containing generic medicine information, indications, mechanisms of action, dosage guidelines, precautions, side effects, and Bangladesh commercial brand mappings.
+It is designed for students, medical learners, healthcare enthusiasts, and anyone interested in understanding the human body and discovering medicine information.
 
-The application is designed to support students, learners, and anyone interested in exploring human anatomy and pharmaceutical information.
+Instead of using separate applications for anatomy exploration and medicine references, AnaPharm brings these learning resources together.
 
-## ✨ Features
+### Key Highlights
 
-### 🧬 Interactive 3D Human Anatomy Viewer
+- Interactive 3D human anatomy exploration.
+- Anatomical dissection and layered visualization.
+- Animated heart and lung simulations.
+- Blood circulation visualization.
+- Human body systems and disease information.
+- Extensive pharmaceutical database.
+- Bangladesh commercial medicine brand database.
+- Bangla and English language support.
+- Dark mode and light mode.
 
-Explore a detailed 3D human body model with interactive camera controls.
+---
 
-- Full-body anatomical visualization.
-- Head, neck, torso, arms, hands, pelvis, legs, and feet.
+## Features
+
+### 1. Interactive 3D Human Anatomy
+
+Explore the human body through an interactive 3D visualization experience.
+
+- Full-body anatomical model.
+- Detailed exploration of major body regions.
 - 360-degree rotation.
 - Pinch-to-zoom and camera navigation.
-- Interactive 3D exploration.
+- Interactive camera controls.
+- X-ray visualization mode.
+- Automatic model rotation.
 
-### ❤️ Real-Time Physiological Simulations
+### 2. Physiological Simulations
 
-Explore animated representations of basic human physiological processes.
+Understand basic human physiological processes through animated simulations.
 
-- **Heart Simulation:** Animated heartbeat with adjustable BPM.
-- **Lung Simulation:** Pulmonary expansion and contraction.
-- **Blood Circulation:** Animated blood particles representing circulation.
+| Simulation | Description |
+|---|---|
+| Heart Simulation | Animated heartbeat with adjustable BPM |
+| Lung Simulation | Respiratory expansion and contraction |
+| Blood Circulation | Animated blood particles representing circulation |
 
-### 🔬 3D Anatomical Dissection
+### 3. 3D Anatomical Dissection
 
-Explore the human body through interactive layered visualization.
+Explore anatomical structures through layered 3D visualization.
 
-- Explosive disassembly effects.
 - Anatomical layer separation.
+- Exploded disassembly visualization.
 - Normal-vector-based separation.
-- Interactive 3D orbital navigation.
+- Interactive 3D navigation.
 
-### 💊 Bangladesh Medicine Database
+### 4. Human Body Systems
 
-AnaPharm includes a comprehensive clinical pharmacopoeia reference database.
+Explore different human body systems and their anatomical structures through organized educational information.
+
+### 5. Diseases Information
+
+Discover disease-related educational information and explore connections between diseases and relevant medicines.
+
+### 6. Bangladesh Medicine Database
+
+AnaPharm includes a structured pharmaceutical reference database covering generic medicines and commercial medicine brands available in Bangladesh.
 
 | Database | Records |
 |---|---:|
 | Generic Medicines | 2,594 |
 | Commercial Medicine Brands | 33,200+ |
 
-**Medicine information includes:**
+Medicine information includes:
 
-- Generic medicine names in English.
-- Primary medical indications in Bangla.
+- Generic medicine names.
+- Medical indications in Bangla.
 - Mechanisms of action in Bangla.
 - Dosage guidelines.
 - Precautions and warnings.
-- Side effects.
-- Commercial medicine brand names available in Bangladesh.
+- Potential side effects.
+- Commercial medicine brand names in Bangladesh.
 
-### 🌙 Dark Mode & Light Mode
+### 7. Modern User Interface
 
-- Dual theme support.
-- Custom medical studio lighting.
-- Frosted anatomical silhouettes.
-- Modern mobile interface.
+- Premium mobile interface.
+- OLED-friendly dark mode.
+- Light mode.
+- Bangla and English support.
+- Adjustable font sizes.
+- Smooth navigation.
+- Responsive layouts.
 
 ---
 
-## 🛠️ Technologies Used
+## Screenshots
 
-| Technology | Application |
+Add application screenshots here as the project develops.
+
+```text
+assets/
+├── screenshots/
+│   ├── anatomy.png
+│   ├── systems.png
+│   ├── diseases.png
+│   ├── medicine.png
+│   └── settings.png
+```
+
+---
+
+## Technology Stack
+
+| Technology | Purpose |
 |---|---|
-| React Native | Cross-platform mobile development |
-| Expo | Mobile development environment |
-| Three.js | 3D anatomy visualization |
-| WebGL | 3D graphics rendering |
-| JavaScript | Application functionality |
+| React Native | Mobile application development |
+| Expo SDK 58 | Development and build environment |
+| JavaScript | Application logic |
+| React 19 | Component-based UI |
+| WebView | Embedded web content |
+| Three.js / WebGL | 3D visualization technology |
+| Android SDK | Android application builds |
 
 ---
 
-## 🎓 Educational Applications
+## Getting Started
 
-AnaPharm brings together tools and information useful for exploring:
+### Prerequisites
 
-- Human anatomy and anatomical structures.
-- Basic human physiology.
-- 3D anatomical visualization.
-- Medical and pharmaceutical terminology.
-- Generic medicines and medicine brands in Bangladesh.
-- Basic pharmacological concepts.
+Install the following before running the project:
+
+- Node.js
+- npm
+- Git
+- Android Studio (optional, for local Android builds)
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/salman-anik/AnaPharm.git
+```
+
+### 2. Navigate to the Project
+
+```bash
+cd AnaPharm
+```
+
+### 3. Install Dependencies
+
+```bash
+npm install
+```
+
+### 4. Start the Application
+
+```bash
+npx expo start
+```
+
+### 5. Run on Android
+
+```bash
+npx expo run:android
+```
 
 ---
 
-## 🎯 Project Goals
+## Project Structure
 
-The goal of AnaPharm is to combine interactive 3D anatomy visualization and accessible pharmaceutical reference information in a single mobile application.
-
-By integrating anatomical exploration with a structured medicine database, AnaPharm aims to create a useful digital learning resource for medical education and pharmaceutical information discovery.
+```text
+AnaPharm/
+│
+├── assets/                 # Images, icons and application assets
+│
+├── src/
+│   ├── components/         # Reusable UI components
+│   ├── screens/            # Application screens
+│   └── theme/              # Theme configuration
+│
+├── scripts/                # Utility and build scripts
+├── apk/                    # APK-related files
+├── .github/
+│   └── workflows/          # GitHub Actions workflows
+│
+├── App.js                  # Main application component
+├── app.json                # Expo configuration
+├── index.js                # Application entry point
+├── package.json            # Dependencies and scripts
+└── README.md
+```
 
 ---
 
-## 👨‍💻 Developer
+## Android APK
+
+You can find available Android builds in the repository's Releases section.
+
+**Download:** [AnaPharm Releases](https://github.com/salman-anik/AnaPharm/releases)
+
+For automated builds, check:
+
+[GitHub Actions – Build Android APK](https://github.com/salman-anik/AnaPharm/actions)
+
+---
+
+## Project Goals
+
+AnaPharm aims to make anatomy education and pharmaceutical information more accessible through interactive technology.
+
+The long-term vision is to create an integrated educational platform where users can explore human anatomy, understand physiological processes, learn about diseases, and discover pharmaceutical information.
+
+---
+
+## Developer
 
 **Salman Anik**
 
-Computer Science & Engineering Student | AI & Data Science Enthusiast | Developer
+Computer Science & Engineering Student | Data Science | AI & Software Development
 
-- GitHub: https://github.com/salman-anik
-- Repository: https://github.com/salman-anik/AnaPharm
-
----
-
-## 🔑 Relevant Topics
-
-3D Human Anatomy, Human Anatomy App, Interactive Anatomy Viewer, 3D Anatomy Model, Human Body Visualization, Medical Education Application, Anatomy Learning App, Human Physiology Simulation, Anatomical Dissection, Clinical Pharmacopoeia, Medicine Database Bangladesh, Bangladesh Medicine Brands, Generic Medicine Database, Pharmaceutical Information, React Native Anatomy App, Three.js Medical Visualization.
+- GitHub: [@salman-anik](https://github.com/salman-anik)
+- LinkedIn: [Salman Anik](https://www.linkedin.com/in/salmananik/)
+- Project: [AnaPharm](https://github.com/salman-anik/AnaPharm)
 
 ---
 
-## ⚠️ Medical Disclaimer
+## Medical Disclaimer
 
-AnaPharm is an educational and informational application. Medicine information, including dosage guidelines, should not be considered a substitute for professional medical advice, diagnosis, or treatment.
+AnaPharm is developed for educational and informational purposes only.
 
-Always consult a qualified healthcare professional before making medical decisions.
+The information provided in this application, including medicine indications, dosage guidelines, precautions, and side effects, should not be considered professional medical advice.
+
+Always consult a qualified healthcare professional before making medical decisions or using any medication.
+
+---
+
+## License
+
+No open-source license has currently been specified. All rights are reserved by the project owner unless otherwise stated.
 
 ---
 
 <p align="center">
-  <b>AnaPharm — Explore Anatomy. Understand Physiology. Discover Medicine.</b>
-  <br/>
-  Developed with ❤️ by Salman Anik
+  <b>AnaPharm</b>
+  <br />
+  Explore Anatomy. Understand Physiology. Discover Medicine.
+  <br /><br />
+  Developed with ❤️ by <a href="https://github.com/salman-anik">Salman Anik</a>
 </p>
