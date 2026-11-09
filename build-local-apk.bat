@@ -19,6 +19,18 @@ set "PROJ_ROOT=%~dp0"
 if "%PROJ_ROOT:~-1%"=="\" set "PROJ_ROOT=%PROJ_ROOT:~0,-1%"
 subst P: "%PROJ_ROOT%"
 
+:: Ensure C++ codegen junctions for React Native 0.88
+if exist "P:\node_modules\react-native-safe-area-context\android\build\generated\source\codegen\jni" (
+    if not exist "P:\node_modules\react-native-safe-area-context\android\src\main\jni\codegen" (
+        mklink /J "P:\node_modules\react-native-safe-area-context\android\src\main\jni\codegen" "P:\node_modules\react-native-safe-area-context\android\build\generated\source\codegen\jni" >nul 2>&1
+    )
+)
+if exist "P:\node_modules\react-native-screens\android\build\generated\source\codegen\jni" (
+    if not exist "P:\node_modules\react-native-screens\android\src\main\jni\codegen" (
+        mklink /J "P:\node_modules\react-native-screens\android\src\main\jni\codegen" "P:\node_modules\react-native-screens\android\build\generated\source\codegen\jni" >nul 2>&1
+    )
+)
+
 :: 3. Run Gradle Release Build from P:\android
 echo [3/4] Building Standalone Official Release APK...
 cd /d P:\android

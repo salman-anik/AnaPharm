@@ -6,6 +6,17 @@ set "PATH=%JAVA_HOME%\bin;%PATH%"
 subst P: /d >nul 2>&1
 subst P: "%~dp0."
 
+if exist "P:\node_modules\react-native-safe-area-context\android\build\generated\source\codegen\jni" (
+    if not exist "P:\node_modules\react-native-safe-area-context\android\src\main\jni\codegen" (
+        mklink /J "P:\node_modules\react-native-safe-area-context\android\src\main\jni\codegen" "P:\node_modules\react-native-safe-area-context\android\build\generated\source\codegen\jni" >nul 2>&1
+    )
+)
+if exist "P:\node_modules\react-native-screens\android\build\generated\source\codegen\jni" (
+    if not exist "P:\node_modules\react-native-screens\android\src\main\jni\codegen" (
+        mklink /J "P:\node_modules\react-native-screens\android\src\main\jni\codegen" "P:\node_modules\react-native-screens\android\build\generated\source\codegen\jni" >nul 2>&1
+    )
+)
+
 cd /d P:\android
 call gradlew.bat assembleRelease --no-daemon
 set BUILD_STATUS=%errorlevel%
