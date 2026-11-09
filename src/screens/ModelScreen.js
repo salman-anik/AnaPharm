@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Model3DView from '../components/Model3DView';
-import OrganDetailsSheet from '../components/OrganDetailsSheet';
+import OrganDetailModal from './OrganDetailModal';
 import { ANATOMY_DATA, SYSTEMS } from '../data/anatomyData';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { getOrganIcon } from '../components/HealthIcon';
@@ -23,6 +23,7 @@ export default function ModelScreen({
   setXrayMode,
   theme = 'dark',
   fontSize = 'medium',
+  language = 'bn',
 }) {
   const [selectedOrganKey, setSelectedOrganKey] = useState(null);
   const [sheetVisible, setSheetVisible] = useState(false);
@@ -231,13 +232,14 @@ export default function ModelScreen({
         </View>
       </View>
 
-      {/* Detail Bottom Sheet with full Theme support */}
-      <OrganDetailsSheet
+      {/* Dedicated Separate Page for Organ Details */}
+      <OrganDetailModal
         visible={sheetVisible}
         organData={selectedData}
         onClose={() => setSheetVisible(false)}
         theme={theme}
         fontSize={fontSize}
+        initialLanguage={language}
       />
     </SafeAreaView>
   );

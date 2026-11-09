@@ -10,11 +10,15 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SYSTEMS, ANATOMY_DATA } from '../data/anatomyData';
-import OrganDetailsSheet from '../components/OrganDetailsSheet';
+import OrganDetailModal from './OrganDetailModal';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIcon';
 
-export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
+export default function SystemsScreen({
+  theme = 'dark',
+  fontSize = 'medium',
+  language = 'bn',
+}) {
   const insets = useSafeAreaInsets();
   const [selectedSystem, setSelectedSystem] = useState(null);
   const [selectedOrganData, setSelectedOrganData] = useState(null);
@@ -151,16 +155,17 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
                     {
                       backgroundColor: t.accentBg,
                       borderColor: t.cardBorder,
+                      flexShrink: 0,
                     },
                   ]}
                 >
-                  <HealthIcon source={getSystemIcon(sysKey)} size={22} color={t.text} />
+                  <HealthIcon source={getSystemIcon(sysKey)} size={Math.max(20, Math.round(t.fs(22)))} color={t.text} />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={[styles.sysName, { color: t.text }]}>
-                    {sys.name}
+                  <Text style={[styles.sysName, { color: t.text, fontSize: t.fs(15) }]}>
+                    {language === 'bn' ? (sys.name_bn || sys.name) : sys.name}
                   </Text>
-                  <Text style={[styles.organCount, { color: t.textMuted }]}>
+                  <Text style={[styles.organCount, { color: t.textMuted, fontSize: t.fs(11) }]}>
                     {organs.length} {organs.length === 1 ? 'organ mapped' : 'organs mapped'}
                   </Text>
                 </View>
@@ -170,10 +175,11 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
                     {
                       backgroundColor: isExpanded ? (t.isDark ? '#3f3f46' : '#d4d4d8') : t.chipBg,
                       borderColor: t.chipBorder,
+                      flexShrink: 0,
                     },
                   ]}
                 >
-                  <Text style={[styles.chevron, { color: t.text }]}>
+                  <Text style={[styles.chevron, { color: t.text, fontSize: t.fs(10) }]}>
                     {isExpanded ? '▲' : '▼'}
                   </Text>
                 </View>
@@ -198,25 +204,27 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
                         {
                           backgroundColor: t.card,
                           borderColor: t.cardBorder,
+                          paddingVertical: Math.max(8, Math.round(t.fs(10))),
+                          paddingHorizontal: Math.max(10, Math.round(t.fs(12))),
                         },
                       ]}
                       onPress={() => handleOpenOrgan(organ)}
                       activeOpacity={0.7}
                     >
-                      <View style={{ flex: 1 }}>
+                      <View style={{ flex: 1, marginRight: 8 }}>
                         <View style={styles.organTitleRow}>
                           <HealthIcon
                             source={getOrganIcon(organ.name)}
-                            size={16}
+                            size={Math.max(15, Math.round(t.fs(16)))}
                             color={t.text}
-                            style={{ marginRight: 8 }}
+                            style={{ marginRight: 8, flexShrink: 0 }}
                           />
-                          <Text style={[styles.organName, { color: t.text }]}>
-                            {organ.name}
+                          <Text style={[styles.organName, { color: t.text, fontSize: t.fs(13) }]}>
+                            {language === 'bn' ? (organ.name_bn || organ.name) : organ.name}
                           </Text>
                         </View>
                         {organ.latin ? (
-                          <Text style={[styles.organLatin, { color: t.textMuted }]}>
+                          <Text style={[styles.organLatin, { color: t.textMuted, fontSize: t.fs(11) }]}>
                             {organ.latin}
                           </Text>
                         ) : null}
@@ -227,11 +235,14 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
                           {
                             backgroundColor: t.accentBg,
                             borderColor: t.cardBorder,
+                            paddingVertical: Math.max(4, Math.round(t.fs(5))),
+                            paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
+                            flexShrink: 0,
                           },
                         ]}
                       >
-                        <Text style={[styles.viewBadgeText, { color: t.text }]}>
-                          Details ➔
+                        <Text style={[styles.viewBadgeText, { color: t.text, fontSize: t.fs(11) }]}>
+                          {language === 'bn' ? 'বিস্তারিত ➔' : 'Details ➔'}
                         </Text>
                       </View>
                     </TouchableOpacity>
@@ -243,13 +254,14 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
         })}
       </ScrollView>
 
-      {/* Details Sheet with live theme support */}
-      <OrganDetailsSheet
+      {/* Dedicated Separate Page for Organ Details */}
+      <OrganDetailModal
         visible={sheetVisible}
         organData={selectedOrganData}
         onClose={() => setSheetVisible(false)}
         theme={theme}
         fontSize={fontSize}
+        initialLanguage={language}
       />
     </View>
   );
@@ -325,13 +337,10 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
   sysName: {
-    fontSize: 15,
     fontWeight: '700',
     marginBottom: 2,
   },
-  organCount: {
-    fontSize: 11,
-  },
+  organCount: {},
   chevronBox: {
     width: 28,
     height: 28,
@@ -341,7 +350,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   chevron: {
-    fontSize: 10,
     fontWeight: '800',
   },
   organsContainer: {
@@ -365,12 +373,10 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   organName: {
-    fontSize: 13,
     fontWeight: '700',
   },
   organLatin: {
     fontStyle: 'italic',
-    fontSize: 11,
     marginTop: 2,
   },
   viewBadge: {
@@ -380,7 +386,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   viewBadgeText: {
-    fontSize: 11,
     fontWeight: '700',
   },
 });
