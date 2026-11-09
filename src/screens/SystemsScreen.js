@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
   ScrollView,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SYSTEMS, ANATOMY_DATA } from '../data/anatomyData';
@@ -20,6 +21,52 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
   const t = getTheme(theme, fontSize);
   const systemKeys = Object.keys(SYSTEMS);
 
+  // Auto-hiding Collapsible Header Animation
+  const [headerHeight, setHeaderHeight] = useState(72);
+  const headerY = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const isHeaderHidden = useRef(false);
+
+  const showHeader = useCallback(() => {
+    if (isHeaderHidden.current) {
+      isHeaderHidden.current = false;
+      Animated.timing(headerY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [headerY]);
+
+  const hideHeader = useCallback(() => {
+    if (!isHeaderHidden.current) {
+      isHeaderHidden.current = true;
+      Animated.timing(headerY, {
+        toValue: -headerHeight,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [headerHeight, headerY]);
+
+  const handleScroll = useCallback(
+    (event) => {
+      const currentY = event.nativeEvent.contentOffset.y;
+      const diff = currentY - lastScrollY.current;
+
+      if (currentY <= 15) {
+        showHeader();
+      } else if (diff > 10 && currentY > 40) {
+        hideHeader();
+      } else if (diff < -10) {
+        showHeader();
+      }
+
+      lastScrollY.current = currentY;
+    },
+    [hideHeader, showHeader]
+  );
+
   const getOrgansForSystem = (sysKey) => {
     return Object.values(ANATOMY_DATA).filter((item) => item.system === sysKey);
   };
@@ -34,15 +81,20 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
       edges={['top']}
       style={[styles.container, { backgroundColor: t.bg }]}
     >
-      {/* Clean Frosted Header - No annoying subtitles */}
-      <View
+      {/* Collapsible Header */}
+      <Animated.View
         style={[
           styles.header,
           {
             backgroundColor: t.headerBg,
             borderBottomColor: t.glassBorder,
+            transform: [{ translateY: headerY }],
           },
         ]}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          if (h > 0) setHeaderHeight(h);
+        }}
       >
         <View style={styles.headerTitleColumn}>
           <Text style={[styles.title, { color: t.text, fontSize: t.fs(26) }]}>
@@ -52,9 +104,14 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
             {systemKeys.length} Networks
           </Text>
         </View>
-      </View>
+      </Animated.View>
 
-      <ScrollView contentContainerStyle={styles.scrollList}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollList, { paddingTop: headerHeight + 8 }]}
+        scrollIndicatorInsets={{ top: headerHeight }}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+      >
         {systemKeys.map((sysKey) => {
           const sys = SYSTEMS[sysKey];
           const organs = getOrgansForSystem(sysKey);
@@ -198,8 +255,14 @@ export default function SystemsScreen({ theme = 'dark', fontSize = 'medium' }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    overflow: 'hidden',
   },
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
     paddingHorizontal: 20,
     paddingTop: 14,
     paddingBottom: 14,

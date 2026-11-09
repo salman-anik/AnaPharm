@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useCallback, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,6 +8,7 @@ import {
   Switch,
   Image,
   Linking,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { THEMES, FONT_SIZES, getTheme } from '../theme/theme';
@@ -32,25 +33,82 @@ export default function SettingsScreen({
   const t = getTheme(theme, fontSize);
   const themeList = Object.values(THEMES);
 
+  // Auto-hiding Collapsible Header Animation
+  const [headerHeight, setHeaderHeight] = useState(60);
+  const headerY = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const isHeaderHidden = useRef(false);
+
+  const showHeader = useCallback(() => {
+    if (isHeaderHidden.current) {
+      isHeaderHidden.current = false;
+      Animated.timing(headerY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [headerY]);
+
+  const hideHeader = useCallback(() => {
+    if (!isHeaderHidden.current) {
+      isHeaderHidden.current = true;
+      Animated.timing(headerY, {
+        toValue: -headerHeight,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [headerHeight, headerY]);
+
+  const handleScroll = useCallback(
+    (event) => {
+      const currentY = event.nativeEvent.contentOffset.y;
+      const diff = currentY - lastScrollY.current;
+
+      if (currentY <= 15) {
+        showHeader();
+      } else if (diff > 10 && currentY > 40) {
+        hideHeader();
+      } else if (diff < -10) {
+        showHeader();
+      }
+
+      lastScrollY.current = currentY;
+    },
+    [hideHeader, showHeader]
+  );
+
   return (
     <SafeAreaView
       edges={['top']}
       style={[styles.container, { backgroundColor: t.bg }]}
     >
-      {/* Header - Clean, No subtitle */}
-      <View
+      {/* Collapsible Header */}
+      <Animated.View
         style={[
           styles.header,
-          { backgroundColor: t.headerBg, borderBottomColor: t.glassBorder },
+          {
+            backgroundColor: t.headerBg,
+            borderBottomColor: t.glassBorder,
+            transform: [{ translateY: headerY }],
+          },
         ]}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          if (h > 0) setHeaderHeight(h);
+        }}
       >
         <Text style={[styles.title, { color: t.text, fontSize: t.fs(26) }]}>
           Settings
         </Text>
-      </View>
+      </Animated.View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollList}
+        contentContainerStyle={[styles.scrollList, { paddingTop: headerHeight + 8 }]}
+        scrollIndicatorInsets={{ top: headerHeight }}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
         {/* CARD 1: THEME SELECTION - Clean, No subtitles, No emoji before title */}
@@ -627,8 +685,14 @@ export default function SettingsScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    overflow: 'hidden',
   },
   header: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
     paddingHorizontal: 20,
     paddingTop: 14,
     paddingBottom: 14,

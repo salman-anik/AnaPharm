@@ -8,6 +8,7 @@ import {
   ScrollView,
   FlatList,
   Image,
+  Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MEDICINE_DATABASE, MEDICINE_CATEGORIES } from '../data/medicineData';
@@ -532,6 +533,52 @@ export default function MedicineScreen({
   const flatListRef = useRef(null);
   const t = getTheme(theme, fontSize);
 
+  // Auto-hiding Collapsible Header Animation
+  const [headerHeight, setHeaderHeight] = useState(195);
+  const headerY = useRef(new Animated.Value(0)).current;
+  const lastScrollY = useRef(0);
+  const isHeaderHidden = useRef(false);
+
+  const showHeader = useCallback(() => {
+    if (isHeaderHidden.current) {
+      isHeaderHidden.current = false;
+      Animated.timing(headerY, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [headerY]);
+
+  const hideHeader = useCallback(() => {
+    if (!isHeaderHidden.current) {
+      isHeaderHidden.current = true;
+      Animated.timing(headerY, {
+        toValue: -headerHeight,
+        duration: 220,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [headerHeight, headerY]);
+
+  const handleScroll = useCallback(
+    (event) => {
+      const currentY = event.nativeEvent.contentOffset.y;
+      const diff = currentY - lastScrollY.current;
+
+      if (currentY <= 15) {
+        showHeader();
+      } else if (diff > 10 && currentY > 40) {
+        hideHeader();
+      } else if (diff < -10) {
+        showHeader();
+      }
+
+      lastScrollY.current = currentY;
+    },
+    [hideHeader, showHeader]
+  );
+
   const selectedCompanyObj = useMemo(() => {
     return MEDICINE_COMPANIES.find((c) => c.id === selectedCompany) || MEDICINE_COMPANIES[0];
   }, [selectedCompany]);
@@ -567,18 +614,21 @@ export default function MedicineScreen({
   const handleSelectCompany = useCallback((id) => {
     setSelectedCompany(id);
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-  }, []);
+    showHeader();
+  }, [showHeader]);
 
   const handleSelectCategory = useCallback((id) => {
     setSelectedCategory(id);
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-  }, []);
+    showHeader();
+  }, [showHeader]);
 
   const handleResetFilters = useCallback(() => {
     setSelectedCompany('all');
     setSelectedCategory('all');
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
-  }, []);
+    showHeader();
+  }, [showHeader]);
 
   const renderMedicineCard = useCallback(
     ({ item }) => {
@@ -602,20 +652,25 @@ export default function MedicineScreen({
       edges={['top']}
       style={[styles.container, { backgroundColor: t.bg }]}
     >
-      {/* Top Header */}
-      <View
+      {/* Collapsible Top Header */}
+      <Animated.View
         style={[
           styles.topHeader,
           {
             backgroundColor: t.headerBg,
             borderBottomColor: t.glassBorder,
+            transform: [{ translateY: headerY }],
           },
         ]}
+        onLayout={(e) => {
+          const h = e.nativeEvent.layout.height;
+          if (h > 0) setHeaderHeight(h);
+        }}
       >
-        {/* Page Title - Center Top */}
+        {/* Page Title - Center Top in English */}
         <View style={styles.headerTitleRow}>
           <Text style={[styles.pageTitle, { color: t.text, fontSize: t.fs(26) }]}>
-            {globalLang === 'bn' ? 'ওষুধ ও ব্র্যান্ড' : 'Medicines'}
+            Medicines & Brands
           </Text>
         </View>
 
@@ -836,7 +891,7 @@ export default function MedicineScreen({
             </TouchableOpacity>
           </View>
         )}
-      </View>
+      </Animated.View>
 
       {/* Medicine List */}
       <FlatList
@@ -844,7 +899,10 @@ export default function MedicineScreen({
         data={filteredMedicines}
         keyExtractor={keyExtractor}
         renderItem={renderMedicineCard}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[styles.listContent, { paddingTop: headerHeight + 8 }]}
+        scrollIndicatorInsets={{ top: headerHeight }}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
         initialNumToRender={8}
         maxToRenderPerBatch={8}
         windowSize={5}
@@ -874,8 +932,14 @@ export default function MedicineScreen({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    overflow: 'hidden',
   },
   topHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 8,
