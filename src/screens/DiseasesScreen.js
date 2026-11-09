@@ -289,7 +289,6 @@ export default function DiseasesScreen({
               borderColor: t.glassBorder,
             },
           ]}
-          onTouchStart={() => onScrollLock?.(true)}
         >
           <HealthIcon name="magnifyingGlass" size={16} color={t.textMuted} style={{ marginRight: 8 }} />
           <TextInput
@@ -299,9 +298,6 @@ export default function DiseasesScreen({
             value={searchQuery}
             onChangeText={(text) => {
               setSearchQuery(text);
-              if (text.trim().length > 0) {
-                onScrollLock?.(true);
-              }
             }}
             onFocus={() => onScrollLock?.(true)}
             onBlur={() => {
@@ -325,12 +321,7 @@ export default function DiseasesScreen({
         </View>
 
         {/* Filter Categories - High contrast: selected font NEVER blends */}
-        <View
-          style={styles.categoriesWrap}
-          onTouchStart={() => onScrollLock?.(true)}
-          onTouchEnd={() => onScrollLock?.(false)}
-          onTouchCancel={() => onScrollLock?.(false)}
-        >
+        <View style={styles.categoriesWrap}>
           <ScrollView
             horizontal
             nestedScrollEnabled={true}

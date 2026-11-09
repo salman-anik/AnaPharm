@@ -312,73 +312,81 @@ export default function MedicineScreen({
 
   // WHILE TYPING: Intelligent Search Suggestions (Medicines, Symptoms, Pharma)
   const searchSuggestions = useMemo(() => {
-    const q = searchQuery.toLowerCase().trim();
-    if (q.length < 2) return [];
+    try {
+      const q = (searchQuery || '').toLowerCase().trim();
+      if (q.length < 2) return [];
 
-    const suggestions = [];
+      const suggestions = [];
 
-    // 1. Symptom / Clinical Concept Suggestions from semantic dictionary
-    if (semanticData?.concepts?.length > 0) {
-      semanticData.concepts.slice(0, 2).forEach((c, idx) => {
-        suggestions.push({
-          key: `concept_${idx}`,
-          type: 'concept',
-          label: globalLang === 'bn' ? c.label_bn : c.label_en,
-          query: c.label_en,
-          iconName: 'medicines',
-        });
-      });
-    }
-
-    // 2. Matching Medicine Brands & Generics (Top 3 instant matches)
-    for (let i = 0; i < INDEXED_MEDICINES.length; i++) {
-      const med = INDEXED_MEDICINES[i];
-      const name = (med.name_en || '').toLowerCase();
-      const gen = (med.generic || '').toLowerCase();
-      const brands = (med.brands || '').toLowerCase();
-
-      if (name.includes(q) || gen.includes(q) || brands.includes(q)) {
-        let label = med.name_en;
-        if (brands.includes(q)) {
-          const matchedBrand = med.brands
-            .split(',')
-            .map((b) => b.trim())
-            .find((b) => b.toLowerCase().includes(q));
-          if (matchedBrand) {
-            label = `${matchedBrand} (${med.name_en})`;
+      // 1. Symptom / Concept Suggestions
+      const currentSemantic = getSemanticMatches(q);
+      if (currentSemantic && Array.isArray(currentSemantic.concepts)) {
+        currentSemantic.concepts.slice(0, 2).forEach((c, idx) => {
+          if (c) {
+            suggestions.push({
+              key: `concept_${c.id || idx}_${idx}`,
+              type: 'concept',
+              label: String(globalLang === 'bn' ? (c.label_bn || c.label_en) : c.label_en),
+              query: c.label_en || '',
+              iconName: 'medicines',
+            });
           }
-        }
-        suggestions.push({
-          key: `med_${med.id}`,
-          type: 'medicine',
-          label,
-          med,
-          iconName: 'pills',
         });
-        if (suggestions.length >= 4) break;
       }
-    }
 
-    // 3. Matching Pharma Companies (Top 2 matches)
-    const matchedComps = MEDICINE_COMPANIES.filter((comp) => {
-      if (comp.id === 'all' || comp.id === selectedCompany) return false;
-      const s = (comp.short_name || '').toLowerCase();
-      const f = (comp.name_en || '').toLowerCase();
-      return s.includes(q) || f.includes(q);
-    }).slice(0, 2);
+      // 2. Matching Medicine Brands & Generics
+      for (let i = 0; i < INDEXED_MEDICINES.length; i++) {
+        const med = INDEXED_MEDICINES[i];
+        if (!med) continue;
+        const name = (med.name_en || '').toLowerCase();
+        const gen = (med.generic || '').toLowerCase();
+        const brands = (med.brands || '').toLowerCase();
 
-    matchedComps.forEach((comp) => {
-      suggestions.push({
-        key: `comp_${comp.id}`,
-        type: 'company',
-        id: comp.id,
-        label: comp.short_name,
-        iconName: 'pharmacy',
+        if (name.includes(q) || gen.includes(q) || (brands && brands.includes(q))) {
+          let label = med.name_en || 'Medicine';
+          if (brands && brands.includes(q) && typeof med.brands === 'string') {
+            const matchedBrand = med.brands
+              .split(',')
+              .map((b) => b.trim())
+              .find((b) => b.toLowerCase().includes(q));
+            if (matchedBrand) {
+              label = `${matchedBrand} (${med.name_en})`;
+            }
+          }
+          suggestions.push({
+            key: `med_${med.id || i}_${i}`,
+            type: 'medicine',
+            label: String(label),
+            med,
+            iconName: 'pills',
+          });
+          if (suggestions.length >= 4) break;
+        }
+      }
+
+      // 3. Matching Pharma Companies
+      const matchedComps = MEDICINE_COMPANIES.filter((comp) => {
+        if (!comp || comp.id === 'all' || comp.id === selectedCompany) return false;
+        const s = (comp.short_name || '').toLowerCase();
+        const f = (comp.name_en || '').toLowerCase();
+        return s.includes(q) || f.includes(q);
+      }).slice(0, 2);
+
+      matchedComps.forEach((comp, cIdx) => {
+        suggestions.push({
+          key: `comp_${comp.id || cIdx}_${cIdx}`,
+          type: 'company',
+          id: comp.id,
+          label: String(comp.short_name || comp.name_en),
+          iconName: 'pharmacy',
+        });
       });
-    });
 
-    return suggestions;
-  }, [globalLang, searchQuery, selectedCompany, semanticData]);
+      return suggestions;
+    } catch (e) {
+      return [];
+    }
+  }, [globalLang, searchQuery, selectedCompany]);
 
   const handleSelectSuggestion = useCallback(
     (sug) => {
@@ -609,7 +617,6 @@ export default function MedicineScreen({
               minHeight: Math.max(42, Math.round(t.fs(44))),
             },
           ]}
-          onTouchStart={() => onScrollLock?.(true)}
         >
           <HealthIcon name="magnifyingGlass" size={Math.max(15, Math.round(t.fs(16)))} color={t.textMuted} style={{ marginRight: 8 }} />
           <TextInput
@@ -624,9 +631,6 @@ export default function MedicineScreen({
             onChangeText={(text) => {
               setSearchQuery(text);
               setRenderLimit(30);
-              if (text.trim().length > 0) {
-                onScrollLock?.(true);
-              }
             }}
             onFocus={() => onScrollLock?.(true)}
             onBlur={() => {
@@ -657,9 +661,10 @@ export default function MedicineScreen({
               {globalLang === 'bn' ? 'পরামর্শ:' : 'Suggestions:'}
             </Text>
             <ScrollView
+              style={styles.suggestionScrollView}
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ alignItems: 'center', gap: 6, paddingRight: 10 }}
+              contentContainerStyle={styles.suggestionScrollContent}
               keyboardShouldPersistTaps="handled"
             >
               {searchSuggestions.map((sug) => (
@@ -695,12 +700,7 @@ export default function MedicineScreen({
         )}
 
         {/* SINGLE UNIFIED FILTER TOOLBAR (Cuts header height by 50% and removes clutter) */}
-        <View
-          style={styles.unifiedFilterRow}
-          onTouchStart={() => onScrollLock?.(true)}
-          onTouchEnd={() => onScrollLock?.(false)}
-          onTouchCancel={() => onScrollLock?.(false)}
-        >
+        <View style={styles.unifiedFilterRow}>
           {/* Segmented Scope Switcher: Pharma FIRST, then Systems */}
           <View
             style={[
@@ -1065,13 +1065,22 @@ const styles = StyleSheet.create({
   matchingCompanyBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 6,
     marginBottom: 6,
+    width: '100%',
+  },
+  suggestionScrollView: {
+    flex: 1,
+    marginLeft: 6,
+  },
+  suggestionScrollContent: {
+    alignItems: 'center',
+    gap: 6,
+    paddingRight: 10,
   },
   matchingCompanyHint: {
     fontWeight: '700',
     textTransform: 'uppercase',
+    flexShrink: 0,
   },
   matchingCompanyPill: {
     borderWidth: 1,
