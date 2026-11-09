@@ -96,7 +96,7 @@ const MedicineCardItem = React.memo(
     const detectedCompany = item._company;
 
     return (
-      <TouchableOpacity
+      <View
         style={[
           styles.card,
           {
@@ -105,8 +105,6 @@ const MedicineCardItem = React.memo(
             shadowColor: t.shadowColor,
           },
         ]}
-        onPress={() => onPress(item)}
-        activeOpacity={0.75}
       >
         <View style={styles.cardHeader}>
           <View style={styles.headerLeft}>
@@ -187,19 +185,26 @@ const MedicineCardItem = React.memo(
             </View>
           </View>
 
-          {/* Right Chevron / Details Button */}
+          {/* Right Action Button: Clicking this icon specifically opens details */}
           <View style={styles.headerRight}>
-            <View
+            <TouchableOpacity
               style={[
-                styles.detailArrowBtn,
+                styles.detailActionBtn,
                 {
                   backgroundColor: t.surfaceSecondary,
                   borderColor: t.cardBorder,
                 },
               ]}
+              onPress={() => onPress(item)}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              activeOpacity={0.7}
             >
-              <Text style={[styles.detailArrowText, { color: t.text }]}>→</Text>
-            </View>
+              <HealthIcon
+                name="eye"
+                size={16}
+                color={t.text}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -215,7 +220,7 @@ const MedicineCardItem = React.memo(
             </Text>
           </View>
         ) : null}
-      </TouchableOpacity>
+      </View>
     );
   },
   (prev, next) =>
@@ -234,8 +239,8 @@ export default function MedicineScreen({
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
 
-  // Modern clean filter state: single-row segmented scope
-  const [filterMode, setFilterMode] = useState('system'); // 'system' | 'company'
+  // Modern clean filter state: single-row segmented scope (Pharma first, then Systems)
+  const [filterMode, setFilterMode] = useState('company'); // 'company' | 'system'
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedCompany, setSelectedCompany] = useState('all');
   const [selectedMedicine, setSelectedMedicine] = useState(null);
@@ -305,28 +310,95 @@ export default function MedicineScreen({
     return getSemanticMatches(deferredSearchQuery);
   }, [deferredSearchQuery]);
 
-  // WHILE TYPING: Compact, high-relevance matching pharmaceutical companies (max 3 for clean UI)
-  const matchingCompanies = useMemo(() => {
+  // WHILE TYPING: Intelligent Search Suggestions (Medicines, Symptoms, Pharma)
+  const searchSuggestions = useMemo(() => {
     const q = searchQuery.toLowerCase().trim();
     if (q.length < 2) return [];
 
-    return MEDICINE_COMPANIES.filter((comp) => {
-      if (comp.id === 'all') return false;
-      if (comp.id === selectedCompany) return false;
+    const suggestions = [];
 
-      const shortName = (comp.short_name || '').toLowerCase();
-      const fullName = (comp.name_en || '').toLowerCase();
-      const bnName = (comp.name_bn || '').toLowerCase();
-      const slug = (comp.slug || '').toLowerCase();
+    // 1. Symptom / Clinical Concept Suggestions from semantic dictionary
+    if (semanticData?.concepts?.length > 0) {
+      semanticData.concepts.slice(0, 2).forEach((c, idx) => {
+        suggestions.push({
+          key: `concept_${idx}`,
+          type: 'concept',
+          label: globalLang === 'bn' ? c.label_bn : c.label_en,
+          query: c.label_en,
+          iconName: 'medicines',
+        });
+      });
+    }
 
-      return (
-        shortName.includes(q) ||
-        fullName.includes(q) ||
-        bnName.includes(q) ||
-        slug.includes(q)
-      );
-    }).slice(0, 3); // Clean limit of 3 to avoid visual clutter
-  }, [searchQuery, selectedCompany]);
+    // 2. Matching Medicine Brands & Generics (Top 3 instant matches)
+    for (let i = 0; i < INDEXED_MEDICINES.length; i++) {
+      const med = INDEXED_MEDICINES[i];
+      const name = (med.name_en || '').toLowerCase();
+      const gen = (med.generic || '').toLowerCase();
+      const brands = (med.brands || '').toLowerCase();
+
+      if (name.includes(q) || gen.includes(q) || brands.includes(q)) {
+        let label = med.name_en;
+        if (brands.includes(q)) {
+          const matchedBrand = med.brands
+            .split(',')
+            .map((b) => b.trim())
+            .find((b) => b.toLowerCase().includes(q));
+          if (matchedBrand) {
+            label = `${matchedBrand} (${med.name_en})`;
+          }
+        }
+        suggestions.push({
+          key: `med_${med.id}`,
+          type: 'medicine',
+          label,
+          med,
+          iconName: 'pills',
+        });
+        if (suggestions.length >= 4) break;
+      }
+    }
+
+    // 3. Matching Pharma Companies (Top 2 matches)
+    const matchedComps = MEDICINE_COMPANIES.filter((comp) => {
+      if (comp.id === 'all' || comp.id === selectedCompany) return false;
+      const s = (comp.short_name || '').toLowerCase();
+      const f = (comp.name_en || '').toLowerCase();
+      return s.includes(q) || f.includes(q);
+    }).slice(0, 2);
+
+    matchedComps.forEach((comp) => {
+      suggestions.push({
+        key: `comp_${comp.id}`,
+        type: 'company',
+        id: comp.id,
+        label: comp.short_name,
+        iconName: 'pharmacy',
+      });
+    });
+
+    return suggestions;
+  }, [globalLang, searchQuery, selectedCompany, semanticData]);
+
+  const handleSelectSuggestion = useCallback(
+    (sug) => {
+      if (sug.type === 'company') {
+        handleSelectCompany(sug.id);
+        setFilterMode('company');
+        setSearchQuery('');
+        Keyboard.dismiss();
+        onScrollLock?.(false);
+      } else if (sug.type === 'concept') {
+        setSearchQuery(sug.query);
+        setRenderLimit(30);
+      } else if (sug.type === 'medicine') {
+        handleOpenDetail(sug.med);
+        Keyboard.dismiss();
+        onScrollLock?.(false);
+      }
+    },
+    [handleOpenDetail, handleSelectCompany, onScrollLock]
+  );
 
   // COMBINED FILTER: Semantic Search + Company + Category over pre-indexed dataset!
   const filteredMedicines = useMemo(() => {
@@ -578,37 +650,47 @@ export default function MedicineScreen({
           )}
         </View>
 
-        {/* WHILE TYPING: Sleek, compact 1-line matching company suggestions */}
-        {matchingCompanies.length > 0 && (
+        {/* WHILE TYPING: Intelligent, horizontal scrollable Search Suggestions */}
+        {searchSuggestions.length > 0 && (
           <View style={styles.matchingCompanyBar}>
             <Text style={[styles.matchingCompanyHint, { color: t.textMuted, fontSize: t.fs(11) }]}>
-              {globalLang === 'bn' ? 'কোম্পানি ফিল্টার:' : 'Filter Company:'}
+              {globalLang === 'bn' ? 'পরামর্শ:' : 'Suggestions:'}
             </Text>
-            {matchingCompanies.map((comp) => (
-              <TouchableOpacity
-                key={comp.id}
-                style={[
-                  styles.matchingCompanyPill,
-                  {
-                    backgroundColor: t.surfaceSecondary,
-                    borderColor: t.cardBorder,
-                    paddingVertical: Math.max(3, Math.round(t.fs(4))),
-                    paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
-                  },
-                ]}
-                onPress={() => {
-                  handleSelectCompany(comp.id);
-                  setSearchQuery('');
-                  Keyboard.dismiss();
-                  onScrollLock?.(false);
-                }}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.matchingCompanyPillText, { color: t.text, fontSize: t.fs(12) }]}>
-                  + {comp.short_name}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ alignItems: 'center', gap: 6, paddingRight: 10 }}
+              keyboardShouldPersistTaps="handled"
+            >
+              {searchSuggestions.map((sug) => (
+                <TouchableOpacity
+                  key={sug.key}
+                  style={[
+                    styles.matchingCompanyPill,
+                    {
+                      backgroundColor: t.surfaceSecondary,
+                      borderColor: t.cardBorder,
+                      paddingVertical: Math.max(3, Math.round(t.fs(4))),
+                      paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                    },
+                  ]}
+                  onPress={() => handleSelectSuggestion(sug)}
+                  activeOpacity={0.7}
+                >
+                  <HealthIcon
+                    name={sug.iconName || 'pills'}
+                    size={Math.max(11, Math.round(t.fs(12)))}
+                    color={t.text}
+                    style={{ marginRight: 4, flexShrink: 0 }}
+                  />
+                  <Text style={[styles.matchingCompanyPillText, { color: t.text, fontSize: t.fs(12) }]}>
+                    {sug.label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         )}
 
@@ -619,7 +701,7 @@ export default function MedicineScreen({
           onTouchEnd={() => onScrollLock?.(false)}
           onTouchCancel={() => onScrollLock?.(false)}
         >
-          {/* Segmented Scope Switcher: System vs Company */}
+          {/* Segmented Scope Switcher: Pharma FIRST, then Systems */}
           <View
             style={[
               styles.scopeSwitchContainer,
@@ -629,56 +711,7 @@ export default function MedicineScreen({
               },
             ]}
           >
-            {/* System Tab */}
-            <TouchableOpacity
-              style={[
-                styles.scopeTabBtn,
-                {
-                  paddingVertical: Math.max(5, Math.round(t.fs(6))),
-                  paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
-                },
-                filterMode === 'system' && {
-                  backgroundColor: t.isDark ? '#ffffff' : '#000000',
-                },
-              ]}
-              onPress={() => setFilterMode('system')}
-              activeOpacity={0.8}
-            >
-              <HealthIcon
-                name="bodyOutline"
-                size={Math.max(12, Math.round(t.fs(13)))}
-                color={
-                  filterMode === 'system'
-                    ? t.isDark
-                      ? '#000000'
-                      : '#ffffff'
-                    : t.textMuted
-                }
-                style={{ marginRight: 4 }}
-              />
-              <Text
-                style={[
-                  styles.scopeTabText,
-                  {
-                    color:
-                      filterMode === 'system'
-                        ? t.isDark
-                          ? '#000000'
-                          : '#ffffff'
-                        : t.textMuted,
-                    fontSize: t.fs(13),
-                    fontWeight: filterMode === 'system' ? '800' : '600',
-                  },
-                ]}
-              >
-                {globalLang === 'bn' ? 'সিস্টেম' : 'Systems'}
-              </Text>
-              {selectedCategory !== 'all' && (
-                <View style={[styles.activeDot, { backgroundColor: t.isDark ? '#000000' : '#ffffff' }]} />
-              )}
-            </TouchableOpacity>
-
-            {/* Company Tab */}
+            {/* Company Tab (Pharma FIRST) */}
             <TouchableOpacity
               style={[
                 styles.scopeTabBtn,
@@ -723,6 +756,55 @@ export default function MedicineScreen({
                 {globalLang === 'bn' ? 'ফার্মা' : 'Pharma'}
               </Text>
               {selectedCompany !== 'all' && (
+                <View style={[styles.activeDot, { backgroundColor: t.isDark ? '#000000' : '#ffffff' }]} />
+              )}
+            </TouchableOpacity>
+
+            {/* System Tab (Systems SECOND) */}
+            <TouchableOpacity
+              style={[
+                styles.scopeTabBtn,
+                {
+                  paddingVertical: Math.max(5, Math.round(t.fs(6))),
+                  paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
+                },
+                filterMode === 'system' && {
+                  backgroundColor: t.isDark ? '#ffffff' : '#000000',
+                },
+              ]}
+              onPress={() => setFilterMode('system')}
+              activeOpacity={0.8}
+            >
+              <HealthIcon
+                name="bodyOutline"
+                size={Math.max(12, Math.round(t.fs(13)))}
+                color={
+                  filterMode === 'system'
+                    ? t.isDark
+                      ? '#000000'
+                      : '#ffffff'
+                    : t.textMuted
+                }
+                style={{ marginRight: 4 }}
+              />
+              <Text
+                style={[
+                  styles.scopeTabText,
+                  {
+                    color:
+                      filterMode === 'system'
+                        ? t.isDark
+                          ? '#000000'
+                          : '#ffffff'
+                        : t.textMuted,
+                    fontSize: t.fs(13),
+                    fontWeight: filterMode === 'system' ? '800' : '600',
+                  },
+                ]}
+              >
+                {globalLang === 'bn' ? 'সিস্টেম' : 'Systems'}
+              </Text>
+              {selectedCategory !== 'all' && (
                 <View style={[styles.activeDot, { backgroundColor: t.isDark ? '#000000' : '#ffffff' }]} />
               )}
             </TouchableOpacity>
@@ -1185,19 +1267,16 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   headerRight: {
-    marginLeft: 4,
+    marginLeft: 6,
   },
-  detailArrowBtn: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
+  detailActionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  detailArrowText: {
-    fontSize: 14,
-    fontWeight: '800',
+    flexShrink: 0,
   },
   cardFooter: {
     borderTopWidth: StyleSheet.hairlineWidth,
