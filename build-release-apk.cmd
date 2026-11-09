@@ -13,8 +13,7 @@ set BUILD_STATUS=%errorlevel%
 if %BUILD_STATUS% equ 0 (
     if not exist "P:\apk" mkdir "P:\apk"
     if exist "P:\android\app\build\outputs\apk\release\app-release.apk" (
-        copy /y "P:\android\app\build\outputs\apk\release\app-release.apk" "P:\apk\AnaPharm-v3.0.0.apk" >nul
-        copy /y "P:\android\app\build\outputs\apk\release\app-release.apk" "P:\apk\AnaPharm-v1.0.0.apk" >nul
+        copy /y "P:\android\app\build\outputs\apk\release\app-release.apk" "P:\apk\AnaPharm.apk" >nul
         echo APK_BUILD_SUCCESS
     )
 )

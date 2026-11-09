@@ -228,7 +228,7 @@ AnaPharm/
 
 Official standalone offline Android Release APK is available directly in the repository:
 
-- **APK File:** [`apk/AnaPharm-v1.0.0.apk`](apk/AnaPharm-v1.0.0.apk) (~85.4 MB)
+- **APK File:** [`apk/AnaPharm.apk`](apk/AnaPharm.apk) (~85.4 MB)
 - **Version:** 1.0.0 (Release 3.5)
 - **Engine:** Hermes Bytecode + React Native 0.88 + Expo 58
 

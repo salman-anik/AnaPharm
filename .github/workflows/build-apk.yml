@@ -41,13 +41,15 @@ jobs:
 
       - name: Rename APK for Release
         run: |
-          cp android/app/build/outputs/apk/release/app-release.apk AnaPharm-v1.0.0.apk
+          cp android/app/build/outputs/apk/release/app-release.apk AnaPharm.apk
+          mkdir -p apk
+          cp android/app/build/outputs/apk/release/app-release.apk apk/AnaPharm.apk
 
       - name: Upload Standalone APK as Artifact
         uses: actions/upload-artifact@v4
         with:
           name: AnaPharm-Android-APK
-          path: AnaPharm-v1.0.0.apk
+          path: AnaPharm.apk
 
       - name: Publish Direct Public Download Release
         uses: softprops/action-gh-release@v2
@@ -67,6 +69,6 @@ jobs:
             - **2,594 Clinical Generics & 33,200+ BD Brands:** Complete medicine monographs with generic indications, mechanisms of action, dosage guidelines, side effects, precautions, and commercial brands (Napa, Seclo, Nexum, etc.).
             - **Bilingual Interface:** Instant interactive toggle between 🇧🇩 বাংলা and 🇬🇧 English.
             - **Dual Theme:** Dark Mode and Light Mode with medical studio lighting.
-          files: AnaPharm-v1.0.0.apk
+          files: AnaPharm.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
