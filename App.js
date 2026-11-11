@@ -24,6 +24,7 @@ import HealthIcon from './src/components/HealthIcon';
 
 const STORAGE_KEY_THEME = '@anapharm_theme';
 const STORAGE_KEY_FONT_SIZE = '@anapharm_fontSize';
+const STORAGE_KEY_KEEP_3D_LOADED = '@anapharm_keep3DLoaded';
 
 export default function App() {
   const { width: screenWidth } = useWindowDimensions();
@@ -36,13 +37,15 @@ export default function App() {
     'HindSiliguri-Bold': require('./assets/fonts/HindSiliguri-Bold.ttf'),
   });
   const [activeTab, setActiveTab] = useState('medicine');
+  const [hasOpenedModel, setHasOpenedModel] = useState(false);
   const [scrollLocked, setScrollLocked] = useState(false);
   const horizontalScrollRef = useRef(null);
   const isProgrammaticScroll = useRef(false);
 
   // Shared state across the app - default to 'light'
   const [theme, setThemeState] = useState('light');
-  const [fontSize, setFontSizeState] = useState('medium');
+  const [fontSize, setFontSizeState] = useState('small');
+  const [keep3DLoaded, setKeep3DLoadedState] = useState(false);
 
   // Load persisted settings on startup
   useEffect(() => {
@@ -55,6 +58,10 @@ export default function App() {
         const savedFontSize = await AsyncStorage.getItem(STORAGE_KEY_FONT_SIZE);
         if (savedFontSize) {
           setFontSizeState(savedFontSize);
+        }
+        const savedKeep3DLoaded = await AsyncStorage.getItem(STORAGE_KEY_KEEP_3D_LOADED);
+        if (savedKeep3DLoaded !== null) {
+          setKeep3DLoadedState(savedKeep3DLoaded === 'true');
         }
       } catch (err) {
         console.warn('Failed to load settings:', err);
@@ -75,13 +82,19 @@ export default function App() {
       console.warn('Failed to save fontSize:', err)
     );
   }, []);
+  const setKeep3DLoaded = useCallback((enabled) => {
+    setKeep3DLoadedState(enabled);
+    AsyncStorage.setItem(STORAGE_KEY_KEEP_3D_LOADED, String(enabled)).catch((err) =>
+      console.warn('Failed to save 3D memory setting:', err)
+    );
+  }, []);
   const [language, setLanguage] = useState('bn');
   const [bpm, setBpm] = useState(72);
   const [respRate, setRespRate] = useState(16);
   const [autoRotate, setAutoRotate] = useState(false);
   const [xrayMode, setXrayMode] = useState(false);
 
-  const t = getTheme(theme, fontSize);
+  const t = useMemo(() => getTheme(theme, fontSize), [theme, fontSize]);
 
   // Lock horizontal page swapping while keyboard is open or user is typing/searching
   useEffect(() => {
@@ -104,8 +117,7 @@ export default function App() {
     {
       id: 'model',
       isCenter: true,
-      iconOutline: 'bodyOutline',
-      iconFilled: 'bodyFilled',
+      modelIcon: 'bodyFilled',
     },
     { id: 'systems', iconName: 'dna' },
     { id: 'settings', iconName: 'settings' },
@@ -119,7 +131,9 @@ export default function App() {
   ];
 
   const handleTabPress = (tabId) => {
+    if (tabId !== 'medicine') Keyboard.dismiss();
     if (tabId === 'model') {
+      setHasOpenedModel(true);
       setActiveTab('model');
       return;
     }
@@ -131,7 +145,8 @@ export default function App() {
       isProgrammaticScroll.current = true;
       horizontalScrollRef.current?.scrollTo({
         x: swipeIdx * screenWidth,
-        animated: !wasModel,
+        // Tab taps should switch immediately; swipe gestures still animate naturally.
+        animated: false,
       });
       setTimeout(() => {
         isProgrammaticScroll.current = false;
@@ -144,7 +159,9 @@ export default function App() {
     if (isProgrammaticScroll.current || activeTab === 'model') return;
     const { contentOffset, layoutMeasurement } = e.nativeEvent;
     const width = layoutMeasurement.width || screenWidth;
-    const pageIndex = Math.round(contentOffset.x / width);
+    // Follow the pager from its first movement so the selected navbar icon
+    // changes in sync with the swipe instead of waiting for a progress threshold.
+    const pageIndex = Math.max(0, Math.min(swipeTabs.length - 1, Math.floor(contentOffset.x / width)));
     if (swipeTabs[pageIndex] && swipeTabs[pageIndex].id !== activeTab) {
       setActiveTab(swipeTabs[pageIndex].id);
     }
@@ -164,21 +181,20 @@ export default function App() {
   // MEMOIZED SCREENS: Prevents re-rendering heavy screens during swipe transitions!
   // This guarantees 60fps silky-smooth swipe and instant bottom navbar updates.
   const modelScreenComponent = useMemo(
-    () => (
+    () => hasOpenedModel ? (
       <ModelScreen
-        bpm={bpm}
-        respRate={respRate}
+        isActive={activeTab === 'model'}
+        keep3DLoaded={keep3DLoaded}
         autoRotate={autoRotate}
         setAutoRotate={setAutoRotate}
         xrayMode={xrayMode}
         setXrayMode={setXrayMode}
         theme={theme}
-        setTheme={setTheme}
         fontSize={fontSize}
         language={language}
       />
-    ),
-    [bpm, respRate, autoRotate, setAutoRotate, xrayMode, setXrayMode, theme, setTheme, fontSize, language]
+    ) : null,
+    [hasOpenedModel, activeTab, keep3DLoaded, autoRotate, setAutoRotate, xrayMode, setXrayMode, theme, fontSize, language]
   );
 
   const systemsScreenComponent = useMemo(
@@ -202,6 +218,7 @@ export default function App() {
   const medicineScreenComponent = useMemo(
     () => (
       <MedicineScreen
+        isActive={activeTab === 'medicine'}
         theme={theme}
         fontSize={fontSize}
         language={language}
@@ -209,7 +226,7 @@ export default function App() {
         onScrollLock={setScrollLocked}
       />
     ),
-    [theme, fontSize, language]
+    [activeTab, theme, fontSize, language]
   );
 
   const settingsScreenComponent = useMemo(
@@ -225,13 +242,15 @@ export default function App() {
         setAutoRotate={setAutoRotate}
         xrayMode={xrayMode}
         setXrayMode={setXrayMode}
+        keep3DLoaded={keep3DLoaded}
+        setKeep3DLoaded={setKeep3DLoaded}
         bpm={bpm}
         setBpm={setBpm}
         respRate={respRate}
         setRespRate={setRespRate}
       />
     ),
-    [theme, setTheme, fontSize, setFontSize, language, setLanguage, autoRotate, setAutoRotate, xrayMode, setXrayMode, bpm, setBpm, respRate, setRespRate]
+    [theme, setTheme, fontSize, setFontSize, language, setLanguage, autoRotate, setAutoRotate, xrayMode, setXrayMode, keep3DLoaded, setKeep3DLoaded, bpm, setBpm, respRate, setRespRate]
   );
 
   return (
@@ -245,7 +264,7 @@ export default function App() {
 
         {/* Screen Area: Persisted 3D Model View + Swipeable Pager for List Screens */}
         <View style={[styles.screenArea, { backgroundColor: t.bg }]}>
-          {/* 3D Model Screen Layer (persisted in memory for instant camera and state) */}
+          {/* 3D Model Screen Layer; the WebGL view releases its native memory when inactive */}
           <View
             style={[
               StyleSheet.absoluteFill,
@@ -329,21 +348,21 @@ export default function App() {
                       styles.centerHeroButton,
                       {
                         backgroundColor: isActive
-                          ? '#D8BDF8'
+                          ? '#DDEEDD'
                           : (t.isDark ? '#141418' : '#f4f4f5'),
                         borderColor: isActive
-                          ? '#D8BDF8'
+                          ? '#DDEEDD'
                           : (t.isDark ? '#2e2e34' : '#e4e4e7'),
                         shadowColor: t.shadowColor || '#000',
                       },
                     ]}
                   >
                     <HealthIcon
-                      name={isActive ? tab.iconFilled : tab.iconOutline}
+                      name={tab.modelIcon || (isActive ? tab.iconFilled : tab.iconOutline)}
                       size={26}
                       color={
                         isActive
-                          ? '#1e1b4b'
+                          ? '#234A2D'
                           : (t.isDark ? '#ffffff' : '#000000')
                       }
                     />
@@ -360,8 +379,8 @@ export default function App() {
                   isActive && [
                     styles.tabButtonActive,
                     {
-                      backgroundColor: '#D8BDF8',
-                      borderColor: '#D8BDF8',
+                      backgroundColor: '#DDEEDD',
+                      borderColor: '#DDEEDD',
                     },
                   ],
                 ]}
@@ -371,7 +390,7 @@ export default function App() {
                 <HealthIcon
                   name={tab.iconName}
                   size={24}
-                  color={isActive ? '#1e1b4b' : t.textMuted}
+                  color={isActive ? '#234A2D' : t.textMuted}
                   style={{ opacity: isActive ? 1.0 : 0.65 }}
                 />
               </TouchableOpacity>

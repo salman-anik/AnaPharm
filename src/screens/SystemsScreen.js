@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -14,9 +14,14 @@ import OrganDetailModal from './OrganDetailModal';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIcon';
 
+const ORGANS_BY_SYSTEM = Object.values(ANATOMY_DATA).reduce((groups, item) => {
+  (groups[item.system] ||= []).push(item);
+  return groups;
+}, {});
+
 export default function SystemsScreen({
   theme = 'light',
-  fontSize = 'medium',
+  fontSize = 'small',
   language = 'bn',
 }) {
   const insets = useSafeAreaInsets();
@@ -24,7 +29,7 @@ export default function SystemsScreen({
   const [selectedOrganData, setSelectedOrganData] = useState(null);
   const [sheetVisible, setSheetVisible] = useState(false);
 
-  const t = getTheme(theme, fontSize);
+  const t = useMemo(() => getTheme(theme, fontSize), [theme, fontSize]);
   const systemKeys = Object.keys(SYSTEMS);
 
   // Auto-hiding Collapsible Header Animation
@@ -75,10 +80,6 @@ export default function SystemsScreen({
     [hideHeader, showHeader]
   );
 
-  const getOrgansForSystem = (sysKey) => {
-    return Object.values(ANATOMY_DATA).filter((item) => item.system === sysKey);
-  };
-
   const handleOpenOrgan = (organ) => {
     setSelectedOrganData(organ);
     setSheetVisible(true);
@@ -121,7 +122,7 @@ export default function SystemsScreen({
       >
         {systemKeys.map((sysKey) => {
           const sys = SYSTEMS[sysKey];
-          const organs = getOrgansForSystem(sysKey);
+          const organs = ORGANS_BY_SYSTEM[sysKey] || [];
           const isExpanded = selectedSystem === sysKey;
 
           return (
@@ -131,7 +132,7 @@ export default function SystemsScreen({
                 styles.systemCard,
                 {
                   backgroundColor: t.card,
-                  borderColor: isExpanded ? '#D8BDF8' : t.cardBorder,
+                  borderColor: isExpanded ? '#DDEEDD' : t.cardBorder,
                   borderWidth: isExpanded ? 1.5 : 1,
                   shadowColor: t.shadowColor,
                 },
@@ -174,13 +175,13 @@ export default function SystemsScreen({
                   style={[
                     styles.chevronBox,
                     {
-                      backgroundColor: isExpanded ? '#D8BDF8' : t.chipBg,
-                      borderColor: isExpanded ? '#D8BDF8' : t.chipBorder,
+                      backgroundColor: isExpanded ? '#DDEEDD' : t.chipBg,
+                      borderColor: isExpanded ? '#DDEEDD' : t.chipBorder,
                       flexShrink: 0,
                     },
                   ]}
                 >
-                  <Text style={[styles.chevron, { color: isExpanded ? '#1e1b4b' : t.text, fontSize: t.fs(10) }]}>
+                  <Text style={[styles.chevron, { color: isExpanded ? '#234A2D' : t.text, fontSize: t.fs(10) }]}>
                     {isExpanded ? '▲' : '▼'}
                   </Text>
                 </View>

@@ -1,4 +1,4 @@
-import React, { useRef, useCallback, useState } from 'react';
+import React, { useRef, useCallback, useState, useMemo } from 'react';
 import {
   StyleSheet,
   View,
@@ -14,11 +14,18 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { THEMES, FONT_SIZES, getTheme } from '../theme/theme';
 import HealthIcon from '../components/HealthIcon';
+import { MEDICINE_DATABASE } from '../data/medicineData';
+import { DISEASE_DATABASE } from '../data/diseaseData';
+
+const APP_DATA_STATS = [
+  { label: 'Medicine', value: MEDICINE_DATABASE.length },
+  { label: 'Disease', value: DISEASE_DATABASE.length },
+];
 
 export default function SettingsScreen({
   theme,
   setTheme,
-  fontSize = 'medium',
+  fontSize = 'small',
   setFontSize,
   language = 'bn',
   setLanguage,
@@ -26,13 +33,15 @@ export default function SettingsScreen({
   setAutoRotate,
   xrayMode,
   setXrayMode,
+  keep3DLoaded = false,
+  setKeep3DLoaded,
   bpm,
   setBpm,
   respRate,
   setRespRate,
 }) {
   const insets = useSafeAreaInsets();
-  const t = getTheme(theme, fontSize);
+  const t = useMemo(() => getTheme(theme, fontSize), [theme, fontSize]);
   const themeList = Object.values(THEMES);
 
   // Auto-hiding Collapsible Header Animation
@@ -114,6 +123,23 @@ export default function SettingsScreen({
         scrollEventThrottle={16}
         showsVerticalScrollIndicator={false}
       >
+        <View style={[styles.dataSummaryCard, { backgroundColor: t.card, borderColor: t.cardBorder, shadowColor: t.shadowColor }]}>
+          <View style={styles.dataSummaryHeadingRow}>
+            <View style={styles.dataSummaryIcon}>
+              <HealthIcon name="dna" size={18} color="#47694A" />
+            </View>
+            <Text style={[styles.cardHeading, { color: t.text }]}>App data</Text>
+          </View>
+          <View style={styles.dataStatsGrid}>
+            {APP_DATA_STATS.map((item) => (
+              <View key={item.label} style={styles.dataStatItem}>
+                <Text style={styles.dataStatValue}>{item.value.toLocaleString()}</Text>
+                <Text numberOfLines={1} style={styles.dataStatLabel}>{item.label}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
         {/* CARD 1: THEME SELECTION - Clean, No subtitles, No emoji before title */}
         <View
           style={[
@@ -142,7 +168,7 @@ export default function SettingsScreen({
                     {
                       backgroundColor: item.card,
                       borderColor: isSelected
-                        ? '#D8BDF8'
+                        ? '#DDEEDD'
                         : item.cardBorder,
                       borderWidth: isSelected ? 2.5 : 1,
                     },
@@ -160,13 +186,13 @@ export default function SettingsScreen({
                       <View
                         style={[
                           styles.activeCheckBadge,
-                          { backgroundColor: '#D8BDF8' },
+                          { backgroundColor: '#DDEEDD' },
                         ]}
                       >
                         <Text
                           style={[
                             styles.activeCheckText,
-                            { color: '#1e1b4b' },
+                            { color: '#234A2D' },
                           ]}
                         >
                           ✓
@@ -209,14 +235,14 @@ export default function SettingsScreen({
             ]}
           >
             {Object.values(FONT_SIZES).map((opt) => {
-              const active = (fontSize || 'medium') === opt.id;
+              const active = (fontSize || 'small') === opt.id;
               return (
                 <TouchableOpacity
                   key={opt.id}
                   style={[
                     styles.fontSizeBtn,
                     active && {
-                      backgroundColor: '#D8BDF8',
+                      backgroundColor: '#DDEEDD',
                     },
                   ]}
                   onPress={() => setFontSize && setFontSize(opt.id)}
@@ -226,7 +252,7 @@ export default function SettingsScreen({
                     style={[
                       styles.fontSizeBtnIcon,
                       {
-                        color: active ? '#1e1b4b' : t.text,
+                        color: active ? '#234A2D' : t.text,
                       },
                     ]}
                   >
@@ -236,7 +262,7 @@ export default function SettingsScreen({
                     style={[
                       styles.fontSizeBtnLabel,
                       {
-                        color: active ? '#1e1b4b' : t.textMuted,
+                        color: active ? '#234A2D' : t.textMuted,
                         fontWeight: active ? '800' : '600',
                         fontFamily: active ? 'HindSiliguri-Bold' : 'HindSiliguri-Medium',
                       },
@@ -271,6 +297,35 @@ export default function SettingsScreen({
             >
               Paracetamol 500mg • প্যারাসিটামল ৫০০ মি.গ্রা.
             </Text>
+          </View>
+        </View>
+
+        <View style={[styles.card, { backgroundColor: t.card, borderColor: t.cardBorder, shadowColor: t.shadowColor }]}>
+          <View style={styles.cardHeader}>
+            <Text style={[styles.cardHeading, { color: t.text }]}>{language === 'bn' ? '3D মডেল' : '3D model'}</Text>
+          </View>
+          <View style={styles.modelMemoryRow}>
+            <View style={styles.modelMemoryCopy}>
+              <Text style={[styles.modelMemoryTitle, { color: t.text }]}>
+                {language === 'bn' ? 'পেছনে মডেল লোড রাখুন' : 'Keep model loaded in background'}
+              </Text>
+              <Text style={[styles.modelMemoryDescription, { color: t.textMuted }]}>
+                {language === 'bn'
+                  ? keep3DLoaded
+                    ? 'চালু: দ্রুত খুলবে, তবে বেশি RAM ব্যবহার করবে।'
+                    : 'বন্ধ: RAM বাঁচায়; ফিরে এলে মডেল আবার লোড হবে।'
+                  : keep3DLoaded
+                    ? 'On: Opens faster, but uses more RAM.'
+                    : 'Off: Saves RAM; the model reloads when you return.'}
+              </Text>
+            </View>
+            <Switch
+              value={keep3DLoaded}
+              onValueChange={setKeep3DLoaded}
+              trackColor={{ false: t.border, true: '#A9CBAA' }}
+              thumbColor={keep3DLoaded ? '#4F8057' : '#f4f3f4'}
+              ios_backgroundColor={t.border}
+            />
           </View>
         </View>
 
@@ -559,6 +614,22 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 40,
   },
+  dataSummaryCard: {
+    borderRadius: 22,
+    borderWidth: 1,
+    padding: 16,
+    marginBottom: 16,
+    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
+  },
+  dataSummaryHeadingRow: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  dataSummaryIcon: { width: 34, height: 34, borderRadius: 12, backgroundColor: '#E8F2E5', alignItems: 'center', justifyContent: 'center' },
+  dataStatsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 12 },
+  dataStatItem: { width: '48%', minHeight: 84, borderWidth: 1, borderColor: '#A9CBAA', backgroundColor: '#E8F2E5', borderRadius: 18, padding: 12, justifyContent: 'center', alignItems: 'center' },
+  dataStatValue: { color: '#234A2D', fontSize: 22, fontWeight: '900', textAlign: 'center' },
+  dataStatLabel: { color: '#47694A', fontSize: 12, fontWeight: '700', marginTop: 4, textAlign: 'center' },
   card: {
     borderRadius: 18,
     borderWidth: 1,
@@ -655,6 +726,10 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
+  modelMemoryRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  modelMemoryCopy: { flex: 1 },
+  modelMemoryTitle: { fontSize: 13, fontWeight: '700' },
+  modelMemoryDescription: { fontSize: 11, lineHeight: 16, marginTop: 4 },
   settingRow: {
     flexDirection: 'row',
     alignItems: 'center',

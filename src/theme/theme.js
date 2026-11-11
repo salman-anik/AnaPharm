@@ -10,8 +10,8 @@ export const FONTS = {
   bold: 'HindSiliguri-Bold',
 };
 
-export const SELECTED_COLOR = '#D8BDF8';
-export const SELECTED_TEXT = '#1e1b4b';
+export const SELECTED_COLOR = '#DDEEDD';
+export const SELECTED_TEXT = '#234A2D';
 
 export const THEMES = {
   dark: {
@@ -99,15 +99,16 @@ export const THEMES = {
 };
 
 export const FONT_SIZES = {
+  xsmall: { id: 'xsmall', label: 'Smaller', labelBn: 'আরও ছোট', scale: 0.78, delta: -4, icon: 'A⁻⁻' },
   small: { id: 'small', label: 'Small', labelBn: 'ছোট', scale: 0.88, delta: -2, icon: 'A⁻' },
-  medium: { id: 'medium', label: 'Default', labelBn: 'স্বাভাবিক', scale: 1.0, delta: 0, icon: 'A' },
+  medium: { id: 'medium', label: 'Medium', labelBn: 'মাঝারি', scale: 1.0, delta: 0, icon: 'A' },
   large: { id: 'large', label: 'Large', labelBn: 'বড়', scale: 1.15, delta: 2, icon: 'A⁺' },
   xlarge: { id: 'xlarge', label: 'X-Large', labelBn: 'অতিরিক্ত বড়', scale: 1.3, delta: 4, icon: 'A⁺⁺' },
 };
 
-export const getTheme = (themeId, fontSizeId = 'medium') => {
+export const getTheme = (themeId, fontSizeId = 'small') => {
   const base = THEMES[themeId] || THEMES.light;
-  const fontConf = FONT_SIZES[fontSizeId] || FONT_SIZES.medium;
+  const fontConf = FONT_SIZES[fontSizeId] || FONT_SIZES.small;
   return {
     ...base,
     fonts: FONTS,

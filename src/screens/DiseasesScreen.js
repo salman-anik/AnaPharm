@@ -17,9 +17,20 @@ import { getTheme } from '../theme/theme';
 import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIcon';
 import DiseaseDetailModal from './DiseaseDetailModal';
 
+// Keep the searchable text ready once rather than joining long symptom and treatment arrays on every keystroke.
+const DISEASE_SEARCH_INDEX = DISEASE_DATABASE.map((item) => ({
+  item,
+  text: [
+    item.name_en, item.name_bn, item.icd10, item.organ, item.overview_bn, item.overview_en,
+    ...(item.causes_bn || []), ...(item.causes_en || []),
+    ...(item.symptoms_bn || []), ...(item.symptoms_en || []),
+    ...(item.medicines || []).flatMap((medicine) => [medicine.generic, medicine.class, ...(medicine.top_brands || [])]),
+  ].filter(Boolean).join(' ').toLowerCase(),
+}));
+
 export default function DiseasesScreen({
   theme = 'light',
-  fontSize = 'medium',
+  fontSize = 'small',
   language = 'bn',
   onSelectMedicine,
   onScrollLock,
@@ -29,7 +40,7 @@ export default function DiseasesScreen({
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedDisease, setSelectedDisease] = useState(null);
 
-  const t = getTheme(theme, fontSize);
+  const t = useMemo(() => getTheme(theme, fontSize), [theme, fontSize]);
 
   // Auto-hiding Collapsible Header Animation
   const [headerHeight, setHeaderHeight] = useState(150);
@@ -80,50 +91,17 @@ export default function DiseasesScreen({
   );
 
   const filteredDiseases = useMemo(() => {
-    return DISEASE_DATABASE.filter((item) => {
+    const q = searchQuery.toLowerCase().trim();
+    return DISEASE_SEARCH_INDEX.filter(({ item, text }) => {
       const matchesCategory =
         selectedCategory === 'all' || item.system === selectedCategory;
 
       if (!matchesCategory) return false;
-
-      const q = searchQuery.toLowerCase().trim();
-      if (!q) return true;
-
-      const nameEn = (item.name_en || '').toLowerCase();
-      const nameBn = (item.name_bn || '').toLowerCase();
-      const icd = (item.icd10 || '').toLowerCase();
-      const organ = (item.organ || '').toLowerCase();
-      const overviewBn = (item.overview_bn || '').toLowerCase();
-      const overviewEn = (item.overview_en || '').toLowerCase();
-
-      const causesStr = (item.causes_bn || [])
-        .concat(item.causes_en || [])
-        .join(' ')
-        .toLowerCase();
-      const symptomsStr = (item.symptoms_bn || [])
-        .concat(item.symptoms_en || [])
-        .join(' ')
-        .toLowerCase();
-      const medsStr = (item.medicines || [])
-        .map((m) => `${m.generic} ${m.class} ${(m.top_brands || []).join(' ')}`)
-        .join(' ')
-        .toLowerCase();
-
-      return (
-        nameEn.includes(q) ||
-        nameBn.includes(q) ||
-        icd.includes(q) ||
-        organ.includes(q) ||
-        overviewBn.includes(q) ||
-        overviewEn.includes(q) ||
-        causesStr.includes(q) ||
-        symptomsStr.includes(q) ||
-        medsStr.includes(q)
-      );
-    });
+      return !q || text.includes(q);
+    }).map(({ item }) => item);
   }, [searchQuery, selectedCategory]);
 
-  const renderDiseaseCard = ({ item }) => {
+  const renderDiseaseCard = useCallback(({ item }) => {
     return (
       <View
         style={[
@@ -253,7 +231,8 @@ export default function DiseasesScreen({
         ) : null}
       </View>
     );
-  };
+  }, [language, t]);
+  const diseaseKeyExtractor = useCallback((item) => item.id, []);
 
   return (
     <View style={[styles.container, { backgroundColor: t.bg }]}>
@@ -333,15 +312,15 @@ export default function DiseasesScreen({
           >
             {DISEASE_CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
-              const catColor = isSelected ? '#1e1b4b' : t.text;
+              const catColor = isSelected ? '#234A2D' : t.text;
               return (
                 <TouchableOpacity
                   key={cat.id}
                   style={[
                     styles.categoryChip,
                     {
-                      backgroundColor: isSelected ? '#D8BDF8' : t.chipBg,
-                      borderColor: isSelected ? '#D8BDF8' : t.chipBorder,
+                      backgroundColor: isSelected ? '#DDEEDD' : t.chipBg,
+                      borderColor: isSelected ? '#DDEEDD' : t.chipBorder,
                     },
                   ]}
                   onPress={() => setSelectedCategory(cat.id)}
@@ -357,7 +336,7 @@ export default function DiseasesScreen({
                     style={[
                       styles.categoryText,
                       {
-                        color: isSelected ? '#1e1b4b' : t.text,
+                        color: isSelected ? '#234A2D' : t.text,
                         fontWeight: isSelected ? '800' : '500',
                         fontFamily: isSelected ? 'HindSiliguri-Bold' : 'HindSiliguri-Medium',
                       },
@@ -375,7 +354,7 @@ export default function DiseasesScreen({
       {/* Disease List */}
       <FlatList
         data={filteredDiseases}
-        keyExtractor={(item) => item.id}
+        keyExtractor={diseaseKeyExtractor}
         renderItem={renderDiseaseCard}
         contentContainerStyle={[styles.listContent, { paddingTop: headerHeight + 8 }]}
         scrollIndicatorInsets={{ top: headerHeight }}

@@ -1,55 +1,96 @@
-import React, { useRef, useEffect, useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
-import { THREE_B64, CONTROLS_B64 } from '../assets/threeBase64';
+import { Asset } from 'expo-asset';
+
+const ANATOMY_MODULES = [
+  require('../assets/anatomy/atlas_skeleton.glb'), require('../assets/anatomy/atlas_muscular.glb'),
+  require('../assets/anatomy/atlas_brain.glb'), require('../assets/anatomy/atlas_heart.glb'),
+  require('../assets/anatomy/atlas_lungs.glb'), require('../assets/anatomy/atlas_liver.glb'),
+  require('../assets/anatomy/atlas_stomach.glb'), require('../assets/anatomy/atlas_kidneys.glb'),
+  require('../assets/anatomy/atlas_small_intestine.glb'), require('../assets/anatomy/atlas_large_intestine.glb'),
+  require('../assets/anatomy/atlas_trachea.glb'),
+];
 
 export default function Model3DView({
   onSelectOrgan,
-  bpm = 72,
-  respRate = 16,
+  isActive = true,
+  keepAlive = false,
   autoRotate = false,
   xrayMode = false,
   explodeVal = 0,
   focusRegion = 'all',
   theme = 'dark',
   resetKey = 0,
+  showSkeleton = true,
+  showMuscles = true,
+  muscleOpacity = 0.58,
+  organsVisible = {},
 }) {
   const webViewRef = useRef(null);
+  const [modelUris, setModelUris] = useState(null);
+  const [runtime, setRuntime] = useState(null);
+  const [assetError, setAssetError] = useState(false);
+  const [runtimeError, setRuntimeError] = useState('');
+  const shouldRender = isActive || keepAlive;
+  const configRef = useRef(null);
+  configRef.current = { type: 'CONFIG_UPDATE', autoRotate, xrayMode, explodeVal, focusRegion, theme, showSkeleton, showMuscles, muscleOpacity, organsVisible };
+
+  useEffect(() => {
+    let active = true;
+    Promise.all(ANATOMY_MODULES.map((moduleId) => Asset.fromModule(moduleId).downloadAsync()))
+      .then((assets) => {
+        if (active) setModelUris(assets.map((asset) => (__DEV__ ? asset.uri : asset.localUri || asset.uri)));
+      })
+      .catch((error) => { console.warn('Could not prepare bundled anatomy models:', error); if (active) setAssetError(true); });
+    return () => { active = false; };
+  }, []);
+
+  // Load the large WebGL runtime only when the user opens the 3D screen.
+  useEffect(() => {
+    if (!shouldRender || runtime) return;
+    try {
+      const three = require('../assets/threeBase64');
+      const gltf = require('../assets/gltfRuntime');
+      setRuntime({ ...three, ...gltf });
+    } catch (error) {
+      console.warn('Could not load the 3D rendering runtime:', error);
+      setRuntimeError(error?.message || 'Could not load the 3D rendering runtime.');
+    }
+  }, [shouldRender, runtime]);
 
   const THEME_DATA = {
-    dark: { css: '#000000', hex: '0x000000' },
-    light: { css: '#e4e4e7', hex: '0xe4e4e7' },
+    dark: { solid: '#091321' },
+    light: { solid: '#1d2e44' },
   };
-
-  const getBgCssForTheme = (t) => {
-    return (THEME_DATA[t] || THEME_DATA.dark).css;
-  };
-
-  const getBgHexForTheme = (t) => {
-    return (THEME_DATA[t] || THEME_DATA.dark).hex;
-  };
+  const getBgSolidForTheme = (t) => (THEME_DATA[t] || THEME_DATA.dark).solid;
 
   // Send state updates into WebView Three.js scene via postMessage and injectJavaScript
   useEffect(() => {
     if (!webViewRef.current) return;
     const msg = JSON.stringify({
       type: 'CONFIG_UPDATE',
-      bpm,
-      respRate,
       autoRotate,
       xrayMode,
       explodeVal,
       focusRegion,
       theme,
+      showSkeleton,
+      showMuscles,
+      muscleOpacity,
+      organsVisible,
     });
-    webViewRef.current.postMessage(msg);
     webViewRef.current.injectJavaScript(`
       if (window.onConfigUpdate) {
         window.onConfigUpdate(${msg});
       }
       true;
     `);
-  }, [bpm, respRate, autoRotate, xrayMode, explodeVal, focusRegion, theme]);
+  }, [autoRotate, xrayMode, explodeVal, focusRegion, theme, showSkeleton, showMuscles, muscleOpacity, organsVisible]);
+
+  useEffect(() => {
+    webViewRef.current?.injectJavaScript(`if (window.onAppVisibility) window.onAppVisibility(${Boolean(isActive)}); true;`);
+  }, [isActive]);
 
   // Handle explicit 3D camera reset trigger
   useEffect(() => {
@@ -65,15 +106,27 @@ export default function Model3DView({
   const handleMessage = (event) => {
     try {
       const data = JSON.parse(event.nativeEvent.data);
+      if (data.type === 'MODEL_ERROR') {
+        console.error('3D anatomy load failed:', data.message);
+        setRuntimeError(data.message || 'Could not read the bundled model files.');
+        return;
+      }
+      if (data.type === 'MODEL_READY') {
+        const msg = JSON.stringify(configRef.current);
+        webViewRef.current?.injectJavaScript(`if (window.onConfigUpdate) window.onConfigUpdate(${msg}); if (window.onAppVisibility) window.onAppVisibility(${Boolean(isActive)}); true;`);
+        return;
+      }
       if (data.type === 'ORGAN_CLICKED' && onSelectOrgan) {
-        onSelectOrgan(data.organ);
+        onSelectOrgan(data.organ, data.part);
       }
     } catch (e) {
       console.warn('WebView message parse error:', e);
     }
   };
 
-  const htmlContent = useMemo(() => `
+  const htmlContent = useMemo(() => {
+    if (!modelUris || !runtime || !shouldRender) return '';
+    return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -83,59 +136,73 @@ export default function Model3DView({
     * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color: transparent; }
     html, body {
       width:100%; height:100%; overflow:hidden;
-      background-color: ${getBgCssForTheme(theme)}; touch-action:none;
+      background: radial-gradient(ellipse at 50% 40%, #304a67 0%, #1a2d44 46%, #091321 100%); touch-action:none;
       user-select:none; -webkit-user-select:none;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      position:relative;
     }
-    #canvas3d { width:100%; height:100%; display:block; }
+    body.theme-dark { background:radial-gradient(ellipse at 50% 40%, #304a67 0%, #1a2d44 46%, #091321 100%); }
+    body.theme-light { background:radial-gradient(ellipse at 50% 40%, #516b86 0%, #344b65 46%, #1d2e44 100%); }
+    body::before { content:""; position:absolute; inset:0; pointer-events:none; opacity:0.55;
+      background-image: radial-gradient(ellipse at 50% 38%, rgba(56,189,248,0.13), transparent 58%),
+        linear-gradient(rgba(148,163,184,0.045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148,163,184,0.045) 1px, transparent 1px);
+      background-size:auto, 38px 38px, 38px 38px; mask-image:radial-gradient(ellipse at center, black 12%, transparent 88%); }
+    body.theme-light::before { opacity:0.5; background-image:radial-gradient(ellipse at 50% 38%, rgba(216,189,248,0.19), transparent 58%), linear-gradient(rgba(226,232,240,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(226,232,240,0.07) 1px, transparent 1px); }
+    body.xray { background:radial-gradient(ellipse at 50% 40%, #112d46 0%, #091827 54%, #050b13 100%); }
+    body.xray::before { opacity:0.7; }
+    #canvas3d { width:100%; height:100%; display:block; position:relative; z-index:1; }
     #loader {
-      position: absolute; top:50%; left:50%;
-      transform: translate(-50%, -50%);
-      color: #38bdf8; font-size: 13px; font-weight: 600;
-      letter-spacing: 0.5px;
-      display: flex; flex-direction: column; align-items: center; gap: 12px;
+      position: absolute; inset:0; display:grid; place-items:center; padding:22px;
       pointer-events: none; transition: opacity 0.4s ease;
-      z-index: 10;
+      z-index: 10; background:linear-gradient(180deg, ${theme === 'dark' ? 'rgba(8,8,12,0.1)' : 'rgba(32,28,43,0.10)'}, ${theme === 'dark' ? 'rgba(8,8,12,0.3)' : 'rgba(32,28,43,0.2)'});
     }
-    .spinner {
-      width: 36px; height: 36px;
-      border: 3px solid rgba(56, 189, 248, 0.2);
-      border-top-color: #38bdf8;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
+    .loading-card { width:min(320px, calc(100vw - 44px)); padding:20px; color:${theme === 'dark' ? '#fafafa' : '#272433'};
+      border:1px solid ${theme === 'dark' ? 'rgba(255,255,255,0.14)' : 'rgba(96,75,129,0.18)'}; border-radius:22px;
+      background:linear-gradient(145deg, ${theme === 'dark' ? 'rgba(30,30,36,0.97), rgba(17,17,22,0.96)' : 'rgba(255,255,255,0.97), rgba(247,245,251,0.96)'});
+      box-shadow:0 22px 70px rgba(0,0,0,0.42), inset 0 1px rgba(255,255,255,0.06);
+      backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); }
+    .loading-brand { display:flex; align-items:center; gap:13px; margin-bottom:22px; }
+    .anatomy-mark { width:48px; height:48px; border-radius:16px; display:grid; place-items:center;
+      position:relative; flex:none; color:${theme === 'dark' ? '#e8d9ff' : '#7654a5'}; font-size:23px; font-weight:300;
+      border:1px solid ${theme === 'dark' ? 'rgba(216,189,248,0.36)' : 'rgba(118,84,165,0.24)'}; background:radial-gradient(circle at 50% 40%, ${theme === 'dark' ? 'rgba(216,189,248,0.25), rgba(37,28,51,0.92)' : 'rgba(216,189,248,0.52), rgba(246,242,251,0.96)'});
+      box-shadow:0 0 28px rgba(156,120,201,0.18); }
+    .anatomy-mark::before { content:""; position:absolute; inset:-4px; border:2px solid transparent; border-top-color:#4f8a54; border-right-color:rgba(79,138,84,.28); border-radius:20px; animation:spin 1.35s linear infinite; }
+    .anatomy-mark::after { content:""; position:absolute; inset:-8px; border:1px solid rgba(79,138,84,0.25); border-radius:24px; animation:markPulse 2.1s ease-out infinite; }
+    .loading-kicker { display:block; color:${theme === 'dark' ? '#DDEEDD' : '#4b744d'}; font-size:8px; font-weight:800; letter-spacing:1.5px; margin-bottom:4px; }
+    .loading-title { display:block; font-size:16px; line-height:20px; font-weight:750; letter-spacing:0.1px; }
+    .loading-status { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:9px; }
+    #loading-name { color:${theme === 'dark' ? '#c9c6d0' : '#686275'}; font-size:10px; letter-spacing:0.15px; }
+    #loading-count { color:${theme === 'dark' ? '#DDEEDD' : '#4b744d'}; font-size:10px; font-weight:800; font-variant-numeric:tabular-nums; }
+    .progress-track { height:5px; border-radius:9px; overflow:hidden; background:${theme === 'dark' ? 'rgba(255,255,255,0.12)' : 'rgba(74,62,94,0.12)'}; }
+    #loading-progress { display:block; height:100%; width:0%; border-radius:9px; background:linear-gradient(90deg,#397842,#77bb78,#DDEEDD); background-size:200% 100%; box-shadow:0 0 12px rgba(79,138,84,0.4); transition:width 0.35s ease; animation:progressGlow 1.8s linear infinite; }
+    .loading-steps { display:flex; gap:6px; margin-top:14px; }
+    .loading-step { flex:1; padding:7px 5px; border-radius:8px; text-align:center; white-space:nowrap;
+      color:${theme === 'dark' ? '#a1a1aa' : '#777180'}; background:${theme === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(74,62,94,0.06)'}; font-size:8px; font-weight:700; letter-spacing:0.25px; }
+    .loading-step.active { color:${theme === 'dark' ? '#eadfff' : '#65428f'}; background:${theme === 'dark' ? 'rgba(216,189,248,0.14)' : 'rgba(216,189,248,0.32)'}; box-shadow:inset 0 0 0 1px rgba(167,139,250,0.25); }
+    @keyframes markPulse { 0% { transform:scale(.92); opacity:.85; } 100% { transform:scale(1.16); opacity:0; } }
     @keyframes spin { to { transform: rotate(360deg); } }
-    #tooltip {
-      position: absolute; bottom: 24px; left: 50%;
-      transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.94);
-      border: 1px solid rgba(56, 189, 248, 0.6);
-      color: #ffffff; padding: 8px 20px; border-radius: 24px;
-      font-size: 13px; font-weight: 700; pointer-events: none;
-      opacity: 0; transition: opacity 0.25s, transform 0.25s;
-      white-space: nowrap; box-shadow: 0 4px 24px rgba(0,0,0,0.6);
-      z-index: 20;
-      display: flex; align-items: center; gap: 8px;
-    }
-    #tooltip.visible { opacity: 1; transform: translateX(-50%) translateY(-6px); }
-    #tooltip-dot {
-      width: 8px; height: 8px; border-radius: 4px;
-      background: #38bdf8; box-shadow: 0 0 8px #38bdf8;
-    }
+    @keyframes progressGlow { to { background-position:200% 0; } }
   </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script>(1, eval)(atob("${runtime.THREE_B64}"));</script>
+  <script>(1, eval)(atob("${runtime.CONTROLS_B64}"));</script>
+  <script>(1, eval)(atob("${runtime.GLTF_LOADER_B64}"));</script>
+  <script>(1, eval)(atob("${runtime.DRACO_LOADER_B64}"));</script>
 </head>
-<body>
-  <div id="loader"><div class="spinner"></div><span>Rendering 3D Human Anatomy...</span></div>
-  <div id="tooltip"><span id="tooltip-dot"></span><span id="tooltip-text"></span></div>
+<body class="theme-${theme}">
+  <div id="loader"><div class="loading-card">
+    <div class="loading-brand"><div class="anatomy-mark">＋</div><div><span class="loading-kicker">ANAPHARM · 3D ATLAS</span><strong class="loading-title">Preparing the body</strong></div></div>
+    <div class="loading-status"><span id="loading-name">Preparing local anatomy models…</span><b id="loading-count">0%</b></div>
+    <div class="progress-track"><i id="loading-progress"></i></div>
+    <div class="loading-steps"><span id="load-step-skeleton" class="loading-step">SKELETON</span><span id="load-step-muscles" class="loading-step">MUSCLES</span><span id="load-step-organs" class="loading-step">ORGANS</span></div>
+  </div></div>
   <canvas id="canvas3d"></canvas>
 
   <script>
     // Bulletproof Three.js decoders
     if (typeof THREE === 'undefined') {
       try {
-        var rawThree = atob("${THREE_B64}");
+        var rawThree = atob("${runtime.THREE_B64}");
         (1, eval)(rawThree);
       } catch (err) {
         console.error('Three fallback decode error:', err);
@@ -143,19 +210,13 @@ export default function Model3DView({
     }
     if (typeof THREE !== 'undefined' && !THREE.OrbitControls) {
       try {
-        var rawControls = atob("${CONTROLS_B64}");
+        var rawControls = atob("${runtime.CONTROLS_B64}");
         (1, eval)(rawControls);
       } catch (err) {
         console.error('OrbitControls fallback decode error:', err);
       }
     }
-
-    // Hoisted Geometry Generators
-    function S(r, ws, hs) { return new THREE.SphereGeometry(r, ws || 28, hs || 22); }
-    function C(rt, rb, h, rs) { return new THREE.CylinderGeometry(rt, rb, h, rs || 22); }
-    function T(r, t, rs, cs) { return new THREE.TorusGeometry(r, t, rs || 16, cs || 28); }
-    function B(w, h, d) { return new THREE.BoxGeometry(w, h, d); }
-    function Cone(r, h, rs) { return new THREE.ConeGeometry(r, h, rs || 22); }
+    window.__DRACO_DECODER_SOURCE = atob('${runtime.DRACO_DECODER_B64}');
 
     var scene, camera, renderer, controls;
     var grid = null;
@@ -167,13 +228,14 @@ export default function Model3DView({
     var rimWarmLight = null;
     var organMeshes = [];
     var organMap = {};
-    var heartGroup = null;
-    var rightLungGroup = null;
-    var leftLungGroup = null;
-    var bloodPoints = null;
-    var bloodSpeeds = [];
-    var bloodCount = 140;
-    var clock = new THREE.Clock();
+    var layerGroups = {};
+    var muscleMaterials = [];
+    var muscleMaterialSet = new Set();
+    var lastMuscleOpacity = null;
+    var sceneActive = true;
+    var animationFrameId = 0;
+    var modelUris = ${JSON.stringify(modelUris)};
+    var anatomyRoot = null;
 
     var THEME_PALETTES = {
       dark: {
@@ -182,19 +244,19 @@ export default function Model3DView({
         hemiSky: 0xffffff,
         hemiGround: 0x1e293b,
         hemiIntensity: 0.90,
-        dirIntensity: 1.15,
-        rimColor: 0x38bdf8,
-        rimIntensity: 0.85,
+        dirIntensity: 1.35,
+        rimColor: 0x62d6ff,
+        rimIntensity: 1.0,
         rimWarmColor: 0xffedd5,
         rimWarmIntensity: 0.35,
         grid1: 0x0ea5e9,
         grid2: 0x1e293b,
-        gridOpacity: 0.22,
+        gridOpacity: 0.09,
         skinColor: 0x38bdf8,
         skinOpacity: 0.18,
         skinRoughness: 0.45,
-        toneExposure: 1.15,
-        skeletalColor: 0xf5eedb,
+        toneExposure: 1.28,
+        skeletalColor: 0xf5eedc,
       },
       light: {
         bgHex: 0xe4e4e7,
@@ -202,30 +264,32 @@ export default function Model3DView({
         hemiSky: 0xffffff,
         hemiGround: 0x94a3b8,
         hemiIntensity: 0.65,
-        dirIntensity: 1.00,
-        rimColor: 0x0284c7,
-        rimIntensity: 0.55,
+        dirIntensity: 1.18,
+        rimColor: 0x5cc9f5,
+        rimIntensity: 0.78,
         rimWarmColor: 0x64748b,
         rimWarmIntensity: 0.25,
         grid1: 0x0284c7,
         grid2: 0xcfd8dc,
-        gridOpacity: 0.34,
+        gridOpacity: 0.11,
         skinColor: 0x0284c7,
         skinOpacity: 0.28,
         skinRoughness: 0.65,
-        toneExposure: 1.05,
-        skeletalColor: 0xd9cebc,
+        toneExposure: 1.18,
+        skeletalColor: 0xf5eedc,
       },
     };
 
     var config = {
-      bpm: 72,
-      respRate: 16,
       autoRotate: false,
       xrayMode: false,
       explodeVal: 0,
       focusRegion: 'all',
-      theme: '${theme}'
+      theme: '${theme}',
+      showSkeleton: true,
+      showMuscles: true,
+      muscleOpacity: 0.58,
+      organsVisible: { brain: true, heart: true, lungs: true, liver: true, stomach: true, kidneys: true, smallIntestine: true, largeIntestine: true, trachea: true }
     };
 
     var CAM_VIEWS = {
@@ -247,238 +311,126 @@ export default function Model3DView({
       isCamTransitioning = true;
     }
 
-    function registerOrgan(system, nameKey, geo, colorHex, x, y, z, opts) {
-      opts = opts || {};
-      var isSkin = (nameKey === 'Body Surface (Skin)');
-      var curPal = THEME_PALETTES[config.theme] || THEME_PALETTES.dark;
+    function isLayerVisible(id) {
+      if (id === 'skeleton') return config.showSkeleton;
+      if (id === 'muscles') return config.showMuscles;
+      return config.organsVisible[id] !== false;
+    }
 
-      var matColor = colorHex;
-      var matOpacity = opts.opacity !== undefined ? opts.opacity : 1.0;
-      var matRoughness = system === 'skeletal' ? 0.38 : (system === 'cardio' ? 0.20 : 0.44);
-      var matMetalness = isSkin ? 0.05 : (system === 'cardio' ? 0.18 : 0.06);
-
-      if (isSkin) {
-        matColor = curPal.skinColor;
-        matOpacity = curPal.skinOpacity;
-        matRoughness = curPal.skinRoughness;
-      } else if (system === 'skeletal') {
-        matColor = curPal.skeletalColor;
+    function applyLayerSettings() {
+      Object.keys(layerGroups).forEach(function(id) { layerGroups[id].visible = isLayerVisible(id); });
+      var opacity = Math.max(0.05, Math.min(0.95, config.muscleOpacity));
+      if (lastMuscleOpacity === null || Math.abs(lastMuscleOpacity - opacity) > 0.001) {
+        muscleMaterials.forEach(function(mat) {
+          mat.transparent = opacity < 0.99;
+          mat.opacity = opacity;
+          mat.depthWrite = opacity >= 0.99;
+          mat.needsUpdate = true;
+        });
+        lastMuscleOpacity = opacity;
       }
+    }
 
-      var mat = new THREE.MeshStandardMaterial({
-        color: matColor,
-        roughness: matRoughness,
-        metalness: matMetalness,
-        transparent: isSkin || Boolean(opts.opacity && opts.opacity < 1),
-        opacity: matOpacity,
-        depthWrite: !isSkin,
-        side: THREE.DoubleSide
+    function updateAtlasLoader(index, completed, labels) {
+      var progress = Math.round(((index + (completed ? 1 : 0)) / modelUris.length) * 100);
+      var progressBar = document.getElementById('loading-progress');
+      var count = document.getElementById('loading-count');
+      var label = document.getElementById('loading-name');
+      if (progressBar) progressBar.style.width = progress + '%';
+      if (count) count.textContent = progress + '%';
+      if (label) label.textContent = completed ? 'Loaded ' + labels[index] : 'Loading ' + labels[index] + '…';
+      var activeStep = index === 0 ? 'skeleton' : index === 1 ? 'muscles' : 'organs';
+      ['skeleton','muscles','organs'].forEach(function(step) {
+        var item = document.getElementById('load-step-' + step);
+        if (item) item.classList.toggle('active', step === activeStep);
+      });
+    }
+
+    function loadFullBodyAnatomy() {
+      var loaderEl = document.getElementById('loader');
+      var labels = ['Skeleton','Muscles','Brain','Heart','Lungs','Liver','Stomach','Kidneys','Small bowel','Large bowel','Trachea'];
+      var ids = ['skeleton','muscles','brain','heart','lungs','liver','stomach','kidneys','smallIntestine','largeIntestine','trachea'];
+      var organKeys = ['Skeleton','Muscles','Brain','Heart','Lungs','Liver','Stomach','Kidneys','Small Intestine','Large Intestine','Trachea'];
+      var systems = ['skeletal','muscular','nervous','cardio','respiratory','digestive','digestive','urinary','digestive','digestive','respiratory'];
+      var root = new THREE.Group();
+      root.rotation.x = -Math.PI / 2;
+      scene.add(root);
+
+      var draco = new THREE.DRACOLoader();
+      draco.setDecoderConfig({ type: 'js' });
+      draco._loadLibrary = function () { return Promise.resolve(window.__DRACO_DECODER_SOURCE); };
+      draco.setWorkerLimit(2);
+      var gltfLoader = new THREE.GLTFLoader();
+      gltfLoader.setDRACOLoader(draco);
+
+      var chain = Promise.resolve();
+      var adjustedMuscleMaterials = new Set();
+      var layerTints = [null, 0xc93645, 0xcf4c91, 0xe52d43, 0x16a9ba, 0xa94518, 0xd47a16, 0x993c72, 0xc28c16, 0xb95721, 0x148d9c];
+      modelUris.forEach(function(uri, index) {
+        chain = chain.then(function() {
+          updateAtlasLoader(index, false, labels);
+          return new Promise(function(resolve, reject) {
+            gltfLoader.load(uri, function(gltf) {
+              var part = gltf.scene;
+              layerGroups[ids[index]] = part;
+              part.traverse(function(node) {
+                if (!node.isMesh) return;
+                node.userData.nameKey = organKeys[index];
+                node.userData.system = systems[index];
+                if (node.material) {
+                  var modelMaterials = Array.isArray(node.material) ? node.material : [node.material];
+                  modelMaterials.forEach(function(mat) {
+                    if (mat.color && !adjustedMuscleMaterials.has(mat)) {
+                      // Keep the source bone and cartilage material colors distinct.
+                      if (index !== 0 && layerTints[index]) mat.color.lerp(new THREE.Color(layerTints[index]), index === 1 ? 0.58 : 0.62);
+                      if (index === 1) mat.roughness = 0.7;
+                      adjustedMuscleMaterials.add(mat);
+                    }
+                    if (index === 1 && !muscleMaterialSet.has(mat)) {
+                      muscleMaterialSet.add(mat);
+                      muscleMaterials.push(mat);
+                    }
+                  });
+                }
+                node.userData.origColor = node.material && node.material.color ? node.material.color.getHex() : 0xffffff;
+                node.userData.origOpacity = 1;
+                node.userData.origPos = node.position.clone();
+                node.userData.explodeDir = new THREE.Vector3(0, 1, 0);
+                organMeshes.push(node);
+              });
+              root.add(part);
+              if (index === 1) lastMuscleOpacity = null;
+              applyLayerSettings();
+              updateAtlasLoader(index, true, labels);
+              resolve();
+            }, undefined, reject);
+          });
+        });
       });
 
-      var mesh = new THREE.Mesh(geo, mat);
-      mesh.position.set(x, y, z);
-      if (opts.s) mesh.scale.set(opts.s[0], opts.s[1], opts.s[2]);
-      if (opts.r) mesh.rotation.set(opts.r[0], opts.r[1], opts.r[2]);
-
-      mesh.userData = {
-        nameKey: nameKey,
-        system: system,
-        origColor: colorHex,
-        origOpacity: isSkin ? curPal.skinOpacity : (opts.opacity !== undefined ? opts.opacity : 1.0),
-        origPos: mesh.position.clone(),
-        origScale: mesh.scale.clone(),
-        explodeDir: new THREE.Vector3(x, y - 9.5, z).normalize()
-      };
-
-      scene.add(mesh);
-      organMeshes.push(mesh);
-      if (!organMap[nameKey]) organMap[nameKey] = [];
-      organMap[nameKey].push(mesh);
-      return mesh;
-    }
-
-    function registerBilateral(system, nameKey, geoFunc, colorHex, x, y, z, opts) {
-      opts = opts || {};
-      var left = registerOrgan(system, nameKey, geoFunc(), colorHex, x, y, z, opts);
-      var optsR = Object.assign({}, opts);
-      if (opts.r) optsR.r = [opts.r[0], -opts.r[1], -opts.r[2]];
-      var right = registerOrgan(system, nameKey, geoFunc(), colorHex, -x, y, z, optsR);
-      return { left: left, right: right };
-    }
-
-    function buildUpgradedHumanAnatomy() {
-      var curPal = THEME_PALETTES[config.theme] || THEME_PALETTES.dark;
-      var SK = curPal.skeletalColor;
-      var CA = 0xe11d48;
-      var NE = 0xfacc15;
-      var RE = 0xf472b6;
-      var DI = 0xf97316;
-      var UR = 0x06b6d4;
-      var MU = 0xc2410c;
-      var IN = curPal.skinColor;
-
-      // 1. Integumentary (Skin)
-      registerOrgan('integumentary', 'Body Surface (Skin)', S(1.06), IN, 0, 16.8, 0, { s: [0.94, 1.15, 1.04] });
-      registerOrgan('integumentary', 'Body Surface (Skin)', B(0.72, 0.55, 0.7), IN, 0, 15.75, 0.38, { r: [0.1, 0, 0] });
-      registerOrgan('integumentary', 'Body Surface (Skin)', C(0.46, 0.58, 1.3), IN, 0, 15.1, 0);
-      registerOrgan('integumentary', 'Body Surface (Skin)', C(2.15, 1.75, 3.4), IN, 0, 13.4, 0, { s: [1, 1, 0.7] });
-      registerOrgan('integumentary', 'Body Surface (Skin)', C(1.7, 1.52, 2.5), IN, 0, 10.9, 0, { s: [1, 1, 0.68] });
-      registerOrgan('integumentary', 'Body Surface (Skin)', C(1.58, 1.40, 1.9), IN, 0, 9.1, 0, { s: [1.06, 1, 0.74] });
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return S(0.72); }, IN, 2.45, 14.15, 0);
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return C(0.44, 0.36, 3.2); }, IN, 2.72, 12.2, 0, { r: [0, 0, -0.22] });
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return C(0.36, 0.26, 3.0); }, IN, 3.42, 9.6, 0, { r: [0, 0, -0.15] });
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return B(0.42, 0.82, 0.16); }, IN, 3.85, 7.85, 0, { r: [0, 0, -0.1] });
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return C(0.065, 0.05, 0.46); }, IN, 3.65, 7.4, 0.08, { r: [0.3, 0, 0.4] });
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return C(0.055, 0.045, 0.52); }, IN, 3.78, 7.12, 0.02);
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return C(0.058, 0.046, 0.55); }, IN, 3.88, 7.08, 0.01);
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return C(0.054, 0.044, 0.51); }, IN, 3.98, 7.12, 0.0);
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return C(0.048, 0.038, 0.44); }, IN, 4.07, 7.18, -0.01);
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return C(0.74, 0.54, 4.2); }, IN, 0.95, 6.8, 0);
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return S(0.50); }, IN, 0.95, 4.6, 0.06);
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return C(0.50, 0.32, 4.4); }, IN, 0.95, 2.4, 0);
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return B(0.56, 0.28, 1.45); }, IN, 0.95, 0.15, 0.32);
-      registerBilateral('integumentary', 'Body Surface (Skin)', function() { return B(0.52, 0.22, 0.42); }, IN, 0.95, 0.12, 1.1);
-
-      // 2. Cardio (Heart & Great Vessels)
-      var heartMeshes = [];
-      var hVent = registerOrgan('cardio', 'Heart', S(0.86), CA, 0.32, 12.8, 0.38, { s: [1.14, 1.34, 0.95], r: [0.15, 0, 0.38] });
-      var hApex = registerOrgan('cardio', 'Heart', Cone(0.42, 0.8), 0xbe123c, 0.48, 12.35, 0.44, { r: [Math.PI + 0.2, 0, 0.35] });
-      var hRV = registerOrgan('cardio', 'Heart', S(0.54), 0x9f1239, 0.12, 12.75, 0.46, { s: [0.95, 1.1, 0.85] });
-      var hLA = registerOrgan('cardio', 'Heart', S(0.44), 0xbe123c, 0.58, 13.45, 0.28, { s: [1, 0.85, 0.8] });
-      var hRA = registerOrgan('cardio', 'Heart', S(0.42), 0x9f1239, 0.02, 13.35, 0.32, { s: [1, 0.85, 0.8] });
-      heartMeshes.push(hVent, hApex, hRV, hLA, hRA);
-
-      registerOrgan('cardio', 'Heart', T(0.50, 0.16, 16, 32), 0xef4444, 0.22, 13.75, 0.20, { r: [0, 0, Math.PI / 2 + 0.32] });
-      registerOrgan('cardio', 'Heart', C(0.08, 0.08, 0.75), 0xef4444, 0.06, 14.3, 0.22, { r: [0, 0, -0.3] });
-      registerOrgan('cardio', 'Heart', C(0.075, 0.075, 0.85), 0xef4444, 0.22, 14.4, 0.18, { r: [0, 0, 0.05] });
-      registerOrgan('cardio', 'Heart', C(0.075, 0.075, 0.8), 0xef4444, 0.38, 14.3, 0.15, { r: [0, 0, 0.35] });
-      registerOrgan('cardio', 'Heart', C(0.15, 0.14, 1.1), 0x2563eb, 0.26, 13.3, 0.52, { r: [-0.3, 0, 0.1] });
-      registerOrgan('cardio', 'Heart', C(0.09, 0.08, 1.2), 0x2563eb, 0.26, 13.7, 0.44, { r: [0, 0, Math.PI / 2] });
-      registerOrgan('cardio', 'Heart', C(0.18, 0.18, 5.0), 0x2563eb, -0.22, 12.3, -0.15);
-      registerOrgan('cardio', 'Heart', C(0.18, 0.16, 5.4), 0xef4444, 0.16, 11.6, -0.20);
-      registerBilateral('cardio', 'Heart', function() { return C(0.09, 0.07, 1.8); }, 0xef4444, 0.42, 14.9, 0.1);
-      registerBilateral('cardio', 'Heart', function() { return C(0.08, 0.06, 4.4); }, 0xef4444, 0.88, 6.6, 0.05);
-      registerBilateral('cardio', 'Heart', function() { return C(0.08, 0.06, 4.4); }, 0x2563eb, 0.74, 6.6, -0.05);
-      registerOrgan('cardio', 'Heart', C(0.035, 0.025, 1.1), 0xf87171, 0.34, 12.75, 0.72, { r: [0.2, 0, -0.3] });
-      registerOrgan('cardio', 'Heart', C(0.03, 0.02, 0.9), 0x60a5fa, 0.24, 12.65, 0.70, { r: [0.15, 0, -0.2] });
-      heartGroup = heartMeshes;
-
-      // 3. Respiratory (Lungs & Bronchi)
-      registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', C(0.15, 0.15, 1.9), 0xe2e8f0, 0, 14.6, 0.32);
-      for (var i = 0; i < 5; i++) {
-        registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', T(0.16, 0.02, 10, 20), 0xcfd8dc, 0, 14.9 - i * 0.25, 0.32, { r: [Math.PI / 2, 0, 0] });
-      }
-      registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', C(0.10, 0.08, 0.9), 0xe2e8f0, -0.30, 13.55, 0.18, { r: [0, 0, 0.6] });
-      registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', C(0.10, 0.08, 0.9), 0xe2e8f0, 0.30, 13.55, 0.18, { r: [0, 0, -0.6] });
-
-      var rLungs = [];
-      rLungs.push(registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', S(0.74), RE, -0.84, 13.6, 0.12, { s: [0.82, 0.95, 0.85], opacity: 0.92 }));
-      rLungs.push(registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', S(0.72), 0xf472b6, -0.86, 12.9, 0.15, { s: [0.85, 0.75, 0.85], opacity: 0.92 }));
-      rLungs.push(registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', S(0.82), 0xf43f5e, -0.82, 12.1, 0.08, { s: [0.88, 1.05, 0.90], opacity: 0.92 }));
-      rightLungGroup = rLungs;
-
-      var lLungs = [];
-      lLungs.push(registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', S(0.72), RE, 0.90, 13.5, 0.10, { s: [0.78, 1.10, 0.82], opacity: 0.92 }));
-      lLungs.push(registerOrgan('respiratory', 'Lungs (Pulmonary Lobes)', S(0.78), 0xf43f5e, 0.88, 12.2, 0.06, { s: [0.84, 1.05, 0.85], opacity: 0.92 }));
-      leftLungGroup = lLungs;
-
-      // 4. Nervous (Brain & Sciatic)
-      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', S(0.80), NE, -0.38, 16.95, 0.05, { s: [0.86, 0.88, 1.12] });
-      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', S(0.80), NE, 0.38, 16.95, 0.05, { s: [0.86, 0.88, 1.12] });
-      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', S(0.52), 0xfde047, -0.34, 16.85, 0.52, { s: [0.85, 0.75, 0.8] });
-      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', S(0.52), 0xfde047, 0.34, 16.85, 0.52, { s: [0.85, 0.75, 0.8] });
-      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', S(0.50), 0xd97706, 0, 15.85, -0.35, { s: [1.25, 0.68, 0.85] });
-      registerOrgan('nervous', 'Brain (Cerebrum & Cortex)', C(0.18, 0.12, 1.3), 0xf59e0b, 0, 15.1, -0.2);
-      registerBilateral('nervous', 'Sciatic Nerve', function() { return C(0.065, 0.045, 4.4); }, NE, 0.88, 6.6, -0.2);
-
-      // 5. Digestive (Stomach, Liver, Gallbladder, Pancreas, Intestines, Colon, Appendix)
-      registerOrgan('digestive', 'Stomach', S(0.70), DI, 0.58, 11.2, 0.35, { s: [1.16, 0.95, 0.85], r: [0, 0, 0.45] });
-      registerOrgan('digestive', 'Stomach', S(0.48), 0xfb923c, 0.68, 11.75, 0.28, { s: [1.0, 0.8, 0.8] });
-      registerOrgan('digestive', 'Stomach', C(0.22, 0.16, 0.75), 0xf97316, 0.22, 10.8, 0.38, { r: [0, 0, -0.7] });
-      registerOrgan('digestive', 'Liver', S(0.96), 0xb45309, -0.76, 11.45, 0.30, { s: [1.38, 0.74, 0.94], r: [0, 0, -0.15] });
-      registerOrgan('digestive', 'Liver', S(0.68), 0x9a3412, -0.25, 11.65, 0.34, { s: [1.0, 0.6, 0.75] });
-      registerOrgan('digestive', 'Gallbladder', S(0.22), 0x84cc16, -0.52, 10.7, 0.64, { s: [0.75, 1.35, 0.75] });
-      registerOrgan('digestive', 'Pancreas', B(1.15, 0.28, 0.30), 0xf59e0b, 0.15, 10.8, 0.10, { r: [0, 0, 0.18] });
-      registerOrgan('digestive', 'Pancreas', T(0.38, 0.08, 10, 20), 0xfb923c, 0.02, 10.6, 0.25, { r: [0, Math.PI / 2, 0] });
-      registerOrgan('digestive', 'Spleen', S(0.38), 0x9333ea, 1.28, 11.5, 0.12, { s: [0.8, 1.25, 0.68] });
-      registerOrgan('digestive', 'Small Intestine', T(0.74, 0.34, 14, 28), 0xfb923c, 0, 9.8, 0.25, { r: [Math.PI / 2, 0, 0] });
-      registerOrgan('digestive', 'Small Intestine', T(0.52, 0.26, 12, 24), 0xf97316, 0.08, 9.4, 0.32, { r: [Math.PI / 2 + 0.2, 0.1, 0] });
-      registerOrgan('digestive', 'Large Intestine (Colon)', S(0.34), 0xd97706, -0.92, 9.1, 0.26);
-      registerOrgan('digestive', 'Appendix', C(0.045, 0.035, 0.48), 0xe11d48, -0.96, 8.7, 0.36, { r: [0.35, 0, 0.55] });
-      registerOrgan('digestive', 'Large Intestine (Colon)', C(0.24, 0.24, 1.6), 0xd97706, -0.98, 10.0, 0.22);
-      registerOrgan('digestive', 'Large Intestine (Colon)', C(0.22, 0.22, 1.9), 0xd97706, 0, 10.7, 0.32, { r: [0, 0, Math.PI / 2] });
-      registerOrgan('digestive', 'Large Intestine (Colon)', C(0.24, 0.24, 1.6), 0xd97706, 0.98, 10.0, 0.22);
-      registerOrgan('digestive', 'Large Intestine (Colon)', T(0.42, 0.18, 12, 22), 0xd97706, 0.48, 8.8, 0.15, { r: [Math.PI / 2, 0.3, 0] });
-
-      // 6. Urinary
-      registerBilateral('urinary', 'Kidneys', function() { return S(0.40); }, UR, 0.82, 10.6, -0.45, { s: [0.72, 1.32, 0.65] });
-      registerBilateral('urinary', 'Kidneys', function() { return Cone(0.18, 0.26); }, 0xfbbf24, 0.82, 11.15, -0.42);
-      registerBilateral('urinary', 'Kidneys', function() { return C(0.035, 0.035, 2.6); }, 0x38bdf8, 0.62, 9.3, -0.15, { r: [0.2, 0, -0.1] });
-      registerOrgan('urinary', 'Kidneys', S(0.46), 0x0284c7, 0, 8.1, 0.35, { s: [1.1, 0.9, 0.95] });
-      registerOrgan('urinary', 'Thyroid Gland', S(0.35), 0xa855f7, 0, 14.7, 0.52, { s: [1.25, 0.65, 0.5] });
-
-      // 7. Skeletal
-      registerOrgan('skeletal', 'Skull (Cranium)', S(1.02), SK, 0, 16.7, 0, { s: [0.92, 1.1, 1.08] });
-      registerOrgan('skeletal', 'Skull (Cranium)', B(0.74, 0.48, 0.68), SK, 0, 15.65, 0.44);
-      registerBilateral('skeletal', 'Skull (Cranium)', function() { return S(0.18); }, 0x09090b, 0.28, 16.2, 0.85);
-      registerOrgan('skeletal', 'Thoracic & Lumbar Spine', C(0.24, 0.28, 6.9, 16), SK, 0, 11.6, -0.55);
-      for (var j = 0; j < 14; j++) {
-        registerOrgan('skeletal', 'Thoracic & Lumbar Spine', T(0.29, 0.035, 8, 18), 0xd9cebc, 0, 14.8 - j * 0.46, -0.55, { r: [Math.PI / 2, 0, 0] });
-      }
-      registerOrgan('skeletal', 'Rib Cage', B(0.36, 2.7, 0.14), SK, 0, 13.0, 0.98);
-      [1.25, 1.44, 1.58, 1.64, 1.60, 1.52, 1.40, 1.25].forEach(function(rad, idx) {
-        registerOrgan('skeletal', 'Rib Cage', T(rad, 0.08, 12, 30), SK, 0, 14.25 - idx * 0.40, 0.08, { s: [1, 0.64, 1], r: [Math.PI / 2 + 0.08, 0, 0] });
-      });
-      registerBilateral('skeletal', 'Rib Cage', function() { return C(0.085, 0.085, 1.75); }, SK, 1.15, 14.35, 0.45, { r: [0, 0, -1.35] });
-      registerBilateral('skeletal', 'Rib Cage', function() { return B(0.72, 1.2, 0.12); }, SK, 1.25, 13.1, -0.65, { r: [0.15, 0.3, -0.2] });
-      registerOrgan('skeletal', 'Thoracic & Lumbar Spine', T(1.18, 0.24, 12, 26), SK, 0, 8.5, 0, { s: [1.12, 0.82, 1], r: [Math.PI / 2, 0, 0] });
-      registerBilateral('skeletal', 'Femur', function() { return C(0.15, 0.12, 3.2); }, SK, 2.7, 12.2, 0, { r: [0, 0, -0.22] });
-      registerBilateral('skeletal', 'Femur', function() { return C(0.11, 0.09, 3.0); }, SK, 3.4, 9.6, 0, { r: [0, 0, -0.15] });
-      registerBilateral('skeletal', 'Femur', function() { return B(0.28, 0.68, 0.1); }, SK, 3.85, 7.8, 0, { r: [0, 0, -0.1] });
-      registerBilateral('skeletal', 'Femur', function() { return C(0.19, 0.16, 4.4); }, SK, 0.95, 6.6, 0);
-      registerBilateral('skeletal', 'Femur', function() { return S(0.26); }, SK, 0.95, 4.6, 0.14);
-      registerBilateral('skeletal', 'Femur', function() { return C(0.16, 0.12, 4.4); }, SK, 0.95, 2.4, 0);
-      registerBilateral('skeletal', 'Femur', function() { return B(0.38, 0.22, 1.1); }, SK, 0.95, 0.15, 0.32);
-
-      // 8. Muscular
-      registerBilateral('muscular', 'Pectoralis Major', function() { return B(0.96, 0.88, 0.18); }, MU, 0.75, 13.35, 0.88, { r: [0, -0.18, 0.15] });
-    }
-
-    function buildBloodParticles() {
-      var geo = new THREE.BufferGeometry();
-      var pos = new Float32Array(bloodCount * 3);
-      var col = new Float32Array(bloodCount * 3);
-      bloodSpeeds = new Float32Array(bloodCount);
-
-      for (var i = 0; i < bloodCount; i++) {
-        var isArtery = (i % 2 === 0);
-        var progress = Math.random();
-        var y = 16.5 - progress * 14.5;
-        var x = (Math.random() - 0.5) * (y < 8.5 ? 1.7 : 0.65);
-        var z = (Math.random() - 0.5) * 0.38;
-        pos[i * 3] = x;
-        pos[i * 3 + 1] = y;
-        pos[i * 3 + 2] = z;
-
-        if (isArtery) {
-          col[i * 3] = 0.98; col[i * 3 + 1] = 0.12; col[i * 3 + 2] = 0.26;
-        } else {
-          col[i * 3] = 0.12; col[i * 3 + 1] = 0.58; col[i * 3 + 2] = 0.98;
+      chain.then(function() {
+        var bounds = new THREE.Box3().setFromObject(root);
+        var size = bounds.getSize(new THREE.Vector3());
+        var center = bounds.getCenter(new THREE.Vector3());
+        var scale = 17.2 / (size.y || 1);
+        root.scale.setScalar(scale);
+        root.position.set(-center.x * scale, 8.65 - center.y * scale, -center.z * scale);
+        root.updateMatrixWorld(true);
+        if (loaderEl) loaderEl.style.opacity = '0';
+        setupTouchRaycaster();
+        animate();
+        if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify({ type: 'MODEL_READY' }));
+      }).catch(function(error) {
+        console.error('Full body anatomy could not load:', error);
+        if (loaderEl) {
+          var label = document.getElementById('loading-name');
+          if (label) label.textContent = 'Could not load the anatomy atlas';
+          loaderEl.style.opacity = '1';
         }
-        bloodSpeeds[i] = 0.026 + Math.random() * 0.038;
-      }
-      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
-
-      var mat = new THREE.PointsMaterial({
-        size: 0.17,
-        vertexColors: true,
-        transparent: true,
-        opacity: 0.88,
-        blending: THREE.AdditiveBlending
+        if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(JSON.stringify({
+          type: 'MODEL_ERROR', message: String(error && (error.message || error.type) || error || 'Unknown model error')
+        }));
       });
-      bloodPoints = new THREE.Points(geo, mat);
-      scene.add(bloodPoints);
     }
 
     function initScene() {
@@ -486,7 +438,7 @@ export default function Model3DView({
       scene = new THREE.Scene();
 
       var curPal = THEME_PALETTES[config.theme] || THEME_PALETTES.dark;
-      scene.background = new THREE.Color(curPal.bgHex);
+      scene.background = null;
 
       var w = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0, 320);
       var h = Math.max(window.innerHeight || 0, document.documentElement.clientHeight || 0, 480);
@@ -500,8 +452,9 @@ export default function Model3DView({
         alpha: true,
         powerPreference: "high-performance"
       });
+      renderer.setClearColor(0x000000, 0);
       renderer.setSize(w, h);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
 
       renderer.outputEncoding = THREE.sRGBEncoding;
       renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -510,6 +463,12 @@ export default function Model3DView({
       controls = new THREE.OrbitControls(camera, renderer.domElement);
       controls.enableDamping = true;
       controls.dampingFactor = 0.08;
+      controls.enabled = true;
+      controls.enableRotate = true;
+      controls.enableZoom = true;
+      controls.enablePan = true;
+      controls.touches.ONE = THREE.TOUCH.ROTATE;
+      controls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
       controls.minDistance = 2.0;
       controls.maxDistance = 55.0;
       controls.rotateSpeed = 0.9;
@@ -565,34 +524,12 @@ export default function Model3DView({
       gridRings = ringsGroup;
       scene.add(gridRings);
 
-      buildUpgradedHumanAnatomy();
-      buildBloodParticles();
-
-      setupTouchRaycaster();
-
-      var loader = document.getElementById('loader');
-      if (loader) loader.style.opacity = '0';
-
-      animate();
+      loadFullBodyAnatomy();
     }
 
     function setupTouchRaycaster() {
       var raycaster = new THREE.Raycaster();
       var mouse = new THREE.Vector2();
-      var tooltip = document.getElementById('tooltip');
-      var tooltipText = document.getElementById('tooltip-text');
-      var tooltipTimer = null;
-
-      function showTooltip(text) {
-        if (!tooltip || !tooltipText) return;
-        tooltipText.textContent = text;
-        tooltip.classList.add('visible');
-        clearTimeout(tooltipTimer);
-        tooltipTimer = setTimeout(function() {
-          tooltip.classList.remove('visible');
-        }, 2200);
-      }
-
       function processHit(clientX, clientY) {
         var w = window.innerWidth || document.documentElement.clientWidth;
         var h = window.innerHeight || document.documentElement.clientHeight;
@@ -601,28 +538,31 @@ export default function Model3DView({
         raycaster.setFromCamera(mouse, camera);
 
         var internalHits = organMeshes.filter(function(m) {
+          var node = m;
+          while (node) { if (!node.visible) return false; node = node.parent; }
           return m.userData.nameKey !== 'Body Surface (Skin)';
         });
         var intersects = raycaster.intersectObjects(internalHits, true);
-        if (intersects.length === 0) {
-          intersects = raycaster.intersectObjects(organMeshes, true);
-        }
-
+        var organIntersects = intersects.filter(function(hit) {
+          return hit.object.userData.system !== 'skeletal' && hit.object.userData.system !== 'muscular';
+        });
+        if (organIntersects.length) intersects = organIntersects;
         if (intersects.length > 0) {
           var hitObj = intersects[0].object;
           var organName = hitObj.userData.nameKey;
           if (organName) {
-            showTooltip(organName);
-            var origColor = hitObj.material.color.getHex();
-            hitObj.material.color.setHex(0x38bdf8);
+            var hitMaterial = Array.isArray(hitObj.material) ? hitObj.material[0] : hitObj.material;
+            var origColor = hitMaterial && hitMaterial.color ? hitMaterial.color.getHex() : null;
+            if (origColor !== null) hitMaterial.color.setHex(0x38bdf8);
             setTimeout(function() {
-              if (hitObj.material) hitObj.material.color.setHex(origColor);
+              if (origColor !== null && hitMaterial && hitMaterial.color) hitMaterial.color.setHex(origColor);
             }, 350);
 
             if (window.ReactNativeWebView) {
               window.ReactNativeWebView.postMessage(JSON.stringify({
                 type: 'ORGAN_CLICKED',
-                organ: organName
+                organ: organName,
+                part: hitObj.name || organName
               }));
             }
           }
@@ -689,11 +629,11 @@ export default function Model3DView({
 
     function applyTheme(themeMode) {
       config.theme = themeMode;
+      document.body.classList.toggle('theme-dark', themeMode === 'dark');
+      document.body.classList.toggle('theme-light', themeMode !== 'dark');
       var curPal = THEME_PALETTES[themeMode] || THEME_PALETTES.dark;
 
-      if (scene && !config.xrayMode) {
-        scene.background.setHex(curPal.bgHex);
-      }
+      if (scene) scene.background = null;
 
       if (renderer) {
         renderer.toneMappingExposure = curPal.toneExposure;
@@ -741,7 +681,7 @@ export default function Model3DView({
             m.userData.origOpacity = curPal.skinOpacity;
             m.material.needsUpdate = true;
           } else if (m.userData.system === 'skeletal') {
-            m.material.color.setHex(curPal.skeletalColor);
+            m.material.color.setHex(m.userData.origColor);
             m.material.needsUpdate = true;
           } else {
             m.material.color.setHex(m.userData.origColor);
@@ -791,9 +731,8 @@ export default function Model3DView({
         }
       });
 
-      if (scene) {
-        scene.background.setHex(enable ? 0x000814 : curPal.bgHex);
-      }
+      if (scene) scene.background = null;
+      document.body.classList.toggle('xray', enable);
     }
 
     function applyExplode(val) {
@@ -813,29 +752,33 @@ export default function Model3DView({
       }
       if (!msg || msg.type !== 'CONFIG_UPDATE') return;
 
-      if (typeof msg.bpm === 'number') config.bpm = msg.bpm;
-      if (typeof msg.respRate === 'number') config.respRate = msg.respRate;
-
+      if (typeof msg.showSkeleton === 'boolean') config.showSkeleton = msg.showSkeleton;
+      if (typeof msg.showMuscles === 'boolean') config.showMuscles = msg.showMuscles;
+      if (typeof msg.muscleOpacity === 'number') config.muscleOpacity = msg.muscleOpacity;
+      if (msg.organsVisible && typeof msg.organsVisible === 'object') config.organsVisible = msg.organsVisible;
       if (typeof msg.autoRotate === 'boolean') {
         config.autoRotate = msg.autoRotate;
         if (controls) controls.autoRotate = config.autoRotate;
       }
 
-      if (typeof msg.xrayMode === 'boolean') {
+      if (typeof msg.xrayMode === 'boolean' && msg.xrayMode !== config.xrayMode) {
         applyXrayMode(msg.xrayMode);
       }
 
-      if (typeof msg.explodeVal === 'number') {
+      if (typeof msg.explodeVal === 'number' && msg.explodeVal !== config.explodeVal) {
+        config.explodeVal = msg.explodeVal;
         applyExplode(msg.explodeVal);
       }
 
-      if (msg.focusRegion) {
+      if (msg.focusRegion && msg.focusRegion !== config.focusRegion) {
+        config.focusRegion = msg.focusRegion;
         setCameraView(msg.focusRegion);
       }
 
       if (msg.theme && msg.theme !== config.theme) {
         applyTheme(msg.theme);
       }
+      applyLayerSettings();
     }
 
     function resetCamera() {
@@ -855,6 +798,15 @@ export default function Model3DView({
 
     window.onConfigUpdate = handleConfigMessage;
     window.onResetView = resetCamera;
+    window.onAppVisibility = function(active) {
+      sceneActive = Boolean(active);
+      if (!sceneActive && animationFrameId && window.cancelAnimationFrame) {
+        window.cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
+      } else if (sceneActive && !animationFrameId) {
+        animate();
+      }
+    };
     window.addEventListener('message', function(e) {
       if (typeof e.data === 'string' && e.data.includes('RESET_VIEW')) {
         resetCamera();
@@ -870,14 +822,13 @@ export default function Model3DView({
       }
     });
 
-    function animate() {
-      if (window.requestAnimationFrame) {
-        window.requestAnimationFrame(animate);
-      } else if (typeof requestAnimationFrame !== 'undefined') {
-        requestAnimationFrame(animate);
-      }
-      var delta = clock.getDelta();
-      var time = clock.getElapsedTime();
+    var lastRenderAt = 0;
+    function animate(timestamp) {
+      if (!sceneActive) return;
+      if (window.requestAnimationFrame) animationFrameId = window.requestAnimationFrame(animate);
+      else if (typeof requestAnimationFrame !== 'undefined') animationFrameId = requestAnimationFrame(animate);
+
+      var frameTime = typeof timestamp === 'number' ? timestamp : performance.now();
 
       if (isCamTransitioning && camera && controls) {
         camera.position.lerp(targetCamPos, 0.08);
@@ -889,73 +840,12 @@ export default function Model3DView({
         }
       }
 
-      if (heartGroup && heartGroup.length > 0) {
-        var beatFreq = (config.bpm / 60) * Math.PI * 2;
-        var phase = (time * beatFreq) % (Math.PI * 2);
-        var pulse = 0;
-        if (phase < 0.6) {
-          pulse = Math.sin((phase / 0.6) * Math.PI) * 0.16;
-        } else if (phase > 0.9 && phase < 1.4) {
-          pulse = Math.sin(((phase - 0.9) / 0.5) * Math.PI) * 0.07;
-        }
-        var sVal = 1 + pulse;
-
-        heartGroup.forEach(function(m) {
-          if (m && m.userData && m.userData.origScale) {
-            m.scale.set(
-              m.userData.origScale.x * sVal,
-              m.userData.origScale.y * (1 + pulse * 0.6),
-              m.userData.origScale.z * sVal
-            );
-          }
-        });
-      }
-
-      var respBreath = Math.sin(time * (config.respRate / 60) * Math.PI * 2) * 0.085;
-      if (rightLungGroup) {
-        rightLungGroup.forEach(function(m) {
-          if (m && m.userData && m.userData.origScale) {
-            m.scale.set(
-              m.userData.origScale.x * (1 + respBreath),
-              m.userData.origScale.y * (1 + respBreath * 0.45),
-              m.userData.origScale.z * (1 + respBreath)
-            );
-          }
-        });
-      }
-      if (leftLungGroup) {
-        leftLungGroup.forEach(function(m) {
-          if (m && m.userData && m.userData.origScale) {
-            m.scale.set(
-              m.userData.origScale.x * (1 + respBreath),
-              m.userData.origScale.y * (1 + respBreath * 0.45),
-              m.userData.origScale.z * (1 + respBreath)
-            );
-          }
-        });
-      }
-
-      if (bloodPoints) {
-        var positions = bloodPoints.geometry.attributes.position.array;
-        for (var i = 0; i < bloodCount; i++) {
-          var isArtery = (i % 2 === 0);
-          if (isArtery) {
-            positions[i * 3 + 1] -= bloodSpeeds[i];
-            if (positions[i * 3 + 1] < 2.0) {
-              positions[i * 3 + 1] = 16.5;
-            }
-          } else {
-            positions[i * 3 + 1] += bloodSpeeds[i] * 0.85;
-            if (positions[i * 3 + 1] > 16.5) {
-              positions[i * 3 + 1] = 2.0;
-            }
-          }
-        }
-        bloodPoints.geometry.attributes.position.needsUpdate = true;
-      }
-
       if (controls) controls.update();
-      if (renderer && scene && camera) renderer.render(scene, camera);
+      // Keep camera damping smooth while limiting expensive WebGL draws on mobile.
+      if (renderer && scene && camera && frameTime - lastRenderAt >= 1000 / 30) {
+        renderer.render(scene, camera);
+        lastRenderAt = frameTime;
+      }
     }
 
     function onResize() {
@@ -987,26 +877,37 @@ export default function Model3DView({
   </script>
 </body>
 </html>
-  `, [theme]);
+  `;
+  }, [modelUris, runtime, shouldRender]);
 
   return (
-    <View style={[styles.container, { backgroundColor: getBgCssForTheme(theme) }]}>
-      <WebView
+    <View style={[styles.container, { backgroundColor: getBgSolidForTheme(theme) }]}>
+      {shouldRender && modelUris && runtime ? <WebView
         ref={webViewRef}
         originWhitelist={['*']}
-        source={{ html: htmlContent }}
+        source={{ html: htmlContent, baseUrl: modelUris[0].slice(0, modelUris[0].lastIndexOf('/') + 1) }}
         onMessage={handleMessage}
         javaScriptEnabled={true}
-        domStorageEnabled={true}
+        domStorageEnabled={false}
         mixedContentMode="always"
         allowFileAccess={true}
         allowUniversalAccessFromFileURLs={true}
+        allowFileAccessFromFileURLs={true}
         allowsInlineMediaPlayback={true}
+        allowingReadAccessToURL="file:///"
         androidLayerType="hardware"
         androidHardwareAccelerationDisabled={false}
         scrollEnabled={false}
         style={styles.webview}
-      />
+      /> : shouldRender ? <View style={[styles.loading, { backgroundColor: theme === 'dark' ? '#111115' : '#f5f1fa' }]}>
+        <View style={[styles.preflightCard, { backgroundColor: theme === 'dark' ? '#1d1b22' : '#ffffff', borderColor: theme === 'dark' ? '#3b3445' : '#e5dcef' }]}>
+          <View style={styles.preflightMark}><Text style={styles.preflightPlus}>＋</Text></View>
+          <Text style={styles.preflightKicker}>ANAPHARM · 3D ATLAS</Text>
+          <Text style={[styles.preflightTitle, { color: theme === 'dark' ? '#fafafa' : '#292533' }]}>{assetError ? 'Atlas unavailable' : 'Preparing the anatomy'}</Text>
+          {assetError ? <Text style={[styles.loadingText, { color: theme === 'dark' ? '#c9c4d0' : '#526653' }]}>The bundled anatomy files could not be prepared.</Text> : <><ActivityIndicator color="#4f8a54" style={styles.preflightSpinner} /><Text style={[styles.loadingText, { color: theme === 'dark' ? '#c9c4d0' : '#526653' }]}>Loading 11 local anatomy models…</Text></>}
+        </View>
+      </View> : null}
+      {!!runtimeError && <View pointerEvents="none" style={styles.errorBanner}><Text style={styles.errorText}>{runtimeError}</Text></View>}
     </View>
   );
 }
@@ -1023,4 +924,14 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'transparent',
   },
+  loading: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 22 },
+  preflightCard: { width: '100%', maxWidth: 320, alignItems: 'center', borderWidth: 1, borderRadius: 22, padding: 22, elevation: 16 },
+  preflightMark: { width: 52, height: 52, borderRadius: 17, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E8F2E5', borderWidth: 1, borderColor: '#A9CBAA', marginBottom: 14 },
+  preflightPlus: { color: '#7654a5', fontSize: 26, fontWeight: '300' },
+  preflightKicker: { color: '#4b744d', fontSize: 9, fontWeight: '900', letterSpacing: 1.5 },
+  preflightTitle: { fontSize: 17, fontWeight: '800', marginTop: 6 },
+  preflightSpinner: { marginTop: 18 },
+  loadingText: { fontSize: 11, fontWeight: '600', textAlign: 'center', lineHeight: 16, marginTop: 10 },
+  errorBanner: { position: 'absolute', bottom: 120, left: 16, right: 16, padding: 10, borderRadius: 10, backgroundColor: '#7f1d1d' },
+  errorText: { color: '#fff', fontSize: 11 },
 });

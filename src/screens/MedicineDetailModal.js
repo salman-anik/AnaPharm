@@ -93,7 +93,7 @@ export default function MedicineDetailModal({
                   paddingVertical: Math.max(3, Math.round(t.fs(4))),
                   paddingHorizontal: Math.max(6, Math.round(t.fs(8))),
                 },
-                isBn && { backgroundColor: '#D8BDF8' },
+                isBn && { backgroundColor: '#DDEEDD' },
               ]}
               onPress={() => setLang('bn')}
               activeOpacity={0.8}
@@ -102,7 +102,7 @@ export default function MedicineDetailModal({
                 style={[
                   styles.langPillText,
                   {
-                    color: isBn ? '#1e1b4b' : t.textMuted,
+                    color: isBn ? '#234A2D' : t.textMuted,
                     fontSize: t.fs(11),
                   },
                 ]}
@@ -118,7 +118,7 @@ export default function MedicineDetailModal({
                   paddingVertical: Math.max(3, Math.round(t.fs(4))),
                   paddingHorizontal: Math.max(6, Math.round(t.fs(8))),
                 },
-                !isBn && { backgroundColor: '#D8BDF8' },
+                !isBn && { backgroundColor: '#DDEEDD' },
               ]}
               onPress={() => setLang('en')}
               activeOpacity={0.8}
@@ -127,7 +127,7 @@ export default function MedicineDetailModal({
                 style={[
                   styles.langPillText,
                   {
-                    color: !isBn ? '#1e1b4b' : t.textMuted,
+                    color: !isBn ? '#234A2D' : t.textMuted,
                     fontSize: t.fs(11),
                   },
                 ]}

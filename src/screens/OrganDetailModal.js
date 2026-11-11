@@ -18,7 +18,7 @@ export default function OrganDetailModal({
   organData,
   onClose,
   theme = 'light',
-  fontSize = 'medium',
+  fontSize = 'small',
   themeObj,
   initialLanguage = 'bn',
 }) {
@@ -29,6 +29,10 @@ export default function OrganDetailModal({
   if (!organData) return null;
 
   const isBn = lang === 'bn';
+  const diseases = isBn ? organData.diseases_bn : organData.diseases_en;
+  const solutions = isBn ? organData.solutions_bn : organData.solutions_en;
+  const careTips = isBn ? organData.fitness_tips_bn : organData.fitness_tips_en;
+  const functions = isBn ? organData.funcs_bn : organData.funcs_en;
   const systemInfo = SYSTEMS[organData.system] || {
     name: 'Human Anatomy',
     name_bn: 'মানব শারীরস্থান',
@@ -93,7 +97,7 @@ export default function OrganDetailModal({
               style={[styles.navTitle, { color: t.text, fontSize: t.fs(16) }]}
               numberOfLines={1}
             >
-              {organData.name}
+              {isBn ? 'অঙ্গের বিস্তারিত' : 'Organ details'}
             </Text>
             <Text
               style={[styles.navSubtitle, { color: t.textMuted, fontSize: t.fs(11) }]}
@@ -112,7 +116,7 @@ export default function OrganDetailModal({
                   paddingVertical: Math.max(3, Math.round(t.fs(4))),
                   paddingHorizontal: Math.max(6, Math.round(t.fs(8))),
                 },
-                isBn && { backgroundColor: '#D8BDF8' },
+                isBn && { backgroundColor: '#DDEEDD' },
               ]}
               onPress={() => setLang('bn')}
               activeOpacity={0.8}
@@ -121,7 +125,7 @@ export default function OrganDetailModal({
                 style={[
                   styles.langPillText,
                   {
-                    color: isBn ? '#1e1b4b' : t.textMuted,
+                    color: isBn ? '#234A2D' : t.textMuted,
                     fontSize: t.fs(11),
                   },
                 ]}
@@ -137,7 +141,7 @@ export default function OrganDetailModal({
                   paddingVertical: Math.max(3, Math.round(t.fs(4))),
                   paddingHorizontal: Math.max(6, Math.round(t.fs(8))),
                 },
-                !isBn && { backgroundColor: '#D8BDF8' },
+                !isBn && { backgroundColor: '#DDEEDD' },
               ]}
               onPress={() => setLang('en')}
               activeOpacity={0.8}
@@ -146,7 +150,7 @@ export default function OrganDetailModal({
                 style={[
                   styles.langPillText,
                   {
-                    color: !isBn ? '#1e1b4b' : t.textMuted,
+                    color: !isBn ? '#234A2D' : t.textMuted,
                     fontSize: t.fs(11),
                   },
                 ]}
@@ -281,12 +285,12 @@ export default function OrganDetailModal({
             </Text>
 
             {/* Physiological Functions List */}
-            {((isBn ? organData.funcs_bn : organData.funcs_en) || organData.funcs_bn)?.length > 0 ? (
+            {functions?.length > 0 ? (
               <View style={styles.subSectionWrap}>
                 <Text style={[styles.subSectionHeading, { color: t.text, fontSize: t.fs(12) }]}>
                   {isBn ? 'প্রধান শারীরবৃত্তীয় কাজসমূহ (Functions):' : 'Key Physiological Functions:'}
                 </Text>
-                {((isBn ? organData.funcs_bn : organData.funcs_en) || organData.funcs_bn).map((fn, idx) => (
+                {functions.map((fn, idx) => (
                   <View key={idx} style={styles.bulletRow}>
                     <View style={[styles.bulletPointCircle, { backgroundColor: t.text }]} />
                     <Text style={[styles.bulletRowText, { color: t.text, fontSize: t.fs(12) }]}>
@@ -298,7 +302,7 @@ export default function OrganDetailModal({
             ) : null}
 
             {/* Clinical Fact Callout */}
-            {(isBn ? organData.fact_bn : (organData.fact_en || organData.fact_bn)) ? (
+            {(isBn ? organData.fact_bn : organData.fact_en) ? (
               <View
                 style={[
                   styles.factCalloutBox,
@@ -316,7 +320,7 @@ export default function OrganDetailModal({
                   </Text>
                 </View>
                 <Text style={[styles.factContentText, { color: t.text, fontSize: t.fs(12) }]}>
-                  {isBn ? organData.fact_bn : (organData.fact_en || organData.fact_bn)}
+                  {isBn ? organData.fact_bn : organData.fact_en}
                 </Text>
               </View>
             ) : null}
@@ -333,9 +337,9 @@ export default function OrganDetailModal({
               </Text>
             </View>
 
-            {organData.diseases_bn && organData.diseases_bn.length > 0 ? (
+            {diseases && diseases.length > 0 ? (
               <View style={styles.itemsListWrap}>
-                {organData.diseases_bn.map((dis, idx) => (
+                {diseases.map((dis, idx) => (
                   <View
                     key={idx}
                     style={[
@@ -360,7 +364,7 @@ export default function OrganDetailModal({
               </View>
             ) : (
               <Text style={[styles.sectionBody, { color: t.textMuted, fontSize: t.fs(13) }]}>
-                {isBn ? organData.patho_bn : (organData.patho_en || organData.patho_bn)}
+                {isBn ? organData.patho_bn : organData.patho_en}
               </Text>
             )}
           </View>
@@ -376,9 +380,9 @@ export default function OrganDetailModal({
               </Text>
             </View>
 
-            {organData.solutions_bn && organData.solutions_bn.length > 0 ? (
+            {solutions && solutions.length > 0 ? (
               <View style={styles.itemsListWrap}>
-                {organData.solutions_bn.map((sol, idx) => (
+                {solutions.map((sol, idx) => (
                   <View
                     key={idx}
                     style={[
@@ -421,9 +425,9 @@ export default function OrganDetailModal({
               </Text>
             </View>
 
-            {organData.fitness_tips_bn && organData.fitness_tips_bn.length > 0 ? (
+            {careTips && careTips.length > 0 ? (
               <View style={styles.itemsListWrap}>
-                {organData.fitness_tips_bn.map((tip, idx) => (
+                {careTips.map((tip, idx) => (
                   <View
                     key={idx}
                     style={[

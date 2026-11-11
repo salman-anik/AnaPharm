@@ -70,8 +70,6 @@ const INDEXED_MEDICINES = MEDICINE_DATABASE.map((med) => {
     (med.work_en || '').toLowerCase() + ' ' +
     (med.primary_indication_bn || '').toLowerCase() + ' ' +
     (med.primary_indication_en || '').toLowerCase() + ' ' +
-    (med.indications_en || '').toLowerCase() + ' ' +
-    (med.how_it_works_bn || '').toLowerCase() + ' ' +
     (med.category_bn || '').toLowerCase() + ' ' +
     (med.target_organ || '').toLowerCase() + ' ' +
     brandsLower + ' ' +
@@ -83,6 +81,7 @@ const INDEXED_MEDICINES = MEDICINE_DATABASE.map((med) => {
     _companyId: detectedCompany ? detectedCompany.id : null,
     _company: detectedCompany,
     _search: searchText,
+    _genericNameSearch: `${nameLower} ${genericLower}`,
   };
 });
 
@@ -94,7 +93,8 @@ const MedicineCardItem = React.memo(
     t,
     onPress,
   }) {
-    const detectedCompany = item._company;
+    const detectedCompany = item._brandName ? null : item._company;
+    const displayName = item._brandName || item.name_en;
 
     return (
       <View
@@ -126,13 +126,15 @@ const MedicineCardItem = React.memo(
             </View>
             <View style={{ flex: 1 }}>
               <Text style={[styles.medNameEn, { color: t.text, fontSize: t.fs(15) }]}>
-                {item.name_en}
+                {displayName}
               </Text>
               <Text
                 style={[styles.medGenericText, { color: t.textMuted, fontSize: t.fs(12) }]}
                 numberOfLines={1}
               >
-                {item.generic}
+                {item._brandName
+                  ? `${isBn ? 'জেনেরিক' : 'Generic'}: ${item.generic}`
+                  : item.generic}
               </Text>
 
               {/* Badges row */}
@@ -210,7 +212,7 @@ const MedicineCardItem = React.memo(
         </View>
 
         {/* Quick Brands Preview */}
-        {item.brands ? (
+        {item.brands && !item._brandName ? (
           <View style={[styles.cardFooter, { borderTopColor: t.border }]}>
             <Text
               style={[styles.cardFooterText, { color: t.textMuted, fontSize: t.fs(11) }]}
@@ -231,14 +233,37 @@ const MedicineCardItem = React.memo(
 );
 
 export default function MedicineScreen({
+  isActive = true,
   theme = 'light',
-  fontSize = 'medium',
+  fontSize = 'small',
   language = 'bn',
   onNavigateToOrgan,
   onScrollLock,
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const deferredSearchQuery = useDeferredValue(searchQuery);
+  const [searchMode, setSearchMode] = useState('all'); // 'all' | 'generic' | 'brand'
+  const brandIndex = useMemo(() => {
+    if (searchMode !== 'brand' || !isActive) return [];
+    return INDEXED_MEDICINES.flatMap((medicine) =>
+      (medicine.brands || '')
+        .split(/[,;|]/)
+        .map((brand) => brand.trim())
+        .filter(Boolean)
+        .map((brand, index) => ({
+          id: `${medicine.id}::brand::${index}`,
+          _medicineId: medicine.id,
+          _brandName: brand,
+          _brandNameLower: brand.toLowerCase(),
+          _medicine: medicine,
+          _genericNameSearch: medicine._genericNameSearch,
+          generic: medicine.generic,
+          category: medicine.category,
+          category_bn: medicine.category_bn,
+          _companyId: medicine._companyId,
+        }))
+    );
+  }, [searchMode, isActive]);
 
   // Modern clean filter state: single-row segmented scope (Pharma first, then Systems)
   const [filterMode, setFilterMode] = useState('company'); // 'company' | 'system'
@@ -251,7 +276,7 @@ export default function MedicineScreen({
 
   const flatListRef = useRef(null);
   const filterListRef = useRef(null);
-  const t = getTheme(theme, fontSize);
+  const t = useMemo(() => getTheme(theme, fontSize), [theme, fontSize]);
   const insets = useSafeAreaInsets();
 
   // Auto-hiding Collapsible Header Animation
@@ -311,108 +336,8 @@ export default function MedicineScreen({
     return getSemanticMatches(deferredSearchQuery);
   }, [deferredSearchQuery]);
 
-  // WHILE TYPING: Search Suggestions - ONLY Pharma Company names as requested
-  const searchSuggestions = useMemo(() => {
-    try {
-      const q = (searchQuery || '').toLowerCase().trim();
-      if (q.length < 1) return [];
-
-      const suggestions = [];
-
-      // Matching Pharma Companies ONLY
-      const matchedComps = MEDICINE_COMPANIES.filter((comp) => {
-        if (!comp || comp.id === 'all') return false;
-        const s = (comp.short_name || '').toLowerCase();
-        const f = (comp.name_en || '').toLowerCase();
-        const b = (comp.name_bn || '').toLowerCase();
-        const sb = (comp.short_name_bn || '').toLowerCase();
-        return s.includes(q) || f.includes(q) || b.includes(q) || sb.includes(q);
-      }).slice(0, 8);
-
-      matchedComps.forEach((comp, cIdx) => {
-        suggestions.push({
-          key: `comp_${comp.id || cIdx}_${cIdx}`,
-          type: 'company',
-          id: comp.id,
-          label: String(comp.short_name || comp.name_en),
-          iconName: 'pharmacy',
-        });
-      });
-
-      return suggestions;
-    } catch (e) {
-      return [];
-    }
-  }, [searchQuery]);
-
-  const handleSelectSuggestion = useCallback(
-    (sug) => {
-      if (sug.type === 'company') {
-        handleSelectCompany(sug.id);
-        setFilterMode('company');
-        setSearchQuery('');
-        Keyboard.dismiss();
-        onScrollLock?.(false);
-      } else if (sug.type === 'concept') {
-        setSearchQuery(sug.query);
-        setRenderLimit(30);
-      } else if (sug.type === 'medicine') {
-        handleOpenDetail(sug.med);
-        Keyboard.dismiss();
-        onScrollLock?.(false);
-      }
-    },
-    [handleOpenDetail, handleSelectCompany, onScrollLock]
-  );
-
-  // COMBINED FILTER: Semantic Search + Company + Category over pre-indexed dataset!
-  const filteredMedicines = useMemo(() => {
-    const q = deferredSearchQuery.toLowerCase().trim();
-    const hasQuery = q.length > 0;
-    const { expansionTerms } = semanticData;
-    const hasSemanticTerms = expansionTerms.length > 0;
-
-    return INDEXED_MEDICINES.filter((med) => {
-      // 1. System Category Filter
-      if (selectedCategory !== 'all' && med.category !== selectedCategory) {
-        return false;
-      }
-
-      // 2. Pharmaceutical Company Filter
-      if (selectedCompany !== 'all' && med._companyId !== selectedCompany) {
-        return false;
-      }
-
-      // 3. Search Query (Exact search OR Semantic concept expansion)
-      if (hasQuery) {
-        const directMatch = med._search.includes(q);
-        if (directMatch) return true;
-
-        if (hasSemanticTerms) {
-          const semanticMatch = expansionTerms.some((term) => med._search.includes(term));
-          if (semanticMatch) return true;
-        }
-
-        return false;
-      }
-
-      return true;
-    });
-  }, [deferredSearchQuery, selectedCategory, selectedCompany, semanticData]);
-
-  // Sliced dataset for instant initial render and infinite batch loading
-  const displayedMedicines = useMemo(() => {
-    return filteredMedicines.slice(0, renderLimit);
-  }, [filteredMedicines, renderLimit]);
-
-  const handleLoadMore = useCallback(() => {
-    if (renderLimit < filteredMedicines.length) {
-      setRenderLimit((prev) => Math.min(prev + 30, filteredMedicines.length));
-    }
-  }, [filteredMedicines.length, renderLimit]);
-
   const handleOpenDetail = useCallback((item) => {
-    setSelectedMedicine(item);
+    setSelectedMedicine(item._medicine || item);
   }, []);
 
   const handleCloseDetail = useCallback(() => {
@@ -439,10 +364,74 @@ export default function MedicineScreen({
     setSelectedCompany('all');
     setSelectedCategory('all');
     setSearchQuery('');
+    setSearchMode('all');
     setRenderLimit(30);
     flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
     showHeader();
   }, [showHeader]);
+
+  // Search scope + semantic query + manufacturer + category filters.
+  const filteredMedicines = useMemo(() => {
+    const q = deferredSearchQuery.toLowerCase().trim();
+    const hasQuery = q.length > 0;
+    const { expansionTerms } = semanticData;
+    const hasSemanticTerms = expansionTerms.length > 0;
+
+    return INDEXED_MEDICINES.filter((med) => {
+      // 1. System Category Filter
+      if (selectedCategory !== 'all' && med.category !== selectedCategory) {
+        return false;
+      }
+
+      // 2. Pharmaceutical Company Filter
+      if (selectedCompany !== 'all' && med._companyId !== selectedCompany) {
+        return false;
+      }
+
+      // 3. Search Query (Exact search OR Semantic concept expansion)
+      if (hasQuery) {
+        const searchIndex = searchMode === 'generic' ? med._genericNameSearch : med._search;
+        const directMatch = searchIndex.includes(q);
+        if (directMatch) return true;
+
+        if (hasSemanticTerms) {
+          const semanticMatch = expansionTerms.some((term) => searchIndex.includes(term));
+          if (semanticMatch) return true;
+        }
+
+        return false;
+      }
+
+      return true;
+    });
+  }, [deferredSearchQuery, selectedCategory, selectedCompany, semanticData, searchMode]);
+
+  const filteredBrands = useMemo(() => {
+    const q = deferredSearchQuery.toLowerCase().trim();
+    const { expansionTerms } = semanticData;
+
+    return brandIndex.filter((brand) => {
+      if (selectedCategory !== 'all' && brand.category !== selectedCategory) return false;
+      if (selectedCompany !== 'all' && brand._companyId !== selectedCompany) return false;
+      if (!q) return true;
+      return brand._brandNameLower.includes(q)
+        || brand._genericNameSearch.includes(q)
+        || expansionTerms.some((term) => brand._genericNameSearch.includes(term));
+    });
+  }, [brandIndex, deferredSearchQuery, selectedCategory, selectedCompany, semanticData]);
+
+  const activeResults = searchMode === 'brand' ? filteredBrands : filteredMedicines;
+
+  // Sliced dataset for instant initial render and infinite batch loading
+  const displayedMedicines = useMemo(() => {
+    return activeResults.slice(0, renderLimit);
+  }, [activeResults, renderLimit]);
+
+  const handleLoadMore = useCallback(() => {
+    if (renderLimit < activeResults.length) {
+      setRenderLimit((prev) => Math.min(prev + 30, activeResults.length));
+    }
+  }, [activeResults.length, renderLimit]);
 
   const renderMedicineCard = useCallback(
     ({ item }) => {
@@ -467,7 +456,7 @@ export default function MedicineScreen({
       const active = isCompanyMode
         ? selectedCompany === item.id
         : selectedCategory === item.id;
-      const chipIconColor = active ? '#1e1b4b' : t.text;
+      const chipIconColor = active ? '#234A2D' : t.text;
       const iconSize = Math.max(12, Math.round(t.fs(13)));
 
       return (
@@ -476,8 +465,8 @@ export default function MedicineScreen({
           style={[
             styles.chip,
             {
-              backgroundColor: active ? '#D8BDF8' : t.chipBg,
-              borderColor: active ? '#D8BDF8' : t.chipBorder,
+              backgroundColor: active ? '#DDEEDD' : t.chipBg,
+              borderColor: active ? '#DDEEDD' : t.chipBorder,
               paddingVertical: Math.max(5, Math.round(t.fs(6))),
               paddingHorizontal: Math.max(10, Math.round(t.fs(12))),
             },
@@ -507,7 +496,7 @@ export default function MedicineScreen({
             style={[
               styles.chipLabel,
               {
-                color: active ? '#1e1b4b' : t.text,
+                color: active ? '#234A2D' : t.text,
                 fontFamily: 'HindSiliguri-Medium',
                 fontSize: t.fs(13),
                 fontWeight: active ? '800' : '600',
@@ -529,8 +518,33 @@ export default function MedicineScreen({
 
   // Active dataset for the single filter row
   const currentFilterData = useMemo(() => {
-    return filterMode === 'company' ? MEDICINE_COMPANIES : MEDICINE_CATEGORIES;
-  }, [filterMode]);
+    if (filterMode !== 'company') return MEDICINE_CATEGORIES;
+
+    const query = deferredSearchQuery.trim().toLowerCase();
+    if (!query) return MEDICINE_COMPANIES;
+
+    const resultCounts = new Map();
+    const seenMedicines = new Set();
+    activeResults.forEach((result) => {
+      const medicineId = result._medicineId || result.id;
+      if (seenMedicines.has(medicineId)) return;
+      seenMedicines.add(medicineId);
+      if (result._companyId && result._companyId !== 'all') {
+        resultCounts.set(result._companyId, (resultCounts.get(result._companyId) || 0) + 1);
+      }
+    });
+
+    let matchingCompanies = MEDICINE_COMPANIES.filter((company) => resultCounts.has(company.id));
+    if (matchingCompanies.length === 0) {
+      matchingCompanies = MEDICINE_COMPANIES.filter((company) => company.id !== 'all'
+        && [company.short_name, company.name_en, company.name_bn, company.short_name_bn]
+          .some((name) => (name || '').toLowerCase().includes(query)));
+    }
+
+    matchingCompanies.sort((a, b) => (resultCounts.get(b.id) || 0) - (resultCounts.get(a.id) || 0));
+    const allCompaniesOption = MEDICINE_COMPANIES.find((company) => company.id === 'all');
+    return [allCompaniesOption, ...matchingCompanies.slice(0, 12)].filter(Boolean);
+  }, [filterMode, deferredSearchQuery, activeResults]);
 
   return (
     <View style={[styles.container, { backgroundColor: t.bg }]}>
@@ -574,14 +588,15 @@ export default function MedicineScreen({
             style={[styles.searchInput, { color: t.text, fontSize: t.fs(14) }]}
             placeholder={
               globalLang === 'bn'
-                ? 'লক্ষণ (মাথা ব্যথা, জ্বর), ওষুধ বা কোম্পানি খুঁজুন...'
-                : 'Search symptoms, medicines, companies...'
+                ? 'লক্ষণ, ওষুধ, জেনেরিক বা ব্র্যান্ড খুঁজুন...'
+                : 'Search symptoms, medicines, generics, brands or companies...'
             }
             placeholderTextColor={t.textMuted}
             value={searchQuery}
             onChangeText={(text) => {
               setSearchQuery(text);
               setRenderLimit(30);
+              if (filterMode === 'company') filterListRef.current?.scrollTo({ x: 0, animated: false });
             }}
             onFocus={() => onScrollLock?.(true)}
             onBlur={() => {
@@ -595,6 +610,7 @@ export default function MedicineScreen({
               onPress={() => {
                 setSearchQuery('');
                 setRenderLimit(30);
+                if (filterMode === 'company') filterListRef.current?.scrollTo({ x: 0, animated: false });
                 Keyboard.dismiss();
                 onScrollLock?.(false);
               }}
@@ -605,50 +621,34 @@ export default function MedicineScreen({
           )}
         </View>
 
-        {/* WHILE TYPING: Intelligent, horizontal scrollable Search Suggestions */}
-        {searchSuggestions.length > 0 && (
-          <View style={styles.matchingCompanyBar}>
-            <Text style={[styles.matchingCompanyHint, { color: t.textMuted, fontSize: t.fs(11) }]}>
-              Pharma:
-            </Text>
-            <ScrollView
-              style={styles.suggestionScrollView}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.suggestionScrollContent}
-              keyboardShouldPersistTaps="handled"
-            >
-              {searchSuggestions.map((sug) => (
-                <TouchableOpacity
-                  key={sug.key}
-                  style={[
-                    styles.matchingCompanyPill,
-                    {
-                      backgroundColor: t.surfaceSecondary,
-                      borderColor: t.cardBorder,
-                      paddingVertical: Math.max(3, Math.round(t.fs(4))),
-                      paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                    },
-                  ]}
-                  onPress={() => handleSelectSuggestion(sug)}
-                  activeOpacity={0.7}
-                >
-                  <HealthIcon
-                    name={sug.iconName || 'pills'}
-                    size={Math.max(11, Math.round(t.fs(12)))}
-                    color={t.text}
-                    style={{ marginRight: 4, flexShrink: 0 }}
-                  />
-                  <Text style={[styles.matchingCompanyPillText, { color: t.text, fontSize: t.fs(12) }]}>
-                    {sug.label}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        )}
+        <View style={[styles.searchModeRow, { backgroundColor: t.surfaceSecondary, borderColor: t.border }]}>
+          {[
+            { id: 'all', en: 'All', bn: 'সব', icon: 'magnifyingGlass' },
+            { id: 'generic', en: 'Generic', bn: 'জেনেরিক', icon: 'pills' },
+            { id: 'brand', en: 'Brand', bn: 'ব্র্যান্ড', icon: 'pharmacy' },
+          ].map((option) => {
+            const active = searchMode === option.id;
+            return (
+              <TouchableOpacity
+                key={option.id}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                style={[styles.searchModeButton, active && styles.searchModeButtonActive]}
+                onPress={() => {
+                  setSearchMode(option.id);
+                  setRenderLimit(30);
+                  flatListRef.current?.scrollToOffset({ offset: 0, animated: false });
+                }}
+                activeOpacity={0.8}
+              >
+                <HealthIcon name={option.icon} size={14} color={active ? '#234A2D' : t.textMuted} />
+                <Text style={[styles.searchModeLabel, { color: active ? '#234A2D' : t.textMuted, fontWeight: active ? '800' : '600' }]}>
+                  {globalLang === 'bn' ? option.bn : option.en}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
         {/* SINGLE UNIFIED FILTER TOOLBAR (Cuts header height by 50% and removes clutter) */}
         <View style={styles.unifiedFilterRow}>
@@ -671,7 +671,7 @@ export default function MedicineScreen({
                   paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                 },
                 filterMode === 'company' && {
-                  backgroundColor: '#D8BDF8',
+                  backgroundColor: '#DDEEDD',
                 },
               ]}
               onPress={() => setFilterMode('company')}
@@ -681,7 +681,7 @@ export default function MedicineScreen({
                 name="pharmacy"
                 size={Math.max(12, Math.round(t.fs(13)))}
                 color={
-                  filterMode === 'company' ? '#1e1b4b' : t.textMuted
+                  filterMode === 'company' ? '#234A2D' : t.textMuted
                 }
                 style={{ marginRight: 4 }}
               />
@@ -690,7 +690,7 @@ export default function MedicineScreen({
                   styles.scopeTabText,
                   {
                     color:
-                      filterMode === 'company' ? '#1e1b4b' : t.textMuted,
+                      filterMode === 'company' ? '#234A2D' : t.textMuted,
                     fontSize: t.fs(13),
                     fontWeight: filterMode === 'company' ? '800' : '600',
                   },
@@ -712,7 +712,7 @@ export default function MedicineScreen({
                   paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                 },
                 filterMode === 'system' && {
-                  backgroundColor: '#D8BDF8',
+                  backgroundColor: '#DDEEDD',
                 },
               ]}
               onPress={() => setFilterMode('system')}
@@ -722,7 +722,7 @@ export default function MedicineScreen({
                 name="bodyOutline"
                 size={Math.max(12, Math.round(t.fs(13)))}
                 color={
-                  filterMode === 'system' ? '#1e1b4b' : t.textMuted
+                  filterMode === 'system' ? '#234A2D' : t.textMuted
                 }
                 style={{ marginRight: 4 }}
               />
@@ -731,7 +731,7 @@ export default function MedicineScreen({
                   styles.scopeTabText,
                   {
                     color:
-                      filterMode === 'system' ? '#1e1b4b' : t.textMuted,
+                      filterMode === 'system' ? '#234A2D' : t.textMuted,
                     fontSize: t.fs(13),
                     fontWeight: filterMode === 'system' ? '800' : '600',
                   },
@@ -827,11 +827,13 @@ export default function MedicineScreen({
             )}
 
             <TouchableOpacity
-              style={styles.clearAllLink}
+              style={[styles.filterResetButton, { backgroundColor: t.surfaceSecondary, borderColor: t.border }]}
               onPress={handleResetFilters}
+              activeOpacity={0.75}
             >
-              <Text style={[styles.clearAllLinkText, { color: t.textMuted, fontSize: t.fs(12) }]}>
-                {globalLang === 'bn' ? 'সব মুছুন' : 'Clear All'}
+              <Text style={[styles.filterResetIcon, { color: t.textMuted }]}>↻</Text>
+              <Text style={[styles.filterResetText, { color: t.text, fontSize: t.fs(11) }]}>
+                {globalLang === 'bn' ? 'ফিল্টার রিসেট' : 'Reset filters'}
               </Text>
             </TouchableOpacity>
           </View>
@@ -848,9 +850,9 @@ export default function MedicineScreen({
         scrollIndicatorInsets={{ top: headerHeight }}
         onScroll={handleScroll}
         scrollEventThrottle={32}
-        initialNumToRender={10}
-        maxToRenderPerBatch={10}
-        windowSize={7}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={5}
         updateCellsBatchingPeriod={50}
         removeClippedSubviews={Platform.OS === 'android'}
         keyboardShouldPersistTaps="handled"
@@ -910,10 +912,10 @@ export default function MedicineScreen({
                 <View style={[styles.companyHeaderStatDivider, { backgroundColor: t.border }]} />
                 <View style={styles.companyHeaderStatCol}>
                   <Text style={[styles.companyHeaderStatVal, { color: t.text }]}>
-                    {filteredMedicines.length}
+                    {activeResults.length}
                   </Text>
                   <Text style={[styles.companyHeaderStatLbl, { color: t.textMuted }]}>
-                    {globalLang === 'bn' ? 'উপলব্ধ ওষুধ' : 'Clinical Meds'}
+                    {globalLang === 'bn' ? 'ফলাফল' : 'Results'}
                   </Text>
                 </View>
               </View>
@@ -930,8 +932,8 @@ export default function MedicineScreen({
             />
             <Text style={[styles.emptyText, { color: t.text }]}>
               {globalLang === 'bn'
-                ? 'এই কোম্পানি, লক্ষণ বা সিস্টেমে কোনো ওষুধ পাওয়া যায়নি'
-                : 'No Medicines Found for this Search, Company & System'}
+                ? (searchMode === 'brand' ? 'এই অনুসন্ধানে কোনো ব্র্যান্ড পাওয়া যায়নি' : 'এই অনুসন্ধানে কোনো ওষুধ পাওয়া যায়নি')
+                : (searchMode === 'brand' ? 'No brands found for this search' : 'No medicines found for this search')}
             </Text>
           </View>
         }
@@ -997,35 +999,6 @@ const styles = StyleSheet.create({
   clearBtnText: {
     paddingHorizontal: 4,
   },
-  matchingCompanyBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-    width: '100%',
-  },
-  suggestionScrollView: {
-    flex: 1,
-    marginLeft: 6,
-  },
-  suggestionScrollContent: {
-    alignItems: 'center',
-    gap: 6,
-    paddingRight: 10,
-  },
-  matchingCompanyHint: {
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    flexShrink: 0,
-  },
-  matchingCompanyPill: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-  },
-  matchingCompanyPillText: {
-    fontWeight: '600',
-  },
   unifiedFilterRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1037,6 +1010,30 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     padding: 2,
     flexShrink: 0,
+  },
+  searchModeRow: {
+    flexDirection: 'row',
+    borderRadius: 13,
+    borderWidth: 1,
+    padding: 3,
+    marginTop: 8,
+    marginBottom: 2,
+  },
+  searchModeButton: {
+    flex: 1,
+    minHeight: 34,
+    borderRadius: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+  },
+  searchModeButtonActive: {
+    backgroundColor: '#DDEEDD',
+  },
+  searchModeLabel: {
+    fontFamily: 'HindSiliguri-SemiBold',
+    fontSize: 12,
   },
   scopeTabBtn: {
     flexDirection: 'row',
@@ -1093,14 +1090,9 @@ const styles = StyleSheet.create({
   compactFilterTagText: {
     fontWeight: '600',
   },
-  clearAllLink: {
-    paddingHorizontal: 4,
-    paddingVertical: 2,
-  },
-  clearAllLinkText: {
-    fontWeight: '700',
-    textDecorationLine: 'underline',
-  },
+  filterResetButton: { minHeight: 28, flexDirection: 'row', alignItems: 'center', gap: 4, borderWidth: 1, borderRadius: 9, paddingHorizontal: 9, paddingVertical: 4 },
+  filterResetIcon: { fontSize: 17, lineHeight: 18, fontWeight: '700' },
+  filterResetText: { fontWeight: '700' },
   listContent: {
     paddingHorizontal: 16,
     paddingBottom: 40,

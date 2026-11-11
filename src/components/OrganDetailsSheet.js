@@ -19,7 +19,7 @@ export default function OrganDetailsSheet({
   organData,
   onClose,
   theme = 'dark',
-  fontSize = 'medium',
+  fontSize = 'small',
 }) {
   if (!organData) return null;
 
