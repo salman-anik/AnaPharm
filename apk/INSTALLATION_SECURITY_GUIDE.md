@@ -25,7 +25,10 @@ This release is digitally signed with an official custom 2048-bit RSA Certificat
 | :--- | :--- |
 | **Application ID** | `com.anapharm.app` |
 | **App Name** | `AnaPharm` |
-| **Version** | `1.0.0` |
+| **App version** | `1.0.0` |
+| **Current Android version code** | `2` |
+| **Stable current APK path** | `apk/AnaPharm.apk` |
+| **Archived prior APK** | `apk/AnaPharm-1.0.0.apk` (version code `1`) |
 | **Certificate Owner (CN)** | `CN=AnaPharm Medical 3D, OU=Healthcare Clinical Systems, O=AnaPharm Inc, L=Dhaka, ST=Dhaka, C=BD` |
 | **Key Alias** | `anapharmkey` |
 | **Valid Through** | March 27, 2054 |
@@ -40,7 +43,7 @@ This release is digitally signed with an official custom 2048-bit RSA Certificat
 Follow these quick steps based on your Android device:
 
 ### Option A: Standard Google Play Protect Alert
-1. When you tap on `AnaPharm.apk`, the installer will appear.
+1. Install the current build from `apk/AnaPharm.apk`. Its app version is `1.0.0` (Android version code `2`). The archived previous build is `apk/AnaPharm-1.0.0.apk` (version code `1`). When you tap the APK, the installer will appear.
 2. If Google Play Protect shows a popup: *"Blocked by Play Protect"* or *"Unsafe app blocked"*:
    - Tap on **"More details"** (or **"Advanced"** dropdown arrow).
    - Tap **"Install anyway"** (ইনস্টল করুন).

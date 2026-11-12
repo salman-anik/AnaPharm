@@ -1,15 +1,18 @@
-# 📱 AnaPharm Android APK
+# AnaPharm Android APKs
 
-This directory contains the standalone Android Release APK for **AnaPharm**.
+This directory keeps the current standalone Android APK at a stable filename and preserves replaced builds under versioned filenames.
 
-## 📥 File
-- **`AnaPharm.apk`** (~85.9 MB)
-- **Version:** 1.0.0 (Release)
-- **Engine:** Hermes Bytecode + React Native 0.88 + Expo 58
-- **Mode:** 100% Offline Standalone (no Metro / dev server needed)
+| Build | App version | Android version code | File |
+|---|---:|---:|---|
+| Current | 1.0.0 | 2 | [`AnaPharm.apk`](AnaPharm.apk) |
+| Previous | 1.0.0 | 1 | [`AnaPharm-1.0.0.apk`](AnaPharm-1.0.0.apk) |
 
-## 🚀 How to Install on Your Android Phone:
-1. Download `AnaPharm.apk` to your phone.
-2. Tap the file to open.
-3. If Android prompts *"Install unknown apps"*, tap **Settings** -> enable **Allow from this source** -> tap **Install**.
-4. Open **AnaPharm** and enjoy full 3D interactive anatomy and bilingual clinical pharmacology!
+Always use `AnaPharm.apk` for the latest build. When a new APK replaces it, move the previous file to a versioned filename and update this table and the root README.
+
+## Install
+
+1. Download the APK to your Android phone.
+2. Open the file and allow installation from that source if Android asks.
+3. Tap **Install**, then open AnaPharm.
+
+These are standalone release APKs; Expo Go or a Metro development server is not required.

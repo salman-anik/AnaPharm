@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/Platform-Android-brightgreen?style=for-the-badge&logo=android" />
   <img src="https://img.shields.io/badge/React_Native-0.88.1-blue?style=for-the-badge&logo=react" />
   <img src="https://img.shields.io/badge/Expo-58-black?style=for-the-badge&logo=expo" />
-  <img src="https://img.shields.io/badge/Version-1.0.0-blueviolet?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Version-1.0.0%20(2)-blueviolet?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Release-v3.5-teal?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Typography-Hind_Siliguri-purple?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Language-Bangla%20%7C%20English-orange?style=for-the-badge" />
@@ -226,13 +226,13 @@ AnaPharm/
 
 ## Android APK
 
-Official standalone offline Android Release APK is available directly in the repository:
+The latest standalone Android APK is kept at a stable path; each replaced build is retained under a versioned filename.
 
-- **APK File:** [`apk/AnaPharm.apk`](apk/AnaPharm.apk) (~85.4 MB)
-- **Version:** 1.0.0 (Release 3.5)
+- **Latest APK:** [`apk/AnaPharm.apk`](apk/AnaPharm.apk) — app version 1.0.0, Android version code 2.
+- **Previous APK:** [`apk/AnaPharm-1.0.0.apk`](apk/AnaPharm-1.0.0.apk) — app version 1.0.0, Android version code 1.
 - **Engine:** Hermes Bytecode + React Native 0.88 + Expo 58
 
-**Download:** [AnaPharm Releases](https://github.com/salman-anik/AnaPharm/releases)
+Download the latest build from [`apk/AnaPharm.apk`](apk/AnaPharm.apk), or browse [AnaPharm Releases](https://github.com/salman-anik/AnaPharm/releases).
 
 For automated builds, check:
 
