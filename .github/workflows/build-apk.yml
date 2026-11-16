@@ -37,7 +37,7 @@ jobs:
 
       - name: Build Standalone APK (Release with Offline Bundle)
         working-directory: android
-        run: ./gradlew assembleRelease --no-daemon
+        run: ./gradlew assembleRelease --no-daemon -PreactNativeArchitectures=arm64-v8a,armeabi-v7a
 
       - name: Rename APK for Release
         run: |
@@ -55,12 +55,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.0
-          name: "AnaPharm v1.0.0 (Android APK)"
+          tag_name: v1.2.0
+          name: "AnaPharm v1.2.0 (Android APK)"
           draft: false
           prerelease: false
           body: |
-            ## 📱 AnaPharm Mobile v1.0.0
+            ## 📱 AnaPharm Mobile v1.2.0
             Download and install the standalone Android APK directly on your phone!
 
             ### ✨ Key Features:

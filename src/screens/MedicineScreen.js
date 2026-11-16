@@ -19,6 +19,7 @@ import { getSemanticMatches } from '../data/semanticSearch';
 import MedicineDetailModal from './MedicineDetailModal';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { HEALTH_ICONS, getMedicineCategoryIcon } from '../components/HealthIcon';
+import MedicalBackdrop from '../components/MedicalBackdrop';
 
 // Re-export for any other component imports
 export { MEDICINE_COMPANIES };
@@ -456,7 +457,7 @@ export default function MedicineScreen({
       const active = isCompanyMode
         ? selectedCompany === item.id
         : selectedCategory === item.id;
-      const chipIconColor = active ? '#234A2D' : t.text;
+      const chipIconColor = active ? t.selectedText : t.text;
       const iconSize = Math.max(12, Math.round(t.fs(13)));
 
       return (
@@ -465,8 +466,8 @@ export default function MedicineScreen({
           style={[
             styles.chip,
             {
-              backgroundColor: active ? '#DDEEDD' : t.chipBg,
-              borderColor: active ? '#DDEEDD' : t.chipBorder,
+              backgroundColor: active ? t.selectedBg : t.chipBg,
+              borderColor: active ? t.selectedBg : t.chipBorder,
               paddingVertical: Math.max(5, Math.round(t.fs(6))),
               paddingHorizontal: Math.max(10, Math.round(t.fs(12))),
             },
@@ -496,7 +497,7 @@ export default function MedicineScreen({
             style={[
               styles.chipLabel,
               {
-                color: active ? '#234A2D' : t.text,
+                color: active ? t.selectedText : t.text,
                 fontFamily: 'HindSiliguri-Medium',
                 fontSize: t.fs(13),
                 fontWeight: active ? '800' : '600',
@@ -548,15 +549,16 @@ export default function MedicineScreen({
 
   return (
     <View style={[styles.container, { backgroundColor: t.bg }]}>
+      <MedicalBackdrop theme={t} />
       {/* Collapsible Top Header */}
       <Animated.View
         style={[
           styles.topHeader,
           {
             paddingTop: insets.top > 0 ? insets.top + 6 : 14,
-            backgroundColor: t.isDark ? '#09090b' : '#ffffff',
-            borderBottomColor: t.isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
-            borderTopColor: t.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+            backgroundColor: t.headerBg,
+            borderBottomColor: t.border,
+            borderTopColor: t.border,
             transform: [{ translateY: headerY }],
           },
         ]}
@@ -633,7 +635,7 @@ export default function MedicineScreen({
                 key={option.id}
                 accessibilityRole="button"
                 accessibilityState={{ selected: active }}
-                style={[styles.searchModeButton, active && styles.searchModeButtonActive]}
+                style={[styles.searchModeButton, active && { backgroundColor: t.selectedBg }]}
                 onPress={() => {
                   setSearchMode(option.id);
                   setRenderLimit(30);
@@ -641,8 +643,8 @@ export default function MedicineScreen({
                 }}
                 activeOpacity={0.8}
               >
-                <HealthIcon name={option.icon} size={14} color={active ? '#234A2D' : t.textMuted} />
-                <Text style={[styles.searchModeLabel, { color: active ? '#234A2D' : t.textMuted, fontWeight: active ? '800' : '600' }]}>
+                <HealthIcon name={option.icon} size={14} color={active ? t.selectedText : t.textMuted} />
+                <Text style={[styles.searchModeLabel, { color: active ? t.selectedText : t.textMuted, fontWeight: active ? '800' : '600' }]}>
                   {globalLang === 'bn' ? option.bn : option.en}
                 </Text>
               </TouchableOpacity>
@@ -671,7 +673,7 @@ export default function MedicineScreen({
                   paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                 },
                 filterMode === 'company' && {
-                  backgroundColor: '#DDEEDD',
+                  backgroundColor: t.selectedBg,
                 },
               ]}
               onPress={() => setFilterMode('company')}
@@ -681,7 +683,7 @@ export default function MedicineScreen({
                 name="pharmacy"
                 size={Math.max(12, Math.round(t.fs(13)))}
                 color={
-                  filterMode === 'company' ? '#234A2D' : t.textMuted
+                  filterMode === 'company' ? t.selectedText : t.textMuted
                 }
                 style={{ marginRight: 4 }}
               />
@@ -690,7 +692,7 @@ export default function MedicineScreen({
                   styles.scopeTabText,
                   {
                     color:
-                      filterMode === 'company' ? '#234A2D' : t.textMuted,
+                      filterMode === 'company' ? t.selectedText : t.textMuted,
                     fontSize: t.fs(13),
                     fontWeight: filterMode === 'company' ? '800' : '600',
                   },
@@ -712,7 +714,7 @@ export default function MedicineScreen({
                   paddingHorizontal: Math.max(8, Math.round(t.fs(10))),
                 },
                 filterMode === 'system' && {
-                  backgroundColor: '#DDEEDD',
+                  backgroundColor: t.selectedBg,
                 },
               ]}
               onPress={() => setFilterMode('system')}
@@ -722,7 +724,7 @@ export default function MedicineScreen({
                 name="bodyOutline"
                 size={Math.max(12, Math.round(t.fs(13)))}
                 color={
-                  filterMode === 'system' ? '#234A2D' : t.textMuted
+                  filterMode === 'system' ? t.selectedText : t.textMuted
                 }
                 style={{ marginRight: 4 }}
               />
@@ -731,7 +733,7 @@ export default function MedicineScreen({
                   styles.scopeTabText,
                   {
                     color:
-                      filterMode === 'system' ? '#234A2D' : t.textMuted,
+                      filterMode === 'system' ? t.selectedText : t.textMuted,
                     fontSize: t.fs(13),
                     fontWeight: filterMode === 'system' ? '800' : '600',
                   },
@@ -1027,9 +1029,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 5,
-  },
-  searchModeButtonActive: {
-    backgroundColor: '#DDEEDD',
   },
   searchModeLabel: {
     fontFamily: 'HindSiliguri-SemiBold',

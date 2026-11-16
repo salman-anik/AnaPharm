@@ -15,6 +15,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DISEASE_DATABASE, DISEASE_CATEGORIES } from '../data/diseaseData';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIcon';
+import MedicalBackdrop from '../components/MedicalBackdrop';
 import DiseaseDetailModal from './DiseaseDetailModal';
 
 // Keep the searchable text ready once rather than joining long symptom and treatment arrays on every keystroke.
@@ -236,15 +237,16 @@ export default function DiseasesScreen({
 
   return (
     <View style={[styles.container, { backgroundColor: t.bg }]}>
+      <MedicalBackdrop theme={t} />
       {/* Collapsible Header */}
       <Animated.View
         style={[
           styles.header,
           {
             paddingTop: insets.top > 0 ? insets.top + 6 : 14,
-            backgroundColor: t.isDark ? '#09090b' : '#ffffff',
-            borderBottomColor: t.isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
-            borderTopColor: t.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+            backgroundColor: t.headerBg,
+            borderBottomColor: t.border,
+            borderTopColor: t.border,
             transform: [{ translateY: headerY }],
           },
         ]}
@@ -312,15 +314,15 @@ export default function DiseasesScreen({
           >
             {DISEASE_CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
-              const catColor = isSelected ? '#234A2D' : t.text;
+              const catColor = isSelected ? t.selectedText : t.text;
               return (
                 <TouchableOpacity
                   key={cat.id}
                   style={[
                     styles.categoryChip,
                     {
-                      backgroundColor: isSelected ? '#DDEEDD' : t.chipBg,
-                      borderColor: isSelected ? '#DDEEDD' : t.chipBorder,
+                      backgroundColor: isSelected ? t.selectedBg : t.chipBg,
+                      borderColor: isSelected ? t.selectedBg : t.chipBorder,
                     },
                   ]}
                   onPress={() => setSelectedCategory(cat.id)}
@@ -336,7 +338,7 @@ export default function DiseasesScreen({
                     style={[
                       styles.categoryText,
                       {
-                        color: isSelected ? '#234A2D' : t.text,
+                        color: isSelected ? t.selectedText : t.text,
                         fontWeight: isSelected ? '800' : '500',
                         fontFamily: isSelected ? 'HindSiliguri-Bold' : 'HindSiliguri-Medium',
                       },

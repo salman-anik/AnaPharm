@@ -14,6 +14,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { THEMES, FONT_SIZES, getTheme } from '../theme/theme';
 import HealthIcon from '../components/HealthIcon';
+import MedicalBackdrop from '../components/MedicalBackdrop';
 import { MEDICINE_DATABASE } from '../data/medicineData';
 import { DISEASE_DATABASE } from '../data/diseaseData';
 
@@ -94,15 +95,16 @@ export default function SettingsScreen({
 
   return (
     <View style={[styles.container, { backgroundColor: t.bg }]}>
+      <MedicalBackdrop theme={t} />
       {/* Collapsible Header */}
       <Animated.View
         style={[
           styles.header,
           {
             paddingTop: insets.top > 0 ? insets.top + 6 : 14,
-            backgroundColor: t.isDark ? '#09090b' : '#ffffff',
-            borderBottomColor: t.isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
-            borderTopColor: t.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+            backgroundColor: t.headerBg,
+            borderBottomColor: t.border,
+            borderTopColor: t.border,
             transform: [{ translateY: headerY }],
           },
         ]}
@@ -126,7 +128,7 @@ export default function SettingsScreen({
         <View style={[styles.dataSummaryCard, { backgroundColor: t.card, borderColor: t.cardBorder, shadowColor: t.shadowColor }]}>
           <View style={styles.dataSummaryHeadingRow}>
             <View style={styles.dataSummaryIcon}>
-              <HealthIcon name="dna" size={18} color="#47694A" />
+              <HealthIcon name="dna" size={18} color={t.accent} />
             </View>
             <Text style={[styles.cardHeading, { color: t.text }]}>App data</Text>
           </View>
@@ -168,7 +170,7 @@ export default function SettingsScreen({
                     {
                       backgroundColor: item.card,
                       borderColor: isSelected
-                        ? '#DDEEDD'
+                        ? t.selectedBg
                         : item.cardBorder,
                       borderWidth: isSelected ? 2.5 : 1,
                     },
@@ -186,13 +188,13 @@ export default function SettingsScreen({
                       <View
                         style={[
                           styles.activeCheckBadge,
-                          { backgroundColor: '#DDEEDD' },
+                          { backgroundColor: t.selectedBg },
                         ]}
                       >
                         <Text
                           style={[
                             styles.activeCheckText,
-                            { color: '#234A2D' },
+                            { color: t.selectedText },
                           ]}
                         >
                           ✓
@@ -242,7 +244,7 @@ export default function SettingsScreen({
                   style={[
                     styles.fontSizeBtn,
                     active && {
-                      backgroundColor: '#DDEEDD',
+                      backgroundColor: t.selectedBg,
                     },
                   ]}
                   onPress={() => setFontSize && setFontSize(opt.id)}
@@ -252,7 +254,7 @@ export default function SettingsScreen({
                     style={[
                       styles.fontSizeBtnIcon,
                       {
-                        color: active ? '#234A2D' : t.text,
+                        color: active ? t.selectedText : t.text,
                       },
                     ]}
                   >
@@ -262,7 +264,7 @@ export default function SettingsScreen({
                     style={[
                       styles.fontSizeBtnLabel,
                       {
-                        color: active ? '#234A2D' : t.textMuted,
+                        color: active ? t.selectedText : t.textMuted,
                         fontWeight: active ? '800' : '600',
                         fontFamily: active ? 'HindSiliguri-Bold' : 'HindSiliguri-Medium',
                       },
@@ -322,8 +324,8 @@ export default function SettingsScreen({
             <Switch
               value={keep3DLoaded}
               onValueChange={setKeep3DLoaded}
-              trackColor={{ false: t.border, true: '#A9CBAA' }}
-              thumbColor={keep3DLoaded ? '#4F8057' : '#f4f3f4'}
+              trackColor={{ false: t.border, true: t.accent }}
+              thumbColor={keep3DLoaded ? '#FFFFFF' : '#f4f3f4'}
               ios_backgroundColor={t.border}
             />
           </View>
@@ -370,13 +372,13 @@ export default function SettingsScreen({
             ]}
           >
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
-              <HealthIcon name="pharmacy" size={14} color={t.text} style={{ marginRight: 6 }} />
+              <HealthIcon name="dna" size={14} color={t.text} style={{ marginRight: 6 }} />
               <Text style={[styles.openSourceTitle, { color: t.text }]}>
                 Free & Open Source Project
               </Text>
             </View>
             <Text style={[styles.openSourceDesc, { color: t.textMuted }]}>
-              AnaPharm is an open source medical and pharmacological reference application built for doctors, healthcare workers, medical students, and developers. Contributions, feedback, and issue reports are openly welcomed on GitHub.
+              AnaPharm is an open source medical learning and anatomy reference app built for healthcare workers, medical students, and developers. Contributions, feedback, and issue reports are welcomed on GitHub.
             </Text>
           </View>
 
@@ -403,7 +405,7 @@ export default function SettingsScreen({
               activeOpacity={0.8}
             >
               <Image
-                source={require('../../assets/salman-anik.jpg')}
+                source={require('../../assets/developer-profile.png')}
                 style={styles.devAvatarImage}
                 resizeMode="cover"
               />
@@ -537,23 +539,12 @@ export default function SettingsScreen({
                 slamananik.bd@gmail.com
               </Text>
             </TouchableOpacity>
-            <View style={[styles.devInfoRow, { borderBottomColor: t.border }]}>
-              <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>
-                Pharma Dataset
-              </Text>
-              <Text
-                style={[styles.devInfoValue, { color: t.text }]}
-                numberOfLines={1}
-              >
-                2,594 Generics • 225 Companies
-              </Text>
-            </View>
             <View style={[styles.devInfoRow, { borderBottomWidth: 0 }]}>
               <Text style={[styles.devInfoLabel, { color: t.textMuted }]}>
                 Version
               </Text>
               <Text style={[styles.devInfoValue, { color: t.text }]}>
-                1.0.0 (Release)
+                1.2.0 (Release)
               </Text>
             </View>
           </View>
@@ -625,11 +616,11 @@ const styles = StyleSheet.create({
     shadowRadius: 10,
   },
   dataSummaryHeadingRow: { flexDirection: 'row', alignItems: 'center', gap: 9 },
-  dataSummaryIcon: { width: 34, height: 34, borderRadius: 12, backgroundColor: '#E8F2E5', alignItems: 'center', justifyContent: 'center' },
+  dataSummaryIcon: { width: 34, height: 34, borderRadius: 12, backgroundColor: '#E1EEFF', alignItems: 'center', justifyContent: 'center' },
   dataStatsGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 12 },
-  dataStatItem: { width: '48%', minHeight: 84, borderWidth: 1, borderColor: '#A9CBAA', backgroundColor: '#E8F2E5', borderRadius: 18, padding: 12, justifyContent: 'center', alignItems: 'center' },
-  dataStatValue: { color: '#234A2D', fontSize: 22, fontWeight: '900', textAlign: 'center' },
-  dataStatLabel: { color: '#47694A', fontSize: 12, fontWeight: '700', marginTop: 4, textAlign: 'center' },
+  dataStatItem: { width: '48%', minHeight: 84, borderWidth: 1, borderColor: '#C6DAF4', backgroundColor: '#F1F6FD', borderRadius: 18, padding: 12, justifyContent: 'center', alignItems: 'center' },
+  dataStatValue: { color: '#2477D4', fontSize: 22, fontWeight: '900', textAlign: 'center' },
+  dataStatLabel: { color: '#526B88', fontSize: 12, fontWeight: '700', marginTop: 4, textAlign: 'center' },
   card: {
     borderRadius: 18,
     borderWidth: 1,

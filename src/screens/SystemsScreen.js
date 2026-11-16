@@ -13,6 +13,7 @@ import { SYSTEMS, ANATOMY_DATA } from '../data/anatomyData';
 import OrganDetailModal from './OrganDetailModal';
 import { getTheme } from '../theme/theme';
 import HealthIcon, { getSystemIcon, getOrganIcon } from '../components/HealthIcon';
+import MedicalBackdrop from '../components/MedicalBackdrop';
 
 const ORGANS_BY_SYSTEM = Object.values(ANATOMY_DATA).reduce((groups, item) => {
   (groups[item.system] ||= []).push(item);
@@ -87,15 +88,16 @@ export default function SystemsScreen({
 
   return (
     <View style={[styles.container, { backgroundColor: t.bg }]}>
+      <MedicalBackdrop theme={t} />
       {/* Collapsible Header */}
       <Animated.View
         style={[
           styles.header,
           {
             paddingTop: insets.top > 0 ? insets.top + 6 : 14,
-            backgroundColor: t.isDark ? '#09090b' : '#ffffff',
-            borderBottomColor: t.isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
-            borderTopColor: t.isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.06)',
+            backgroundColor: t.headerBg,
+            borderBottomColor: t.border,
+            borderTopColor: t.border,
             transform: [{ translateY: headerY }],
           },
         ]}
@@ -132,7 +134,7 @@ export default function SystemsScreen({
                 styles.systemCard,
                 {
                   backgroundColor: t.card,
-                  borderColor: isExpanded ? '#DDEEDD' : t.cardBorder,
+                  borderColor: isExpanded ? t.selectedBg : t.cardBorder,
                   borderWidth: isExpanded ? 1.5 : 1,
                   shadowColor: t.shadowColor,
                 },
@@ -175,13 +177,13 @@ export default function SystemsScreen({
                   style={[
                     styles.chevronBox,
                     {
-                      backgroundColor: isExpanded ? '#DDEEDD' : t.chipBg,
-                      borderColor: isExpanded ? '#DDEEDD' : t.chipBorder,
+                      backgroundColor: isExpanded ? t.selectedBg : t.chipBg,
+                      borderColor: isExpanded ? t.selectedBg : t.chipBorder,
                       flexShrink: 0,
                     },
                   ]}
                 >
-                  <Text style={[styles.chevron, { color: isExpanded ? '#234A2D' : t.text, fontSize: t.fs(10) }]}>
+                  <Text style={[styles.chevron, { color: isExpanded ? t.selectedText : t.text, fontSize: t.fs(10) }]}>
                     {isExpanded ? '▲' : '▼'}
                   </Text>
                 </View>

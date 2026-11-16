@@ -44,7 +44,7 @@ export default function App() {
 
   // Shared state across the app - default to 'light'
   const [theme, setThemeState] = useState('light');
-  const [fontSize, setFontSizeState] = useState('small');
+  const [fontSize, setFontSizeState] = useState('medium');
   const [keep3DLoaded, setKeep3DLoadedState] = useState(false);
 
   // Load persisted settings on startup
@@ -112,15 +112,16 @@ export default function App() {
 
   // All bottom navbar icons from healthicons.org (inlined, zero 404s)
   const tabs = [
-    { id: 'medicine', iconName: 'medicines' },
-    { id: 'diseases', iconName: 'stethoscope' },
+    { id: 'medicine', label: 'Medicines', labelBn: 'ওষুধ', iconName: 'medicines' },
+    { id: 'diseases', label: 'Diseases', labelBn: 'রোগ', iconName: 'stethoscope' },
     {
       id: 'model',
+      label: 'Anatomy', labelBn: 'অ্যানাটমি',
       isCenter: true,
-      modelIcon: 'bodyFilled',
+      modelIcon: 'bodyOutline',
     },
-    { id: 'systems', iconName: 'dna' },
-    { id: 'settings', iconName: 'settings' },
+    { id: 'systems', label: 'Systems', labelBn: 'সিস্টেম', iconName: 'dna' },
+    { id: 'settings', label: 'Settings', labelBn: 'সেটিংস', iconName: 'settings' },
   ];
 
   const swipeTabs = [
@@ -321,7 +322,7 @@ export default function App() {
           </View>
         </View>
 
-        {/* Modern Bottom Navigation Bar - Icons Only, Big Center 3D Button */}
+        {/* Labeled navigation keeps each medical section easy to recognize. */}
         <SafeAreaView
           edges={['bottom']}
           style={[
@@ -339,7 +340,7 @@ export default function App() {
               return (
                 <TouchableOpacity
                   key={tab.id}
-                  style={styles.centerTabWrapper}
+                  style={styles.tabButton}
                   activeOpacity={0.8}
                   onPress={() => handleTabPress(tab.id)}
                 >
@@ -347,12 +348,8 @@ export default function App() {
                     style={[
                       styles.centerHeroButton,
                       {
-                        backgroundColor: isActive
-                          ? '#DDEEDD'
-                          : (t.isDark ? '#141418' : '#f4f4f5'),
-                        borderColor: isActive
-                          ? '#DDEEDD'
-                          : (t.isDark ? '#2e2e34' : '#e4e4e7'),
+                        backgroundColor: isActive ? t.accentBg : 'transparent',
+                        borderColor: 'transparent',
                         shadowColor: t.shadowColor || '#000',
                       },
                     ]}
@@ -361,12 +358,11 @@ export default function App() {
                       name={tab.modelIcon || (isActive ? tab.iconFilled : tab.iconOutline)}
                       size={26}
                       color={
-                        isActive
-                          ? '#234A2D'
-                          : (t.isDark ? '#ffffff' : '#000000')
+                        isActive ? t.accent : t.textMuted
                       }
                     />
                   </View>
+                  <Text style={[styles.tabLabel, { color: isActive ? t.accent : t.textMuted, fontWeight: isActive ? '700' : '500' }]}>{language === 'bn' ? tab.labelBn : tab.label}</Text>
                 </TouchableOpacity>
               );
             }
@@ -379,8 +375,8 @@ export default function App() {
                   isActive && [
                     styles.tabButtonActive,
                     {
-                      backgroundColor: '#DDEEDD',
-                      borderColor: '#DDEEDD',
+                      backgroundColor: t.accentBg,
+                      borderColor: 'transparent',
                     },
                   ],
                 ]}
@@ -389,10 +385,11 @@ export default function App() {
               >
                 <HealthIcon
                   name={tab.iconName}
-                  size={24}
-                  color={isActive ? '#234A2D' : t.textMuted}
+                  size={22}
+                  color={isActive ? t.accent : t.textMuted}
                   style={{ opacity: isActive ? 1.0 : 0.65 }}
                 />
+                <Text style={[styles.tabLabel, { color: isActive ? t.accent : t.textMuted, fontWeight: isActive ? '700' : '500' }]}>{language === 'bn' ? tab.labelBn : tab.label}</Text>
               </TouchableOpacity>
             );
           })}
@@ -418,8 +415,9 @@ const styles = StyleSheet.create({
   bottomTabBar: {
     flexDirection: 'row',
     borderTopWidth: 1,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingTop: 8,
+    paddingBottom: 4,
+    paddingHorizontal: 7,
     justifyContent: 'space-around',
     alignItems: 'center',
     elevation: 16,
@@ -431,13 +429,13 @@ const styles = StyleSheet.create({
   tabButton: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 16,
+    paddingVertical: 5,
+    paddingHorizontal: 5,
+    borderRadius: 14,
     borderWidth: 1,
     borderColor: 'transparent',
-    minWidth: 48,
-    height: 48,
+    minWidth: 60,
+    height: 52,
   },
   tabButtonActive: {
     borderWidth: 1,
@@ -451,16 +449,21 @@ const styles = StyleSheet.create({
     minWidth: 54,
   },
   centerHeroButton: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 28,
+    height: 25,
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 2,
-    elevation: 4,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
+    borderWidth: 0,
+    elevation: 0,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0,
+    shadowRadius: 0,
+  },
+  tabLabel: {
+    fontSize: 10,
+    marginTop: 3,
+    letterSpacing: 0.05,
   },
   centerHeroText3D: {
     fontSize: 18,

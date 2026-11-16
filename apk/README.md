@@ -4,8 +4,9 @@ This directory keeps the current standalone Android APK at a stable filename and
 
 | Build | App version | Android version code | File |
 |---|---:|---:|---|
-| Current | 1.0.0 | 2 | [`AnaPharm.apk`](AnaPharm.apk) |
-| Previous | 1.0.0 | 1 | [`AnaPharm-1.0.0.apk`](AnaPharm-1.0.0.apk) |
+| Current | 1.2.0 | 3 | [`AnaPharm.apk`](AnaPharm.apk) |
+| Previous | 1.0.0 | 2 | [`AnaPharm-1.0.0-build2.apk`](AnaPharm-1.0.0-build2.apk) |
+| Older | 1.0.0 | 1 | [`AnaPharm-1.0.0.apk`](AnaPharm-1.0.0.apk) |
 
 Always use `AnaPharm.apk` for the latest build. When a new APK replaces it, move the previous file to a versioned filename and update this table and the root README.
 
@@ -16,3 +17,4 @@ Always use `AnaPharm.apk` for the latest build. When a new APK replaces it, move
 3. Tap **Install**, then open AnaPharm.
 
 These are standalone release APKs; Expo Go or a Metro development server is not required.
+The current APK supports ARM64 and ARM32 Android phones.

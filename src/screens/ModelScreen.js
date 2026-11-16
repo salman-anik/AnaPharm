@@ -165,11 +165,14 @@ export default function ModelScreen({
           style={[styles.layersButton, { backgroundColor: t.glassBg, borderColor: t.glassBorder }]}
           onPress={() => setLayersOpen((open) => !open)} activeOpacity={0.8}
         >
-          <Text style={[styles.layersButtonText, { color: t.text }]}>{layersOpen ? 'CLOSE LAYERS' : 'BODY SYSTEMS'}</Text>
+          <HealthIcon name="dna" size={15} color={t.accent} />
+          <Text style={[styles.layersButtonText, { color: t.text }]}>
+            {language === 'bn' ? (layersOpen ? 'বন্ধ করুন' : 'স্তর ও সিস্টেম') : (layersOpen ? 'Close layers' : 'Layers & systems')}
+          </Text>
           <Text style={[styles.layersChevron, { color: t.textMuted }]}>{layersOpen ? '−' : '+'}</Text>
         </TouchableOpacity>
 
-        {layersOpen && <View style={[styles.layersPanel, { backgroundColor: t.isDark ? '#17191a' : '#f8faf8', borderColor: t.glassBorder }]}>
+        {layersOpen && <View style={[styles.layersPanel, { backgroundColor: t.card, borderColor: t.glassBorder }]}>
           <ScrollView style={styles.layersScroll} showsVerticalScrollIndicator={false}>
             <View style={styles.layersHeaderRow}>
               <View><Text style={[styles.layerSectionTitle, { color: t.text, marginBottom: 3 }]}>BODY SYSTEMS</Text><Text style={[styles.layerHint, { color: t.textMuted, marginBottom: 0 }]}>Choose the layers to explore</Text></View>
@@ -185,8 +188,8 @@ export default function ModelScreen({
             </View>
             <Slider
               minimumValue={0.05} maximumValue={0.95} step={0.01} value={1 - muscleOpacity}
-              onValueChange={(transparency) => setMuscleOpacity(1 - transparency)} minimumTrackTintColor={t.text}
-              maximumTrackTintColor={t.chipBorder} thumbTintColor={t.text}
+              onValueChange={(transparency) => setMuscleOpacity(1 - transparency)} minimumTrackTintColor={t.accent}
+              maximumTrackTintColor={t.chipBorder} thumbTintColor={t.accent}
               disabled={!showMuscles} style={styles.muscleSlider}
             />
             <Text style={[styles.layerHint, { color: t.textMuted }]}>Adjust visibility to reveal deeper anatomy.</Text>
@@ -203,10 +206,10 @@ export default function ModelScreen({
         {!!selectedOrganKey && !!selectedData && !layersOpen && <View style={[styles.selectionCard, { backgroundColor: t.glassBg, borderColor: t.glassBorder }]}>
           <View style={styles.selectionCopy}>
             <Text numberOfLines={1} style={[styles.selectionTitle, { color: t.text }]}>{selectedData.name}</Text>
-            <Text style={[styles.selectionHint, { color: t.textMuted }]}>Selected in 3D · open details to learn more</Text>
+            <Text style={[styles.selectionHint, { color: t.textMuted }]}>{language === 'bn' ? '3D-তে নির্বাচিত · বিস্তারিত জানতে খুলুন' : 'Selected in 3D · open details to learn more'}</Text>
           </View>
-          <TouchableOpacity style={styles.detailsButton} onPress={() => setSheetVisible(true)} activeOpacity={0.8}>
-            <Text style={styles.detailsButtonText}>Details</Text>
+          <TouchableOpacity style={[styles.detailsButton, { backgroundColor: t.accent }]} onPress={() => setSheetVisible(true)} activeOpacity={0.8}>
+            <Text style={[styles.detailsButtonText, { color: '#FFFFFF' }]}>{language === 'bn' ? 'বিস্তারিত' : 'Details'}</Text>
           </TouchableOpacity>
         </View>}
 
@@ -217,7 +220,7 @@ export default function ModelScreen({
             style={[
               styles.actionFab,
               {
-                backgroundColor: autoRotate ? (t.isDark ? '#3f3f46' : '#d4d4d8') : t.glassBg,
+                backgroundColor: autoRotate ? t.accentBg : t.glassBg,
                 borderColor: t.glassBorder,
                 shadowColor: t.shadowColor,
               },
@@ -236,7 +239,7 @@ export default function ModelScreen({
             style={[
               styles.actionFab,
               {
-                backgroundColor: xrayMode ? (t.isDark ? '#3f3f46' : '#d4d4d8') : t.glassBg,
+                backgroundColor: xrayMode ? t.accentBg : t.glassBg,
                 borderColor: t.glassBorder,
                 shadowColor: t.shadowColor,
               },
@@ -293,11 +296,11 @@ function LayerToggle({ label, checked, onPress, theme, compact = false }) {
       style={[
         styles.layerToggle,
         compact && styles.layerToggleCompact,
-        { borderColor: checked ? theme.text : theme.chipBorder, backgroundColor: checked ? (theme.isDark ? 'rgba(255,255,255,0.10)' : 'rgba(0,0,0,0.06)') : 'transparent' },
+        { borderColor: checked ? theme.accent : theme.chipBorder, backgroundColor: checked ? theme.accentBg : 'transparent' },
       ]}
     >
-      <View style={[styles.layerCheckbox, { borderColor: checked ? theme.text : theme.textMuted, backgroundColor: checked ? theme.text : 'transparent' }]}>
-        {checked && <Text style={[styles.layerCheckmark, { color: theme.bg }]}>✓</Text>}
+      <View style={[styles.layerCheckbox, { borderColor: checked ? theme.accent : theme.textMuted, backgroundColor: checked ? theme.accent : 'transparent' }]}>
+        {checked && <Text style={[styles.layerCheckmark, { color: '#FFFFFF' }]}>✓</Text>}
       </View>
       <Text numberOfLines={1} style={[styles.layerLabel, compact && styles.organLayerLabel, { color: theme.text, fontWeight: checked ? '700' : '500' }]}>{label}</Text>
     </TouchableOpacity>
@@ -313,11 +316,11 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   layersButton: {
-    position: 'absolute', top: 14, left: 14, minHeight: 38, paddingHorizontal: 14,
-    borderRadius: 12, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
+    position: 'absolute', top: 14, left: 14, minHeight: 40, paddingHorizontal: 13,
+    borderRadius: 14, borderWidth: 1, flexDirection: 'row', alignItems: 'center', gap: 8,
     zIndex: 10, elevation: 8,
   },
-  layersButtonText: { fontSize: 10, fontWeight: '800', letterSpacing: 0.8 },
+  layersButtonText: { fontSize: 11, fontWeight: '800', letterSpacing: 0.2 },
   layersChevron: { fontSize: 16, fontWeight: '700' },
   layersPanel: {
     position: 'absolute', bottom: 64, left: 12, right: 12, height: '59%', maxHeight: '70%',
@@ -352,8 +355,8 @@ const styles = StyleSheet.create({
   selectionCopy: { flex: 1 },
   selectionTitle: { fontSize: 12, fontWeight: '800' },
   selectionHint: { fontSize: 9, marginTop: 2 },
-  detailsButton: { backgroundColor: '#38bdf8', borderRadius: 10, paddingVertical: 8, paddingHorizontal: 14 },
-  detailsButtonText: { color: '#082f49', fontWeight: '900', fontSize: 11 },
+  detailsButton: { borderRadius: 10, paddingVertical: 8, paddingHorizontal: 14 },
+  detailsButtonText: { fontWeight: '900', fontSize: 11 },
   resetGlyph: { fontSize: 29, lineHeight: 33, fontWeight: '500', marginTop: -5 },
   fabColumn: {
     position: 'absolute',

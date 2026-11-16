@@ -57,7 +57,7 @@ export default function OrganDetailModal({
       <View style={[styles.container, { backgroundColor: t.bg }]}>
         <StatusBar
           barStyle={t.isDark ? 'light-content' : 'dark-content'}
-          backgroundColor={t.isDark ? '#09090b' : '#ffffff'}
+          backgroundColor={t.headerBg}
         />
 
         {/* Top Navigation Bar */}
@@ -66,7 +66,7 @@ export default function OrganDetailModal({
             styles.navBar,
             {
               paddingTop: insets.top > 0 ? insets.top + 8 : 14,
-              backgroundColor: t.isDark ? '#09090b' : '#ffffff',
+              backgroundColor: t.headerBg,
               borderBottomColor: t.isDark ? 'rgba(255, 255, 255, 0.16)' : 'rgba(0, 0, 0, 0.12)',
             },
           ]}
@@ -116,7 +116,7 @@ export default function OrganDetailModal({
                   paddingVertical: Math.max(3, Math.round(t.fs(4))),
                   paddingHorizontal: Math.max(6, Math.round(t.fs(8))),
                 },
-                isBn && { backgroundColor: '#DDEEDD' },
+                isBn && { backgroundColor: t.selectedBg },
               ]}
               onPress={() => setLang('bn')}
               activeOpacity={0.8}
@@ -125,7 +125,7 @@ export default function OrganDetailModal({
                 style={[
                   styles.langPillText,
                   {
-                    color: isBn ? '#234A2D' : t.textMuted,
+                    color: isBn ? t.selectedText : t.textMuted,
                     fontSize: t.fs(11),
                   },
                 ]}
@@ -141,7 +141,7 @@ export default function OrganDetailModal({
                   paddingVertical: Math.max(3, Math.round(t.fs(4))),
                   paddingHorizontal: Math.max(6, Math.round(t.fs(8))),
                 },
-                !isBn && { backgroundColor: '#DDEEDD' },
+                !isBn && { backgroundColor: t.selectedBg },
               ]}
               onPress={() => setLang('en')}
               activeOpacity={0.8}
@@ -150,7 +150,7 @@ export default function OrganDetailModal({
                 style={[
                   styles.langPillText,
                   {
-                    color: !isBn ? '#234A2D' : t.textMuted,
+                    color: !isBn ? t.selectedText : t.textMuted,
                     fontSize: t.fs(11),
                   },
                 ]}
